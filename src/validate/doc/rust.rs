@@ -41,11 +41,6 @@ pub fn validate(content: &str, config: &RustDocConfig) -> Vec<DocViolation> {
             violations.push(violation);
         }
 
-        // Check for macro declaration
-        if let Some(violation) = check_macro_declaration(line, i + 1, has_rustdoc, config) {
-            violations.push(violation);
-        }
-
         i += 1;
     }
 
@@ -171,30 +166,6 @@ fn check_function_declaration(
     Some(DocViolation { line: line_num, kind: DocKind::Function, name })
 }
 
-fn check_macro_declaration(
-    line: &str,
-    line_num: usize,
-    has_rustdoc: bool,
-    config: &RustDocConfig,
-) -> Option<DocViolation> {
-    if !config.check_macro {
-        return None;
-    }
-
-    // macro_rules! name
-    if !line.contains("macro_rules!") {
-        return None;
-    }
-
-    if has_rustdoc {
-        return None;
-    }
-
-    let name = extract_name_after(line, "macro_rules!");
-
-    Some(DocViolation { line: line_num, kind: DocKind::Macro, name })
-}
-
 fn extract_name_after(line: &str, keyword: &str) -> String {
     let pos = line.find(keyword);
     if pos.is_none() {
@@ -213,19 +184,11 @@ mod tests {
     use super::*;
 
     fn config_all() -> RustDocConfig {
-        RustDocConfig {
-            type_visibility: Some(Visibility::All),
-            function_visibility: Some(Visibility::All),
-            check_macro: true,
-        }
+        RustDocConfig { type_visibility: Some(Visibility::All), function_visibility: Some(Visibility::All) }
     }
 
     fn config_public() -> RustDocConfig {
-        RustDocConfig {
-            type_visibility: Some(Visibility::Public),
-            function_visibility: Some(Visibility::Public),
-            check_macro: true,
-        }
+        RustDocConfig { type_visibility: Some(Visibility::Public), function_visibility: Some(Visibility::Public) }
     }
 
     // =========================================================================
@@ -309,8 +272,7 @@ pub struct MyStruct {}
     #[test]
     fn test_function_without_rustdoc() {
         let content = "pub fn do_something() {}";
-        let config =
-            RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::All), check_macro: false };
+        let config = RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::All) };
         let violations = validate(content, &config);
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].kind, DocKind::Function);
@@ -323,8 +285,7 @@ pub struct MyStruct {}
 /// Does something
 pub fn do_something() {}
 "#;
-        let config =
-            RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::All), check_macro: false };
+        let config = RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::All) };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
@@ -332,41 +293,7 @@ pub fn do_something() {}
     #[test]
     fn test_private_function_skipped() {
         let content = "fn helper() {}";
-        let config =
-            RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::Public), check_macro: false };
-        let violations = validate(content, &config);
-        assert!(violations.is_empty());
-    }
-
-    // =========================================================================
-    // Macro declaration tests
-    // =========================================================================
-
-    #[test]
-    fn test_macro_without_rustdoc() {
-        let content = "macro_rules! my_macro { () => {} }";
-        let config = RustDocConfig { type_visibility: None, function_visibility: None, check_macro: true };
-        let violations = validate(content, &config);
-        assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Macro);
-        assert_eq!(violations[0].name, "my_macro");
-    }
-
-    #[test]
-    fn test_macro_with_rustdoc() {
-        let content = r#"
-/// My macro
-macro_rules! my_macro { () => {} }
-"#;
-        let config = RustDocConfig { type_visibility: None, function_visibility: None, check_macro: true };
-        let violations = validate(content, &config);
-        assert!(violations.is_empty());
-    }
-
-    #[test]
-    fn test_macro_check_disabled() {
-        let content = "macro_rules! my_macro { () => {} }";
-        let config = RustDocConfig { type_visibility: None, function_visibility: None, check_macro: false };
+        let config = RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::Public) };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }

@@ -35,12 +35,19 @@ pub enum Visibility {
     All,
 }
 
-/// Config for no_java_doc and no_kotlin_doc validators
+/// Config for no_java_doc validator
 #[derive(Clone, Debug, Deserialize, Default)]
 pub struct RawJavaDocConfig {
     #[serde(rename = "type")]
     pub type_: Option<Visibility>,
-    pub constructor: Option<Visibility>,
+    pub function: Option<Visibility>,
+}
+
+/// Config for no_kotlin_doc validator
+#[derive(Clone, Debug, Deserialize, Default)]
+pub struct RawKotlinDocConfig {
+    #[serde(rename = "type")]
+    pub type_: Option<Visibility>,
     pub function: Option<Visibility>,
 }
 
@@ -50,8 +57,6 @@ pub struct RawRustDocConfig {
     #[serde(rename = "type")]
     pub type_: Option<Visibility>,
     pub function: Option<Visibility>,
-    #[serde(rename = "macro")]
-    pub macro_: Option<bool>,
 }
 
 // =============================================================================
@@ -92,7 +97,6 @@ pub struct RawCommentConfig {
 
 #[derive(Deserialize)]
 pub struct RawConfig {
-    pub required: Option<Vec<RawRule>>,
     pub deny: Option<Vec<RawRule>>,
     pub review: Option<Vec<RawReviewItem>>,
 }
@@ -101,8 +105,8 @@ pub struct RawConfig {
 pub struct RawRule {
     #[serde(default)]
     pub label: String,
-    #[serde(default)]
-    pub validator: String,
+    #[serde(default, rename = "type")]
+    pub type_: String,
     pub keywords: Option<Vec<String>>,
     pub exec: Option<String>,
     #[serde(default)]
@@ -112,7 +116,7 @@ pub struct RawRule {
     pub exclude_files: Option<Vec<RawExcludeFilter>>,
     // Doc validator configs
     pub java_doc: Option<RawJavaDocConfig>,
-    pub kotlin_doc: Option<RawJavaDocConfig>,
+    pub kotlin_doc: Option<RawKotlinDocConfig>,
     pub rust_doc: Option<RawRustDocConfig>,
     // Comment validator configs
     pub comment: Option<RawCommentConfig>,
@@ -148,7 +152,6 @@ mod tests {
     fn test_parse_empty_yaml() {
         let yaml = "";
         let config = RawConfig::parse(yaml).unwrap();
-        assert!(config.required.is_none());
         assert!(config.deny.is_none());
         assert!(config.review.is_none());
     }
@@ -156,12 +159,10 @@ mod tests {
     #[test]
     fn test_parse_empty_sections() {
         let yaml = r#"
-required: []
 deny: []
 review: []
 "#;
         let config = RawConfig::parse(yaml).unwrap();
-        assert_eq!(config.required.unwrap().len(), 0);
         assert_eq!(config.deny.unwrap().len(), 0);
         assert_eq!(config.review.unwrap().len(), 0);
     }
@@ -171,7 +172,7 @@ review: []
         let yaml = r#"
 deny:
   - label: test-rule
-    validator: text
+    type: text
     keywords:
       - keyword1
       - keyword2
@@ -182,7 +183,7 @@ deny:
         assert_eq!(rules.len(), 1);
         let rule = &rules[0];
         assert_eq!(rule.label, "test-rule");
-        assert_eq!(rule.validator, "text");
+        assert_eq!(rule.type_, "text");
         assert_eq!(rule.keywords.as_ref().unwrap().len(), 2);
         assert!(rule.exec.is_none());
         assert_eq!(rule.message, "Test message");
@@ -196,14 +197,14 @@ deny:
         let yaml = r#"
 deny:
   - label: regex-rule
-    validator: regex
+    type: regex
     keywords:
       - "pattern.*"
     message: Regex message
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
-        assert_eq!(rule.validator, "regex");
+        assert_eq!(rule.type_, "regex");
         assert!(rule.keywords.is_some());
         assert!(rule.exec.is_none());
     }
@@ -211,17 +212,17 @@ deny:
     #[test]
     fn test_parse_custom_rule() {
         let yaml = r#"
-required:
+deny:
   - label: custom-rule
-    validator: custom
-    exec: "command {file}"
+    type: custom
+    exec: "command {path}"
     message: Custom message
 "#;
         let config = RawConfig::parse(yaml).unwrap();
-        let rule = &config.required.unwrap()[0];
-        assert_eq!(rule.validator, "custom");
+        let rule = &config.deny.unwrap()[0];
+        assert_eq!(rule.type_, "custom");
         assert!(rule.keywords.is_none());
-        assert_eq!(rule.exec.as_ref().unwrap(), "command {file}");
+        assert_eq!(rule.exec.as_ref().unwrap(), "command {path}");
     }
 
     #[test]
@@ -229,7 +230,7 @@ required:
         let yaml = r#"
 deny:
   - label: ext-rule
-    validator: text
+    type: text
     keywords: [test]
     message: Message
     include_exts: [.java, .kt]
@@ -246,7 +247,7 @@ deny:
         let yaml = r#"
 deny:
   - label: exclude-test
-    validator: text
+    type: text
     keywords: [test]
     message: Message
     exclude_files:
@@ -283,21 +284,15 @@ review:
     #[test]
     fn test_parse_mixed_sections() {
         let yaml = r#"
-required:
-  - label: req1
-    validator: custom
-    exec: cmd
-    message: msg
 deny:
   - label: deny1
-    validator: text
+    type: text
     keywords: [kw]
     message: msg
 review:
   - message: rev1
 "#;
         let config = RawConfig::parse(yaml).unwrap();
-        assert_eq!(config.required.unwrap().len(), 1);
         assert_eq!(config.deny.unwrap().len(), 1);
         assert_eq!(config.review.unwrap().len(), 1);
     }
@@ -311,19 +306,17 @@ review:
         let yaml = r#"
 deny:
   - label: java-doc
-    validator: no_java_doc
+    type: no_java_doc
     message: Missing JavaDoc
     java_doc:
       type: public
-      constructor: all
       function: public
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
-        assert_eq!(rule.validator, "no_java_doc");
+        assert_eq!(rule.type_, "no_java_doc");
         let doc = rule.java_doc.as_ref().unwrap();
         assert_eq!(doc.type_, Some(Visibility::Public));
-        assert_eq!(doc.constructor, Some(Visibility::All));
         assert_eq!(doc.function, Some(Visibility::Public));
     }
 
@@ -332,7 +325,7 @@ deny:
         let yaml = r#"
 deny:
   - label: java-doc
-    validator: no_java_doc
+    type: no_java_doc
     message: Missing JavaDoc
     java_doc:
       type: all
@@ -341,7 +334,6 @@ deny:
         let rule = &config.deny.unwrap()[0];
         let doc = rule.java_doc.as_ref().unwrap();
         assert_eq!(doc.type_, Some(Visibility::All));
-        assert!(doc.constructor.is_none());
         assert!(doc.function.is_none());
     }
 
@@ -350,7 +342,7 @@ deny:
         let yaml = r#"
 deny:
   - label: kotlin-doc
-    validator: no_kotlin_doc
+    type: no_kotlin_doc
     message: Missing KDoc
     kotlin_doc:
       type: public
@@ -358,7 +350,7 @@ deny:
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
-        assert_eq!(rule.validator, "no_kotlin_doc");
+        assert_eq!(rule.type_, "no_kotlin_doc");
         let doc = rule.kotlin_doc.as_ref().unwrap();
         assert_eq!(doc.type_, Some(Visibility::Public));
         assert_eq!(doc.function, Some(Visibility::All));
@@ -369,38 +361,18 @@ deny:
         let yaml = r#"
 deny:
   - label: rust-doc
-    validator: no_rust_doc
+    type: no_rust_doc
     message: Missing RustDoc
     rust_doc:
       type: public
       function: all
-      macro: true
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
-        assert_eq!(rule.validator, "no_rust_doc");
+        assert_eq!(rule.type_, "no_rust_doc");
         let doc = rule.rust_doc.as_ref().unwrap();
         assert_eq!(doc.type_, Some(Visibility::Public));
         assert_eq!(doc.function, Some(Visibility::All));
-        assert_eq!(doc.macro_, Some(true));
-    }
-
-    #[test]
-    fn test_parse_no_rust_doc_without_macro() {
-        let yaml = r#"
-deny:
-  - label: rust-doc
-    validator: no_rust_doc
-    message: Missing RustDoc
-    rust_doc:
-      type: all
-"#;
-        let config = RawConfig::parse(yaml).unwrap();
-        let rule = &config.deny.unwrap()[0];
-        let doc = rule.rust_doc.as_ref().unwrap();
-        assert_eq!(doc.type_, Some(Visibility::All));
-        assert!(doc.function.is_none());
-        assert!(doc.macro_.is_none());
     }
 
     // =========================================================================
@@ -412,14 +384,14 @@ deny:
         let yaml = r#"
 deny:
   - label: no-jp-comment
-    validator: no_japanese_comment
+    type: no_japanese_comment
     message: Japanese comment found
     comment:
       lang: java
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
-        assert_eq!(rule.validator, "no_japanese_comment");
+        assert_eq!(rule.type_, "no_japanese_comment");
         let comment = rule.comment.as_ref().unwrap();
         assert_eq!(comment.lang, Some(CommentLang::Java));
         assert!(comment.custom.is_none());
@@ -430,7 +402,7 @@ deny:
         let yaml = r#"
 deny:
   - label: no-jp-comment
-    validator: no_japanese_comment
+    type: no_japanese_comment
     message: Japanese comment found
     comment:
       lang: kotlin
@@ -446,7 +418,7 @@ deny:
         let yaml = r#"
 deny:
   - label: no-jp-comment
-    validator: no_japanese_comment
+    type: no_japanese_comment
     message: Japanese comment found
     comment:
       lang: rust
@@ -462,7 +434,7 @@ deny:
         let yaml = r#"
 deny:
   - label: no-jp-comment
-    validator: no_japanese_comment
+    type: no_japanese_comment
     message: Japanese comment found
     comment:
       custom:
@@ -488,7 +460,7 @@ deny:
         let yaml = r##"
 deny:
   - label: no-jp-comment
-    validator: no_japanese_comment
+    type: no_japanese_comment
     message: Japanese comment found
     comment:
       custom:
@@ -512,7 +484,7 @@ deny:
         let yaml = r#"
 deny:
   - label: no-jp-comment
-    validator: no_japanese_comment
+    type: no_japanese_comment
     message: Japanese comment found
     comment:
       custom:
@@ -535,14 +507,14 @@ deny:
         let yaml = r#"
 deny:
   - label: no-en-comment
-    validator: no_english_comment
+    type: no_english_comment
     message: English comment found
     comment:
       lang: java
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
-        assert_eq!(rule.validator, "no_english_comment");
+        assert_eq!(rule.type_, "no_english_comment");
         let comment = rule.comment.as_ref().unwrap();
         assert_eq!(comment.lang, Some(CommentLang::Java));
     }

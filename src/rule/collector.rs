@@ -10,7 +10,6 @@ const ROOT_CONFIG_FILENAME: &str = "rec_lint_config.yaml";
 
 pub struct CollectedRules {
     pub root_dir: PathBuf,
-    pub required: Vec<(Rule, PathBuf)>,
     pub deny: Vec<(Rule, PathBuf)>,
     pub review: Vec<(ReviewItem, PathBuf)>,
 }
@@ -45,11 +44,8 @@ pub fn collect_rules(target_dir: &Path) -> Result<CollectedRules> {
 
     configs.reverse();
 
-    let mut collected = CollectedRules { root_dir, required: Vec::new(), deny: Vec::new(), review: Vec::new() };
+    let mut collected = CollectedRules { root_dir, deny: Vec::new(), review: Vec::new() };
     for (config, dir) in configs {
-        for rule in config.required {
-            collected.required.push((rule, dir.clone()));
-        }
         for rule in config.deny {
             collected.deny.push((rule, dir.clone()));
         }

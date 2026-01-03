@@ -1,8 +1,8 @@
-use super::{DocKind, DocViolation, JvmDocConfig};
+use super::{DocKind, DocViolation, KotlinDocConfig};
 use crate::rule::parser::Visibility;
 
 /// Validate Kotlin file for missing KDoc
-pub fn validate(content: &str, config: &JvmDocConfig) -> Vec<DocViolation> {
+pub fn validate(content: &str, config: &KotlinDocConfig) -> Vec<DocViolation> {
     let mut violations = Vec::new();
     let lines: Vec<&str> = content.lines().collect();
     let mut i = 0;
@@ -27,11 +27,6 @@ pub fn validate(content: &str, config: &JvmDocConfig) -> Vec<DocViolation> {
 
         // Check for type declaration
         if let Some(violation) = check_type_declaration(line, i + 1, has_kdoc, config) {
-            violations.push(violation);
-        }
-
-        // Check for constructor declaration (primary constructor in class declaration is handled in type)
-        if let Some(violation) = check_constructor_declaration(line, i + 1, has_kdoc, config) {
             violations.push(violation);
         }
 
@@ -96,7 +91,7 @@ fn check_kdoc_before(lines: &[&str], current: usize) -> bool {
     false
 }
 
-fn check_type_declaration(line: &str, line_num: usize, has_kdoc: bool, config: &JvmDocConfig) -> Option<DocViolation> {
+fn check_type_declaration(line: &str, line_num: usize, has_kdoc: bool, config: &KotlinDocConfig) -> Option<DocViolation> {
     let visibility = config.type_visibility.as_ref()?;
 
     // Skip comment lines
@@ -156,47 +151,11 @@ fn check_type_declaration(line: &str, line_num: usize, has_kdoc: bool, config: &
     None
 }
 
-fn check_constructor_declaration(
-    line: &str,
-    line_num: usize,
-    has_kdoc: bool,
-    config: &JvmDocConfig,
-) -> Option<DocViolation> {
-    let visibility = config.constructor_visibility.as_ref()?;
-
-    // Skip comment lines
-    if line.starts_with("//") || line.starts_with("/*") || line.starts_with("*") {
-        return None;
-    }
-
-    // Secondary constructor in Kotlin: constructor(...)
-    if !line.contains("constructor") {
-        return None;
-    }
-
-    // Check if it's a secondary constructor (not in class declaration line)
-    if line.contains(" class ") {
-        return None;
-    }
-
-    let is_public = !line.contains("private ") && !line.contains("internal ") && !line.contains("protected ");
-
-    if *visibility == Visibility::Public && !is_public {
-        return None;
-    }
-
-    if has_kdoc {
-        return None;
-    }
-
-    Some(DocViolation { line: line_num, kind: DocKind::Constructor, name: "constructor".to_string() })
-}
-
 fn check_function_declaration(
     line: &str,
     line_num: usize,
     has_kdoc: bool,
-    config: &JvmDocConfig,
+    config: &KotlinDocConfig,
 ) -> Option<DocViolation> {
     let visibility = config.function_visibility.as_ref()?;
 
@@ -253,20 +212,12 @@ fn extract_class_name(line: &str, keyword: &str) -> String {
 mod tests {
     use super::*;
 
-    fn config_all() -> JvmDocConfig {
-        JvmDocConfig {
-            type_visibility: Some(Visibility::All),
-            constructor_visibility: Some(Visibility::All),
-            function_visibility: Some(Visibility::All),
-        }
+    fn config_all() -> KotlinDocConfig {
+        KotlinDocConfig { type_visibility: Some(Visibility::All), function_visibility: Some(Visibility::All) }
     }
 
-    fn config_public() -> JvmDocConfig {
-        JvmDocConfig {
-            type_visibility: Some(Visibility::Public),
-            constructor_visibility: Some(Visibility::Public),
-            function_visibility: Some(Visibility::Public),
-        }
+    fn config_public() -> KotlinDocConfig {
+        KotlinDocConfig { type_visibility: Some(Visibility::Public), function_visibility: Some(Visibility::Public) }
     }
 
     // =========================================================================
@@ -335,11 +286,7 @@ class MyClass {}
     #[test]
     fn test_function_without_kdoc() {
         let content = "fun doSomething() {}";
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: None,
-            function_visibility: Some(Visibility::All),
-        };
+        let config = KotlinDocConfig { type_visibility: None, function_visibility: Some(Visibility::All) };
         let violations = validate(content, &config);
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].kind, DocKind::Function);
@@ -352,11 +299,7 @@ class MyClass {}
 /** Does something */
 fun doSomething() {}
 "#;
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: None,
-            function_visibility: Some(Visibility::All),
-        };
+        let config = KotlinDocConfig { type_visibility: None, function_visibility: Some(Visibility::All) };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
@@ -364,11 +307,7 @@ fun doSomething() {}
     #[test]
     fn test_private_function_skipped() {
         let content = "private fun helper() {}";
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: None,
-            function_visibility: Some(Visibility::Public),
-        };
+        let config = KotlinDocConfig { type_visibility: None, function_visibility: Some(Visibility::Public) };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
@@ -376,51 +315,10 @@ fun doSomething() {}
     #[test]
     fn test_generic_function() {
         let content = "fun <T> process(item: T) {}";
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: None,
-            function_visibility: Some(Visibility::All),
-        };
+        let config = KotlinDocConfig { type_visibility: None, function_visibility: Some(Visibility::All) };
         let violations = validate(content, &config);
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].name, "process");
-    }
-
-    // =========================================================================
-    // Constructor tests
-    // =========================================================================
-
-    #[test]
-    fn test_secondary_constructor_without_kdoc() {
-        let content = r#"
-class MyClass {
-    constructor(value: Int)
-}
-"#;
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: Some(Visibility::All),
-            function_visibility: None,
-        };
-        let violations = validate(content, &config);
-        assert!(violations.iter().any(|v| v.kind == DocKind::Constructor));
-    }
-
-    #[test]
-    fn test_secondary_constructor_with_kdoc() {
-        let content = r#"
-class MyClass {
-    /** Creates from int */
-    constructor(value: Int)
-}
-"#;
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: Some(Visibility::All),
-            function_visibility: None,
-        };
-        let violations = validate(content, &config);
-        assert!(violations.is_empty());
     }
 
     // =========================================================================
@@ -453,7 +351,7 @@ class MyClass {}
     #[test]
     fn test_empty_config_no_violations() {
         let content = "class MyClass {}";
-        let config = JvmDocConfig::default();
+        let config = KotlinDocConfig::default();
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }

@@ -8,10 +8,6 @@ pub fn run(dir: &Path) -> Result<Vec<String>> {
     let rules = collect_rules(dir)?;
     let mut output = Vec::new();
 
-    for (rule, source_dir) in &rules.required {
-        output.push(format_rule("required", rule, source_dir, &rules));
-    }
-
     for (rule, source_dir) in &rules.deny {
         output.push(format_rule("deny", rule, source_dir, &rules));
     }

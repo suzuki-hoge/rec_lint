@@ -1,0 +1,570 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/suzuki-hoge/rec_lint/main/schema/rec_lint.schema.json",
+  "title": "rec_lint.yaml ドキュメント",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "deny": {
+      "x-property-order": 0,
+      "description": "特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>review: 表示されない",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/rule"
+      }
+    },
+    "review": {
+      "x-property-order": 1,
+      "description": "レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>review: 表示される",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/reviewItem"
+      }
+    }
+  },
+  "definitions": {
+    "ruleBase": {
+      "x-doc-order": 11,
+      "title": "RuleBase",
+      "description": "ルールの共通フィールド",
+      "type": "object",
+      "properties": {
+        "label": {
+          "x-property-order": 11,
+          "description": "show で表示するラベル",
+          "type": "string"
+        },
+        "message": {
+          "x-property-order": 12,
+          "description": "validation で違反しているときに表示するメッセージ",
+          "type": "string"
+        },
+        "include_exts": {
+          "x-property-order": 13,
+          "description": "show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "ts",
+              "tsx"
+            ]
+          ]
+        },
+        "exclude_exts": {
+          "x-property-order": 14,
+          "description": "show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "css"
+            ]
+          ]
+        },
+        "exclude_files": {
+          "x-property-order": 15,
+          "description": "show と validation で除外するファイルのフィルタ",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/excludeFilter"
+          }
+        }
+      }
+    },
+    "rule": {
+      "x-doc-order": 1,
+      "title": "Rule",
+      "description": "deny に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: text<br>- type: regex<br>- type: custom<br>- type: no_java_doc<br>- type: no_kotlin_doc<br>- type: no_rust_doc<br>- type: no_japanese_comment<br>- type: no_english_comment",
+      "oneOf": [
+        {
+          "title": "TextRule",
+          "description": "特定のキーワードを含むファイルを完全一致で検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message",
+                "keywords"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "text"
+                },
+                "keywords": {
+                  "x-property-order": 1,
+                  "description": "validate で探す禁止キーワード",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "RegexRule",
+          "description": "特定のキーワードを含むファイルを正規表現で検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message",
+                "keywords"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "regex"
+                },
+                "keywords": {
+                  "x-property-order": 1,
+                  "description": "validate で探す禁止キーワードの正規表現",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "CustomRule",
+          "description": "任意のコマンドを実行してファイルを検証する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message",
+                "exec"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "custom"
+                },
+                "exec": {
+                  "x-property-order": 1,
+                  "description": "ファイルに対して実行するコマンド<br>終了コード 0 の場合はエラーなし扱い<br>エラー時は実行コマンドの標準出力がエラーメッセージとして表示される",
+                  "type": "string",
+                  "examples": [
+                    "ruby path/to/your/checker.rb {path}",
+                    "docker run your:image {path}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "NoJavaDocRule",
+          "description": "JavaDoc がないファイルを検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "no_java_doc"
+                },
+                "java_doc": {
+                  "x-property-order": 1,
+                  "$ref": "#/definitions/javaDocConfig"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "NoKotlinDocRule",
+          "description": "KDoc がないファイルを検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "no_kotlin_doc"
+                },
+                "kotlin_doc": {
+                  "x-property-order": 1,
+                  "$ref": "#/definitions/kotlinDocConfig"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "NoRustDocRule",
+          "description": "rustdoc がないファイルを検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "no_rust_doc"
+                },
+                "rust_doc": {
+                  "x-property-order": 1,
+                  "$ref": "#/definitions/rustDocConfig"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "NoJapaneseCommentRule",
+          "description": "コメントが日本語のファイルを検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message",
+                "comment"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "no_japanese_comment"
+                },
+                "comment": {
+                  "x-property-order": 1,
+                  "$ref": "#/definitions/commentConfig"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "NoEnglishCommentRule",
+          "description": "コメントが英語のファイルを検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message",
+                "comment"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "no_english_comment"
+                },
+                "comment": {
+                  "x-property-order": 1,
+                  "$ref": "#/definitions/commentConfig"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "reviewItem": {
+      "x-doc-order": 2,
+      "title": "ReviewItem",
+      "description": "review に列挙するレビューガイドラインの定義",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "x-property-order": 0,
+          "description": "review で表示するメッセージ",
+          "type": "string"
+        },
+        "include_exts": {
+          "x-property-order": 1,
+          "description": "検査する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "ts",
+              "tsx"
+            ]
+          ]
+        },
+        "exclude_exts": {
+          "x-property-order": 2,
+          "description": "除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "css"
+            ]
+          ]
+        }
+      }
+    },
+    "excludeFilter": {
+      "x-doc-order": 3,
+      "title": "ExcludeFilter",
+      "description": "ファイル除外フィルタの定義",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filter",
+        "keyword"
+      ],
+      "properties": {
+        "filter": {
+          "x-property-order": 0,
+          "description": "フィルタの種類",
+          "type": "string",
+          "oneOf": [
+            {
+              "const": "file_starts_with",
+              "description": "ファイル名が指定文字列で始まる"
+            },
+            {
+              "const": "file_ends_with",
+              "description": "ファイル名が指定文字列で終わる"
+            },
+            {
+              "const": "path_contains",
+              "description": "パスに指定文字列が含まれる"
+            }
+          ]
+        },
+        "keyword": {
+          "x-property-order": 1,
+          "description": "キーワード",
+          "type": "string"
+        }
+      }
+    },
+    "javaDocConfig": {
+      "x-doc-order": 4,
+      "title": "JavaDocConfig",
+      "description": "JavaDoc 検証設定の定義",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "x-property-order": 0,
+          "description": "型の定義に JavaDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "function": {
+          "x-property-order": 1,
+          "description": "メソッドの定義に JavaDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        }
+      }
+    },
+    "kotlinDocConfig": {
+      "x-doc-order": 5,
+      "title": "KotlinDocConfig",
+      "description": "KDoc 検証設定の定義",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "x-property-order": 0,
+          "description": "型の定義に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "function": {
+          "x-property-order": 1,
+          "description": "メソッドの定義に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        }
+      }
+    },
+    "rustDocConfig": {
+      "x-doc-order": 6,
+      "title": "RustDocConfig",
+      "description": "rustdoc 検証設定の定義",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "x-property-order": 0,
+          "description": "型の定義に rustdoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "function": {
+          "x-property-order": 1,
+          "description": "関数の定義に rustdoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        }
+      }
+    },
+    "commentConfig": {
+      "x-doc-order": 7,
+      "title": "CommentConfig",
+      "description": "コメント構文の定義<br>lang と custom のどちらかのみ必ず指定する",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lang": {
+          "x-property-order": 0,
+          "description": "コメント構文のプリセットが提供されている言語",
+          "type": "string",
+          "oneOf": [
+            {
+              "const": "java",
+              "description": "Java のコメント構文（//, /* */）"
+            },
+            {
+              "const": "kotlin",
+              "description": "Kotlin のコメント構文（//, /* */）"
+            },
+            {
+              "const": "rust",
+              "description": "Rust のコメント構文（//, /* */）"
+            }
+          ]
+        },
+        "custom": {
+          "x-property-order": 1,
+          "description": "プリセットが提供されていない場合の指定",
+          "$ref": "#/definitions/customComment"
+        }
+      }
+    },
+    "visibility": {
+      "x-doc-order": 8,
+      "title": "Visibility",
+      "description": "Doc コメントを強制する対象の可視性",
+      "type": "string",
+      "oneOf": [
+        {
+          "x-property-order": 0,
+          "const": "public",
+          "description": "その言語における public のコードのみ検証"
+        },
+        {
+          "x-property-order": 1,
+          "const": "all",
+          "description": "すべての可視性を検証"
+        }
+      ]
+    },
+    "customComment": {
+      "x-doc-order": 9,
+      "title": "CustomComment",
+      "description": "コメント構文の定義",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lines": {
+          "x-property-order": 0,
+          "description": "行コメントの開始マーカー",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "//",
+              "#"
+            ]
+          ]
+        },
+        "blocks": {
+          "x-property-order": 1,
+          "description": "ブロックコメント構文の定義",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/blockComment"
+          }
+        }
+      }
+    },
+    "blockComment": {
+      "x-doc-order": 10,
+      "title": "BlockComment",
+      "description": "ブロックコメント構文の定義",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "x-property-order": 0,
+          "description": "ブロックコメントの開始マーカー",
+          "type": "string",
+          "examples": [
+            "/*"
+          ]
+        },
+        "end": {
+          "x-property-order": 1,
+          "description": "ブロックコメントの終了マーカー",
+          "type": "string",
+          "examples": [
+            "*/"
+          ]
+        }
+      }
+    }
+  }
+}

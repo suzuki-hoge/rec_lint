@@ -1,8 +1,8 @@
-use super::{DocKind, DocViolation, JvmDocConfig};
+use super::{DocKind, DocViolation, JavaDocConfig};
 use crate::rule::parser::Visibility;
 
 /// Validate Java file for missing JavaDoc
-pub fn validate(content: &str, config: &JvmDocConfig) -> Vec<DocViolation> {
+pub fn validate(content: &str, config: &JavaDocConfig) -> Vec<DocViolation> {
     let mut violations = Vec::new();
     let lines: Vec<&str> = content.lines().collect();
     let mut i = 0;
@@ -27,11 +27,6 @@ pub fn validate(content: &str, config: &JvmDocConfig) -> Vec<DocViolation> {
 
         // Check for type declaration
         if let Some(violation) = check_type_declaration(line, i + 1, has_javadoc, config) {
-            violations.push(violation);
-        }
-
-        // Check for constructor declaration
-        if let Some(violation) = check_constructor_declaration(line, i + 1, has_javadoc, config) {
             violations.push(violation);
         }
 
@@ -103,7 +98,7 @@ fn check_type_declaration(
     line: &str,
     line_num: usize,
     has_javadoc: bool,
-    config: &JvmDocConfig,
+    config: &JavaDocConfig,
 ) -> Option<DocViolation> {
     let visibility = config.type_visibility.as_ref()?;
 
@@ -141,86 +136,11 @@ fn check_type_declaration(
     None
 }
 
-fn check_constructor_declaration(
-    line: &str,
-    line_num: usize,
-    has_javadoc: bool,
-    config: &JvmDocConfig,
-) -> Option<DocViolation> {
-    let visibility = config.constructor_visibility.as_ref()?;
-
-    // Skip comment lines
-    if line.starts_with("//") || line.starts_with("/*") || line.starts_with("*") {
-        return None;
-    }
-
-    // Constructor pattern: visibility? ClassName(
-    // Must not have return type, so no type before identifier
-
-    // Skip if it's a method (has return type) or field
-    if line.contains(" class ")
-        || line.contains(" interface ")
-        || line.contains(" enum ")
-        || line.contains(" record ")
-        || line.contains("=")
-        || !line.contains('(')
-    {
-        return None;
-    }
-
-    // Check for constructor pattern
-    let trimmed = line.trim();
-
-    // Must start with visibility or identifier directly
-    let parts: Vec<&str> = trimmed.split_whitespace().collect();
-    if parts.is_empty() {
-        return None;
-    }
-
-    let (is_public, name_idx) = if parts[0] == "public" || parts[0] == "protected" || parts[0] == "private" {
-        (parts[0] == "public", 1)
-    } else if parts[0].chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
-        // Could be constructor with default visibility
-        (false, 0)
-    } else {
-        return None;
-    };
-
-    if name_idx >= parts.len() {
-        return None;
-    }
-
-    let name_part = parts[name_idx];
-
-    // Constructor name starts with uppercase and is followed by (
-    if !name_part.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
-        return None;
-    }
-
-    // Check if there's a ( in the name part or next
-    if !name_part.contains('(') && (name_idx + 1 >= parts.len() || !parts[name_idx + 1].starts_with('(')) {
-        return None;
-    }
-
-    // Check visibility
-    if *visibility == Visibility::Public && !is_public {
-        return None;
-    }
-
-    if has_javadoc {
-        return None;
-    }
-
-    let name = name_part.split('(').next().unwrap_or(name_part).to_string();
-
-    Some(DocViolation { line: line_num, kind: DocKind::Constructor, name })
-}
-
 fn check_method_declaration(
     line: &str,
     line_num: usize,
     has_javadoc: bool,
-    config: &JvmDocConfig,
+    config: &JavaDocConfig,
 ) -> Option<DocViolation> {
     let visibility = config.function_visibility.as_ref()?;
 
@@ -288,20 +208,12 @@ fn extract_identifier(s: &str) -> String {
 mod tests {
     use super::*;
 
-    fn config_all() -> JvmDocConfig {
-        JvmDocConfig {
-            type_visibility: Some(Visibility::All),
-            constructor_visibility: Some(Visibility::All),
-            function_visibility: Some(Visibility::All),
-        }
+    fn config_all() -> JavaDocConfig {
+        JavaDocConfig { type_visibility: Some(Visibility::All), function_visibility: Some(Visibility::All) }
     }
 
-    fn config_public() -> JvmDocConfig {
-        JvmDocConfig {
-            type_visibility: Some(Visibility::Public),
-            constructor_visibility: Some(Visibility::Public),
-            function_visibility: Some(Visibility::Public),
-        }
+    fn config_public() -> JavaDocConfig {
+        JavaDocConfig { type_visibility: Some(Visibility::Public), function_visibility: Some(Visibility::Public) }
     }
 
     // =========================================================================
@@ -395,9 +307,8 @@ public class MyClass {
     public void doSomething() {}
 }
 "#;
-        let config = JvmDocConfig {
+        let config = JavaDocConfig {
             type_visibility: None, // Skip type check
-            constructor_visibility: None,
             function_visibility: Some(Visibility::All),
         };
         let violations = validate(content, &config);
@@ -411,48 +322,7 @@ public class MyClass {
     private void helper() {}
 }
 "#;
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: None,
-            function_visibility: Some(Visibility::Public),
-        };
-        let violations = validate(content, &config);
-        assert!(violations.is_empty());
-    }
-
-    // =========================================================================
-    // Constructor tests
-    // =========================================================================
-
-    #[test]
-    fn test_constructor_without_javadoc() {
-        let content = r#"
-public class MyClass {
-    public MyClass() {}
-}
-"#;
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: Some(Visibility::All),
-            function_visibility: None,
-        };
-        let violations = validate(content, &config);
-        assert!(violations.iter().any(|v| v.kind == DocKind::Constructor && v.name == "MyClass"));
-    }
-
-    #[test]
-    fn test_constructor_with_javadoc() {
-        let content = r#"
-public class MyClass {
-    /** Creates instance */
-    public MyClass() {}
-}
-"#;
-        let config = JvmDocConfig {
-            type_visibility: None,
-            constructor_visibility: Some(Visibility::All),
-            function_visibility: None,
-        };
+        let config = JavaDocConfig { type_visibility: None, function_visibility: Some(Visibility::Public) };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
@@ -485,7 +355,7 @@ public class MyClass {}
     #[test]
     fn test_empty_config_no_violations() {
         let content = "public class MyClass {}";
-        let config = JvmDocConfig::default();
+        let config = JavaDocConfig::default();
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }

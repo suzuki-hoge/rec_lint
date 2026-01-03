@@ -32,11 +32,17 @@ impl std::fmt::Display for DocKind {
     }
 }
 
-/// Config for Java/Kotlin doc checks
+/// Config for Java doc checks
 #[derive(Debug, Clone, Default)]
-pub struct JvmDocConfig {
+pub struct JavaDocConfig {
     pub type_visibility: Option<Visibility>,
-    pub constructor_visibility: Option<Visibility>,
+    pub function_visibility: Option<Visibility>,
+}
+
+/// Config for Kotlin doc checks
+#[derive(Debug, Clone, Default)]
+pub struct KotlinDocConfig {
+    pub type_visibility: Option<Visibility>,
     pub function_visibility: Option<Visibility>,
 }
 
@@ -45,5 +51,4 @@ pub struct JvmDocConfig {
 pub struct RustDocConfig {
     pub type_visibility: Option<Visibility>,
     pub function_visibility: Option<Visibility>,
-    pub check_macro: bool,
 }

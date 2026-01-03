@@ -107,18 +107,6 @@ fn validate_file(file: &Path, rules: &CollectedRules) -> Result<Vec<FileViolatio
     let mut violations = Vec::new();
     let root_dir = &rules.root_dir;
 
-    for (rule, _source) in &rules.required {
-        if !rule.ext_filter().matches(filename) {
-            continue;
-        }
-        if rule.exclude_filter().should_exclude(&file) {
-            continue;
-        }
-        if let Some(v) = validate_rule(&file, root_dir, rule, &content)? {
-            violations.push(v);
-        }
-    }
-
     for (rule, _source) in &rules.deny {
         if !rule.ext_filter().matches(filename) {
             continue;
