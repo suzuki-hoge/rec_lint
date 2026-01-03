@@ -1,0 +1,10 @@
+deny:
+  - label: no-system-exit
+    validator: text
+    keywords:
+      - System.exit
+    message: Do not use System.exit
+    include_exts: [.java]
+
+review:
+  - message: Check exception handling

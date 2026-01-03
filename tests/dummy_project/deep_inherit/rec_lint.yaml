@@ -1,0 +1,10 @@
+deny:
+  - label: no-deprecated
+    validator: regex
+    keywords:
+      - "@Deprecated"
+    message: Remove deprecated code
+    include_exts: [.java]
+
+review:
+  - message: Check API compatibility

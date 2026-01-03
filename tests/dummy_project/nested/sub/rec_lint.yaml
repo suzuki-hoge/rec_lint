@@ -1,0 +1,10 @@
+deny:
+  - label: no-wildcard-import
+    validator: regex
+    keywords:
+      - "import.*\\*;"
+    message: Avoid wildcard imports
+    include_exts: [.java]
+
+review:
+  - message: Check for code duplication

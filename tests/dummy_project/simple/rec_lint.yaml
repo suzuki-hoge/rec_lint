@@ -1,0 +1,10 @@
+deny:
+  - label: no-println
+    validator: text
+    keywords:
+      - System.out.println
+    message: Use logger instead
+    include_exts: [.java]
+
+review:
+  - message: Check logging configuration

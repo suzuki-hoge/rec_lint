@@ -1,0 +1,7 @@
+# No rec_lint_config.yaml in this directory tree
+deny:
+  - label: no-test
+    validator: text
+    keywords:
+      - "test"
+    message: No test keyword

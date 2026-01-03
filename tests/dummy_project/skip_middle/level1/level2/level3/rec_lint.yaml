@@ -1,0 +1,11 @@
+deny:
+  - label: no-raw-types
+    validator: regex
+    keywords:
+      - "List[^<]"
+      - "Map[^<]"
+    message: Use generic types instead of raw types
+    include_exts: [.java]
+
+review:
+  - message: Check null safety
