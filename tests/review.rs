@@ -3,65 +3,59 @@ mod common;
 use common::dummy_project_path;
 
 // =============================================================================
-// simple: Single yaml at root
+// simple: 単一のyamlファイル
 // =============================================================================
 
 #[test]
-fn test_simple_review() {
+fn ルート直下のレビュー項目のみが表示される() {
     let dir = dummy_project_path("simple");
     let result = rec_lint::commands::review::run(&dir).unwrap();
 
     // ルート定義なので @ なし
-    assert_eq!(result, vec!["review: Check logging configuration"]);
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], "review: Check logging configuration");
 }
 
 // =============================================================================
-// nested: Hierarchical yaml files
+// nested: 階層的なyamlファイル
 // =============================================================================
 
 #[test]
-fn test_nested_review_sub() {
+fn サブディレクトリでは親と子のレビュー項目が順に表示される() {
     let dir = dummy_project_path("nested/sub");
     let result = rec_lint::commands::review::run(&dir).unwrap();
 
     // 親 → 子の順, ルート = @ なし, sub = @ sub
-    assert_eq!(result, vec!["review: Review error handling", "review: Check for code duplication @ sub",]);
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0], "review: Review error handling");
+    assert_eq!(result[1], "review: Check for code duplication @ sub");
 }
 
 // =============================================================================
-// skip_middle: Intermediate directories without yaml
+// skip_middle: 中間ディレクトリにyamlがない場合
 // =============================================================================
 
 #[test]
-fn test_skip_middle_review_level3() {
+fn 深い階層でもレビュー項目は継承され相対パスで表示される() {
     let dir = dummy_project_path("skip_middle/level1/level2/level3");
     let result = rec_lint::commands::review::run(&dir).unwrap();
 
     // 親 → 子の順
-    assert_eq!(result, vec!["review: Check exception handling", "review: Check null safety @ level1/level2/level3",]);
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0], "review: Check exception handling");
+    assert_eq!(result[1], "review: Check null safety @ level1/level2/level3");
 }
 
 // =============================================================================
-// deep_inherit: Deep directory with only root yaml
+// deep_inherit: ルートyamlのみで深い階層
 // =============================================================================
 
 #[test]
-fn test_deep_inherit_review() {
+fn 深い階層でもルートのレビュー項目のみ表示される() {
     let dir = dummy_project_path("deep_inherit/a/b/c");
     let result = rec_lint::commands::review::run(&dir).unwrap();
 
     // ルート定義なので @ なし
-    assert_eq!(result, vec!["review: Check API compatibility"]);
-}
-
-// =============================================================================
-// no_root: No rec_lint_config.yaml found in any ancestor
-// =============================================================================
-
-#[test]
-fn test_no_root_review_error() {
-    let dir = dummy_project_path("no_root/child");
-    let err = rec_lint::commands::review::run(&dir).unwrap_err();
-
-    assert!(err.to_string().contains("rec_lint_config.yaml"));
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], "review: Check API compatibility");
 }

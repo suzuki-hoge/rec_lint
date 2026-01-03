@@ -7,13 +7,20 @@ use anyhow::{anyhow, Result};
 use regex::Regex;
 
 use crate::filter::{ExcludeFilter, ExtFilter};
-use parser::{RawConfig, RawReviewItem, RawRule};
+use crate::validate::comment::custom::{BlockSyntax, CustomCommentSyntax};
+use crate::validate::doc::{JvmDocConfig, RustDocConfig};
+use parser::{CommentLang, RawConfig, RawReviewItem, RawRule, Visibility};
 
 #[derive(Clone, Debug)]
 pub enum Rule {
     Text(TextRule),
     Regex(RegexRule),
     Custom(CustomRule),
+    JavaDoc(JavaDocRule),
+    KotlinDoc(KotlinDocRule),
+    RustDoc(RustDocRule),
+    JapaneseComment(CommentRule),
+    EnglishComment(CommentRule),
 }
 
 impl Rule {
@@ -22,6 +29,11 @@ impl Rule {
             Rule::Text(r) => &r.label,
             Rule::Regex(r) => &r.label,
             Rule::Custom(r) => &r.label,
+            Rule::JavaDoc(r) => &r.label,
+            Rule::KotlinDoc(r) => &r.label,
+            Rule::RustDoc(r) => &r.label,
+            Rule::JapaneseComment(r) => &r.label,
+            Rule::EnglishComment(r) => &r.label,
         }
     }
 
@@ -30,6 +42,11 @@ impl Rule {
             Rule::Text(r) => &r.ext_filter,
             Rule::Regex(r) => &r.ext_filter,
             Rule::Custom(r) => &r.ext_filter,
+            Rule::JavaDoc(r) => &r.ext_filter,
+            Rule::KotlinDoc(r) => &r.ext_filter,
+            Rule::RustDoc(r) => &r.ext_filter,
+            Rule::JapaneseComment(r) => &r.ext_filter,
+            Rule::EnglishComment(r) => &r.ext_filter,
         }
     }
 
@@ -38,6 +55,11 @@ impl Rule {
             Rule::Text(r) => &r.exclude_filter,
             Rule::Regex(r) => &r.exclude_filter,
             Rule::Custom(r) => &r.exclude_filter,
+            Rule::JavaDoc(r) => &r.exclude_filter,
+            Rule::KotlinDoc(r) => &r.exclude_filter,
+            Rule::RustDoc(r) => &r.exclude_filter,
+            Rule::JapaneseComment(r) => &r.exclude_filter,
+            Rule::EnglishComment(r) => &r.exclude_filter,
         }
     }
 
@@ -46,6 +68,11 @@ impl Rule {
             Rule::Text(r) => Some(&r.keywords),
             Rule::Regex(r) => Some(&r.keywords),
             Rule::Custom(_) => None,
+            Rule::JavaDoc(_) => None,
+            Rule::KotlinDoc(_) => None,
+            Rule::RustDoc(_) => None,
+            Rule::JapaneseComment(_) => None,
+            Rule::EnglishComment(_) => None,
         }
     }
 }
@@ -73,6 +100,49 @@ pub struct RegexRule {
 pub struct CustomRule {
     pub label: String,
     pub exec: String,
+    pub message: String,
+    pub ext_filter: ExtFilter,
+    pub exclude_filter: ExcludeFilter,
+}
+
+#[derive(Clone, Debug)]
+pub struct JavaDocRule {
+    pub label: String,
+    pub config: JvmDocConfig,
+    pub message: String,
+    pub ext_filter: ExtFilter,
+    pub exclude_filter: ExcludeFilter,
+}
+
+#[derive(Clone, Debug)]
+pub struct KotlinDocRule {
+    pub label: String,
+    pub config: JvmDocConfig,
+    pub message: String,
+    pub ext_filter: ExtFilter,
+    pub exclude_filter: ExcludeFilter,
+}
+
+#[derive(Clone, Debug)]
+pub struct RustDocRule {
+    pub label: String,
+    pub config: RustDocConfig,
+    pub message: String,
+    pub ext_filter: ExtFilter,
+    pub exclude_filter: ExcludeFilter,
+}
+
+/// Comment source for comment validation
+#[derive(Clone, Debug)]
+pub enum CommentSource {
+    Lang(CommentLang),
+    Custom(CustomCommentSyntax),
+}
+
+#[derive(Clone, Debug)]
+pub struct CommentRule {
+    pub label: String,
+    pub source: CommentSource,
     pub message: String,
     pub ext_filter: ExtFilter,
     pub exclude_filter: ExcludeFilter,
@@ -107,10 +177,12 @@ impl TryFrom<RawConfig> for Config {
 }
 
 fn convert_rule(raw: RawRule) -> Result<Rule> {
-    let ext_filter =
-        ExtFilter { include: raw.include_exts.unwrap_or_default(), exclude: raw.exclude_exts.unwrap_or_default() };
+    let ext_filter = ExtFilter {
+        include: raw.include_exts.clone().unwrap_or_default(),
+        exclude: raw.exclude_exts.clone().unwrap_or_default(),
+    };
 
-    let exclude_filter = ExcludeFilter::new(raw.exclude_files.unwrap_or_default());
+    let exclude_filter = ExcludeFilter::new(raw.exclude_files.clone().unwrap_or_default());
 
     match raw.validator.as_str() {
         "text" => {
@@ -147,7 +219,96 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             }
             Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, ext_filter, exclude_filter }))
         }
+        "no_java_doc" => {
+            let raw_config = raw.java_doc.unwrap_or_default();
+            let config = JvmDocConfig {
+                type_visibility: raw_config.type_.map(convert_visibility),
+                constructor_visibility: raw_config.constructor.map(convert_visibility),
+                function_visibility: raw_config.function.map(convert_visibility),
+            };
+            Ok(Rule::JavaDoc(JavaDocRule {
+                label: raw.label,
+                config,
+                message: raw.message,
+                ext_filter,
+                exclude_filter,
+            }))
+        }
+        "no_kotlin_doc" => {
+            let raw_config = raw.kotlin_doc.unwrap_or_default();
+            let config = JvmDocConfig {
+                type_visibility: raw_config.type_.map(convert_visibility),
+                constructor_visibility: raw_config.constructor.map(convert_visibility),
+                function_visibility: raw_config.function.map(convert_visibility),
+            };
+            Ok(Rule::KotlinDoc(KotlinDocRule {
+                label: raw.label,
+                config,
+                message: raw.message,
+                ext_filter,
+                exclude_filter,
+            }))
+        }
+        "no_rust_doc" => {
+            let raw_config = raw.rust_doc.unwrap_or_default();
+            let config = RustDocConfig {
+                type_visibility: raw_config.type_.map(convert_visibility),
+                function_visibility: raw_config.function.map(convert_visibility),
+                check_macro: raw_config.macro_.unwrap_or(false),
+            };
+            Ok(Rule::RustDoc(RustDocRule {
+                label: raw.label,
+                config,
+                message: raw.message,
+                ext_filter,
+                exclude_filter,
+            }))
+        }
+        "no_japanese_comment" => {
+            let source = convert_comment_source(&raw)?;
+            Ok(Rule::JapaneseComment(CommentRule {
+                label: raw.label,
+                source,
+                message: raw.message,
+                ext_filter,
+                exclude_filter,
+            }))
+        }
+        "no_english_comment" => {
+            let source = convert_comment_source(&raw)?;
+            Ok(Rule::EnglishComment(CommentRule {
+                label: raw.label,
+                source,
+                message: raw.message,
+                ext_filter,
+                exclude_filter,
+            }))
+        }
         other => Err(anyhow!("Rule '{}': unknown validator '{}'", raw.label, other)),
+    }
+}
+
+fn convert_visibility(vis: parser::Visibility) -> Visibility {
+    match vis {
+        parser::Visibility::Public => Visibility::Public,
+        parser::Visibility::All => Visibility::All,
+    }
+}
+
+fn convert_comment_source(raw: &RawRule) -> Result<CommentSource> {
+    let config = raw.comment.as_ref().ok_or_else(|| anyhow!("Rule '{}': comment config is required", raw.label))?;
+
+    // lang and custom are mutually exclusive
+    match (&config.lang, &config.custom) {
+        (Some(lang), None) => Ok(CommentSource::Lang(lang.clone())),
+        (None, Some(custom)) => {
+            let blocks =
+                custom.blocks.iter().map(|b| BlockSyntax { start: b.start.clone(), end: b.end.clone() }).collect();
+            let syntax = CustomCommentSyntax { lines: custom.lines.clone(), blocks };
+            Ok(CommentSource::Custom(syntax))
+        }
+        (Some(_), Some(_)) => Err(anyhow!("Rule '{}': cannot specify both 'lang' and 'custom'", raw.label)),
+        (None, None) => Err(anyhow!("Rule '{}': either 'lang' or 'custom' is required", raw.label)),
     }
 }
 
@@ -195,11 +356,8 @@ mod tests {
                 label: "test".to_string(),
                 validator: "text".to_string(),
                 keywords: Some(vec!["kw1".to_string(), "kw2".to_string()]),
-                exec: None,
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -226,11 +384,9 @@ mod tests {
                 label: "regex-test".to_string(),
                 validator: "regex".to_string(),
                 keywords: Some(vec!["pattern.*".to_string()]),
-                exec: None,
                 message: "msg".to_string(),
                 include_exts: Some(vec![".java".to_string()]),
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -252,12 +408,10 @@ mod tests {
             required: Some(vec![RawRule {
                 label: "custom-test".to_string(),
                 validator: "custom".to_string(),
-                keywords: None,
                 exec: Some("cmd {file}".to_string()),
                 message: "msg".to_string(),
-                include_exts: None,
                 exclude_exts: Some(vec![".txt".to_string()]),
-                exclude_files: None,
+                ..Default::default()
             }]),
             deny: None,
             review: None,
@@ -306,12 +460,8 @@ mod tests {
             deny: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 validator: "text".to_string(),
-                keywords: None,
-                exec: None,
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -329,9 +479,7 @@ mod tests {
                 keywords: Some(vec!["kw".to_string()]),
                 exec: Some("cmd".to_string()),
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -346,12 +494,8 @@ mod tests {
             deny: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 validator: "regex".to_string(),
-                keywords: None,
-                exec: None,
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -369,9 +513,7 @@ mod tests {
                 keywords: Some(vec![".*".to_string()]),
                 exec: Some("cmd".to_string()),
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -387,11 +529,8 @@ mod tests {
                 label: "bad-rule".to_string(),
                 validator: "regex".to_string(),
                 keywords: Some(vec!["[invalid".to_string()]),
-                exec: None,
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -406,12 +545,8 @@ mod tests {
             deny: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 validator: "custom".to_string(),
-                keywords: None,
-                exec: None,
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -429,9 +564,7 @@ mod tests {
                 keywords: Some(vec!["kw".to_string()]),
                 exec: Some("cmd".to_string()),
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };
@@ -446,12 +579,8 @@ mod tests {
             deny: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 validator: "unknown".to_string(),
-                keywords: None,
-                exec: None,
                 message: "msg".to_string(),
-                include_exts: None,
-                exclude_exts: None,
-                exclude_files: None,
+                ..Default::default()
             }]),
             review: None,
         };

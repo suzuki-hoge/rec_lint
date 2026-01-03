@@ -1,4 +1,6 @@
+pub mod comment;
 pub mod custom;
+pub mod doc;
 pub mod regex;
 pub mod text;
 

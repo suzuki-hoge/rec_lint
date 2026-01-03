@@ -8,7 +8,9 @@ use rayon::prelude::*;
 use walkdir::WalkDir;
 
 use crate::commands::SortMode;
-use crate::rule::{collect_rules, CollectedRules, Rule};
+use crate::rule::{collect_rules, CollectedRules, CommentSource, Rule};
+use crate::validate::comment::{self, CommentViolation};
+use crate::validate::doc::{self, DocViolation};
 use crate::validate::{custom, regex, text, CustomViolation, Violation};
 
 struct FileViolation {
@@ -21,6 +23,8 @@ struct FileViolation {
 enum ViolationDetail {
     LineViolations(Vec<Violation>),
     CustomViolation(CustomViolation),
+    DocViolations(Vec<DocViolation>),
+    CommentViolations(Vec<CommentViolation>),
 }
 
 pub fn run(paths: &[PathBuf], sort_mode: SortMode) -> Result<Vec<String>> {
@@ -164,8 +168,76 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
                 }));
             }
         }
+        Rule::JavaDoc(rule) => {
+            let violations = doc::java::validate(content, &rule.config);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::DocViolations(violations),
+                }));
+            }
+        }
+        Rule::KotlinDoc(rule) => {
+            let violations = doc::kotlin::validate(content, &rule.config);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::DocViolations(violations),
+                }));
+            }
+        }
+        Rule::RustDoc(rule) => {
+            let violations = doc::rust::validate(content, &rule.config);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::DocViolations(violations),
+                }));
+            }
+        }
+        Rule::JapaneseComment(rule) => {
+            let comments = extract_comments(content, &rule.source);
+            let violations = comment::validate_japanese(&comments);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::CommentViolations(violations),
+                }));
+            }
+        }
+        Rule::EnglishComment(rule) => {
+            let comments = extract_comments(content, &rule.source);
+            let violations = comment::validate_non_japanese(&comments);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::CommentViolations(violations),
+                }));
+            }
+        }
     }
     Ok(None)
+}
+
+fn extract_comments(content: &str, source: &CommentSource) -> Vec<comment::Comment> {
+    match source {
+        CommentSource::Lang(lang) => match lang {
+            crate::rule::parser::CommentLang::Java => comment::java::extract_comments(content),
+            crate::rule::parser::CommentLang::Kotlin => comment::kotlin::extract_comments(content),
+            crate::rule::parser::CommentLang::Rust => comment::rust::extract_comments(content),
+        },
+        CommentSource::Custom(syntax) => comment::custom::extract_comments(content, syntax),
+    }
 }
 
 /// A flattened violation entry for sorting
@@ -207,9 +279,39 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                     custom_output: if custom.output.is_empty() { None } else { Some(custom.output.clone()) },
                 });
             }
+            ViolationDetail::DocViolations(doc_violations) => {
+                for dv in doc_violations {
+                    flat.push(FlatViolation {
+                        file: relative_path.clone(),
+                        line: dv.line,
+                        col: 1, // Doc violations don't have column info
+                        message: format!("{} ({} {})", v.message, dv.kind, dv.name),
+                        custom_output: None,
+                    });
+                }
+            }
+            ViolationDetail::CommentViolations(comment_violations) => {
+                for cv in comment_violations {
+                    flat.push(FlatViolation {
+                        file: relative_path.clone(),
+                        line: cv.line,
+                        col: 1, // Comment violations don't have column info
+                        message: format!("{}: \"{}\"", v.message, truncate_text(&cv.text, 40)),
+                        custom_output: None,
+                    });
+                }
+            }
         }
     }
     flat
+}
+
+fn truncate_text(text: &str, max_len: usize) -> String {
+    if text.len() <= max_len {
+        text.to_string()
+    } else {
+        format!("{}...", &text[..max_len])
+    }
 }
 
 fn format_violations(violations: &[FileViolation], sort_mode: SortMode) -> Vec<String> {

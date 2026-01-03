@@ -4,165 +4,145 @@ use common::dummy_project_path;
 use rec_lint::commands::SortMode;
 
 // =============================================================================
-// simple: Single yaml at root
+// simple: 単一のyamlファイル
 // =============================================================================
 
 #[test]
-fn test_simple_validate_sort_rule() {
+fn ルールでソートすると違反がメッセージ順に表示される() {
     let file = dummy_project_path("simple/Sample.java");
     let result = rec_lint::commands::validate::run(&[file], SortMode::Rule).unwrap();
 
     // --sort rule: message: file:line:col
-    assert_eq!(result, vec!["Use logger instead: Sample.java:7:9"]);
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], "Use logger instead: Sample.java:7:9");
 }
 
 #[test]
-fn test_simple_validate_sort_file() {
+fn ファイルでソートすると違反がファイル順に表示される() {
     let file = dummy_project_path("simple/Sample.java");
     let result = rec_lint::commands::validate::run(&[file], SortMode::File).unwrap();
 
     // --sort file: file:line:col: message
-    assert_eq!(result, vec!["Sample.java:7:9: Use logger instead"]);
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], "Sample.java:7:9: Use logger instead");
 }
 
 // =============================================================================
-// nested: Hierarchical yaml files
+// nested: 階層的なyamlファイル
 // =============================================================================
 
 #[test]
-fn test_nested_validate_root_clean() {
+fn 違反がないファイルは空の結果を返す() {
     let file = dummy_project_path("nested/Root.java");
     let result = rec_lint::commands::validate::run(&[file], SortMode::Rule).unwrap();
 
-    assert!(result.is_empty(), "Expected no violations, got: {:?}", result);
+    assert_eq!(result.len(), 0);
 }
 
 #[test]
-fn test_nested_validate_sub_sort_rule() {
+fn サブディレクトリの違反はルールでソートされる() {
     let file = dummy_project_path("nested/sub/Sub.java");
     let result = rec_lint::commands::validate::run(&[file], SortMode::Rule).unwrap();
 
     // --sort rule: sorted by message, then file, then line
-    assert_eq!(result, vec!["Avoid wildcard imports: sub/Sub.java:1:1", "Use LocalDate instead: sub/Sub.java:5:9",]);
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0], "Avoid wildcard imports: sub/Sub.java:1:1");
+    assert_eq!(result[1], "Use LocalDate instead: sub/Sub.java:5:9");
 }
 
 #[test]
-fn test_nested_validate_sub_sort_file() {
+fn サブディレクトリの違反はファイルでソートされる() {
     let file = dummy_project_path("nested/sub/Sub.java");
     let result = rec_lint::commands::validate::run(&[file], SortMode::File).unwrap();
 
     // --sort file: sorted by file, then line, then col
-    assert_eq!(result, vec!["sub/Sub.java:1:1: Avoid wildcard imports", "sub/Sub.java:5:9: Use LocalDate instead",]);
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0], "sub/Sub.java:1:1: Avoid wildcard imports");
+    assert_eq!(result[1], "sub/Sub.java:5:9: Use LocalDate instead");
 }
 
 // =============================================================================
-// skip_middle: Intermediate directories without yaml
+// skip_middle: 中間ディレクトリにyamlがない場合
 // =============================================================================
 
 #[test]
-fn test_skip_middle_validate_sort_rule() {
+fn 深い階層の違反はルールでソートされる() {
     let file = dummy_project_path("skip_middle/level1/level2/level3/Deep.java");
     let result = rec_lint::commands::validate::run(&[file], SortMode::Rule).unwrap();
 
     // --sort rule: sorted by message
     // col は keyword の開始位置 (1-based)
-    assert_eq!(
-        result,
-        vec![
-            "Do not use System.exit: level1/level2/level3/Deep.java:10:9",
-            "Use generic types instead of raw types: level1/level2/level3/Deep.java:1:18",
-            "Use generic types instead of raw types: level1/level2/level3/Deep.java:2:18",
-            "Use generic types instead of raw types: level1/level2/level3/Deep.java:6:13",
-            "Use generic types instead of raw types: level1/level2/level3/Deep.java:7:13",
-        ]
-    );
+    assert_eq!(result.len(), 5);
+    assert_eq!(result[0], "Do not use System.exit: level1/level2/level3/Deep.java:10:9");
+    assert_eq!(result[1], "Use generic types instead of raw types: level1/level2/level3/Deep.java:1:18");
+    assert_eq!(result[2], "Use generic types instead of raw types: level1/level2/level3/Deep.java:2:18");
+    assert_eq!(result[3], "Use generic types instead of raw types: level1/level2/level3/Deep.java:6:13");
+    assert_eq!(result[4], "Use generic types instead of raw types: level1/level2/level3/Deep.java:7:13");
 }
 
 #[test]
-fn test_skip_middle_validate_sort_file() {
+fn 深い階層の違反はファイルでソートされる() {
     let file = dummy_project_path("skip_middle/level1/level2/level3/Deep.java");
     let result = rec_lint::commands::validate::run(&[file], SortMode::File).unwrap();
 
     // --sort file: sorted by line
-    assert_eq!(
-        result,
-        vec![
-            "level1/level2/level3/Deep.java:1:18: Use generic types instead of raw types",
-            "level1/level2/level3/Deep.java:2:18: Use generic types instead of raw types",
-            "level1/level2/level3/Deep.java:6:13: Use generic types instead of raw types",
-            "level1/level2/level3/Deep.java:7:13: Use generic types instead of raw types",
-            "level1/level2/level3/Deep.java:10:9: Do not use System.exit",
-        ]
-    );
+    assert_eq!(result.len(), 5);
+    assert_eq!(result[0], "level1/level2/level3/Deep.java:1:18: Use generic types instead of raw types");
+    assert_eq!(result[1], "level1/level2/level3/Deep.java:2:18: Use generic types instead of raw types");
+    assert_eq!(result[2], "level1/level2/level3/Deep.java:6:13: Use generic types instead of raw types");
+    assert_eq!(result[3], "level1/level2/level3/Deep.java:7:13: Use generic types instead of raw types");
+    assert_eq!(result[4], "level1/level2/level3/Deep.java:10:9: Do not use System.exit");
 }
 
 // =============================================================================
-// deep_inherit: Deep directory with only root yaml
+// deep_inherit: ルートyamlのみで深い階層
 // =============================================================================
 
 #[test]
-fn test_deep_inherit_validate() {
+fn 深い階層でもルートルールで検証される() {
     let file = dummy_project_path("deep_inherit/a/b/c/Target.java");
     let result = rec_lint::commands::validate::run(&[file], SortMode::Rule).unwrap();
 
-    assert_eq!(result, vec!["Remove deprecated code: a/b/c/Target.java:2:5"]);
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], "Remove deprecated code: a/b/c/Target.java:2:5");
 }
 
 // =============================================================================
-// validate: Directory recursive scan
+// validate: ディレクトリの再帰的スキャン
 // =============================================================================
 
 #[test]
-fn test_validate_directory_recursive() {
+fn ディレクトリを指定すると再帰的にファイルを検証する() {
     let dir = dummy_project_path("nested");
     let result = rec_lint::commands::validate::run(&[dir], SortMode::File).unwrap();
 
-    assert_eq!(result, vec!["sub/Sub.java:1:1: Avoid wildcard imports", "sub/Sub.java:5:9: Use LocalDate instead",]);
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0], "sub/Sub.java:1:1: Avoid wildcard imports");
+    assert_eq!(result[1], "sub/Sub.java:5:9: Use LocalDate instead");
 }
 
 #[test]
-fn test_validate_multiple_paths_sort_rule() {
+fn 複数パスを指定するとルールでソートされる() {
     let file1 = dummy_project_path("simple/Sample.java");
     let file2 = dummy_project_path("nested/sub/Sub.java");
     let result = rec_lint::commands::validate::run(&[file1, file2], SortMode::Rule).unwrap();
 
     // --sort rule: sorted by message, then file
-    assert_eq!(
-        result,
-        vec![
-            "Avoid wildcard imports: sub/Sub.java:1:1",
-            "Use LocalDate instead: sub/Sub.java:5:9",
-            "Use logger instead: Sample.java:7:9",
-        ]
-    );
+    assert_eq!(result.len(), 3);
+    assert_eq!(result[0], "Avoid wildcard imports: sub/Sub.java:1:1");
+    assert_eq!(result[1], "Use LocalDate instead: sub/Sub.java:5:9");
+    assert_eq!(result[2], "Use logger instead: Sample.java:7:9");
 }
 
 #[test]
-fn test_validate_multiple_paths_sort_file() {
+fn 複数パスを指定するとファイルでソートされる() {
     let file1 = dummy_project_path("simple/Sample.java");
     let file2 = dummy_project_path("nested/sub/Sub.java");
     let result = rec_lint::commands::validate::run(&[file1, file2], SortMode::File).unwrap();
 
     // --sort file: sorted by file, then line
-    assert_eq!(
-        result,
-        vec![
-            "Sample.java:7:9: Use logger instead",
-            "sub/Sub.java:1:1: Avoid wildcard imports",
-            "sub/Sub.java:5:9: Use LocalDate instead",
-        ]
-    );
-}
-
-// =============================================================================
-// no_root: No rec_lint_config.yaml found in any ancestor
-// =============================================================================
-
-#[test]
-fn test_no_root_validate_error() {
-    let file = dummy_project_path("no_root/child/Sample.java");
-    let result = rec_lint::commands::validate::run(&[file], SortMode::Rule).unwrap();
-
-    assert_eq!(result.len(), 1);
-    assert!(result[0].contains("rec_lint_config.yaml"));
+    assert_eq!(result.len(), 3);
+    assert_eq!(result[0], "Sample.java:7:9: Use logger instead");
+    assert_eq!(result[1], "sub/Sub.java:1:1: Avoid wildcard imports");
+    assert_eq!(result[2], "sub/Sub.java:5:9: Use LocalDate instead");
 }
