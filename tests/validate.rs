@@ -1,7 +1,7 @@
 mod common;
 
 use common::dummy_project_path;
-use rec_lint::SortMode;
+use rec_lint::commands::SortMode;
 
 // =============================================================================
 // simple: Single yaml at root

@@ -1,10 +1,8 @@
-mod cli;
-
 use anyhow::Result;
 use clap::Parser;
 
-use cli::{Cli, Commands};
 use rec_lint::commands;
+use rec_lint::commands::{Cli, Commands};
 
 fn main() -> Result<()> {
     let cli = Cli::parse();

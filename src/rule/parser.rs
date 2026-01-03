@@ -1,8 +1,27 @@
-use serde::Deserialize;
 use std::fs;
 use std::path::Path;
 
 use anyhow::{Context, Result};
+use serde::Deserialize;
+
+/// Filter type for exclude_files
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ExcludeFilterType {
+    /// Check if filename starts with keyword
+    FileStartsWith,
+    /// Check if filename ends with keyword
+    FileEndsWith,
+    /// Check if path contains keyword
+    PathContains,
+}
+
+/// Single exclude filter entry
+#[derive(Clone, Debug, Deserialize)]
+pub struct RawExcludeFilter {
+    pub filter: ExcludeFilterType,
+    pub keyword: String,
+}
 
 #[derive(Deserialize)]
 pub struct RawConfig {
@@ -20,6 +39,7 @@ pub struct RawRule {
     pub message: String,
     pub include_exts: Option<Vec<String>>,
     pub exclude_exts: Option<Vec<String>>,
+    pub exclude_files: Option<Vec<RawExcludeFilter>>,
 }
 
 #[derive(Deserialize)]
@@ -92,6 +112,7 @@ deny:
         assert_eq!(rule.message, "Test message");
         assert!(rule.include_exts.is_none());
         assert!(rule.exclude_exts.is_none());
+        assert!(rule.exclude_files.is_none());
     }
 
     #[test]
@@ -142,6 +163,28 @@ deny:
         let rule = &config.deny.unwrap()[0];
         assert_eq!(rule.include_exts.as_ref().unwrap(), &vec![".java", ".kt"]);
         assert_eq!(rule.exclude_exts.as_ref().unwrap(), &vec![".test.java"]);
+    }
+
+    #[test]
+    fn test_parse_rule_with_exclude_files() {
+        let yaml = r#"
+deny:
+  - label: exclude-test
+    validator: text
+    keywords: [test]
+    message: Message
+    exclude_files:
+      - filter: file_starts_with
+        keyword: Test
+      - filter: path_contains
+        keyword: /generated/
+"#;
+        let config = RawConfig::parse(yaml).unwrap();
+        let rule = &config.deny.unwrap()[0];
+        let exclude_files = rule.exclude_files.as_ref().unwrap();
+        assert_eq!(exclude_files.len(), 2);
+        assert_eq!(exclude_files[0].keyword, "Test");
+        assert_eq!(exclude_files[1].keyword, "/generated/");
     }
 
     #[test]

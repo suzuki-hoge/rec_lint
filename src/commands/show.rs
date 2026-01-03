@@ -2,8 +2,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use crate::collector::{collect_rules, CollectedRules};
-use crate::rule::Rule;
+use crate::rule::{collect_rules, CollectedRules, Rule};
 
 pub fn run(dir: &Path) -> Result<Vec<String>> {
     let rules = collect_rules(dir)?;

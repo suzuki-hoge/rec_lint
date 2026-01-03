@@ -1,25 +1,13 @@
+mod collector;
+pub mod parser;
+
+pub use collector::{collect_rules, CollectedRules};
+
 use anyhow::{anyhow, Result};
 use regex::Regex;
 
-use crate::config::{RawConfig, RawReviewItem, RawRule};
-
-#[derive(Clone, Default, Debug)]
-pub struct ExtFilter {
-    pub include: Vec<String>,
-    pub exclude: Vec<String>,
-}
-
-impl ExtFilter {
-    pub fn matches(&self, filename: &str) -> bool {
-        if !self.include.is_empty() && !self.include.iter().any(|e| filename.ends_with(e)) {
-            return false;
-        }
-        if !self.exclude.is_empty() && self.exclude.iter().any(|e| filename.ends_with(e)) {
-            return false;
-        }
-        true
-    }
-}
+use crate::filter::{ExcludeFilter, ExtFilter};
+use parser::{RawConfig, RawReviewItem, RawRule};
 
 #[derive(Clone, Debug)]
 pub enum Rule {
@@ -45,6 +33,14 @@ impl Rule {
         }
     }
 
+    pub fn exclude_filter(&self) -> &ExcludeFilter {
+        match self {
+            Rule::Text(r) => &r.exclude_filter,
+            Rule::Regex(r) => &r.exclude_filter,
+            Rule::Custom(r) => &r.exclude_filter,
+        }
+    }
+
     pub fn keywords(&self) -> Option<&[String]> {
         match self {
             Rule::Text(r) => Some(&r.keywords),
@@ -60,6 +56,7 @@ pub struct TextRule {
     pub keywords: Vec<String>,
     pub message: String,
     pub ext_filter: ExtFilter,
+    pub exclude_filter: ExcludeFilter,
 }
 
 #[derive(Clone, Debug)]
@@ -69,6 +66,7 @@ pub struct RegexRule {
     pub keywords: Vec<String>,
     pub message: String,
     pub ext_filter: ExtFilter,
+    pub exclude_filter: ExcludeFilter,
 }
 
 #[derive(Clone, Debug)]
@@ -77,6 +75,7 @@ pub struct CustomRule {
     pub exec: String,
     pub message: String,
     pub ext_filter: ExtFilter,
+    pub exclude_filter: ExcludeFilter,
 }
 
 #[derive(Clone, Debug)]
@@ -111,6 +110,8 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
     let ext_filter =
         ExtFilter { include: raw.include_exts.unwrap_or_default(), exclude: raw.exclude_exts.unwrap_or_default() };
 
+    let exclude_filter = ExcludeFilter::new(raw.exclude_files.unwrap_or_default());
+
     match raw.validator.as_str() {
         "text" => {
             let keywords =
@@ -118,7 +119,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             if raw.exec.is_some() {
                 return Err(anyhow!("Rule '{}': validator 'text' must not have 'exec'", raw.label));
             }
-            Ok(Rule::Text(TextRule { label: raw.label, keywords, message: raw.message, ext_filter }))
+            Ok(Rule::Text(TextRule { label: raw.label, keywords, message: raw.message, ext_filter, exclude_filter }))
         }
         "regex" => {
             let keywords =
@@ -130,14 +131,21 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 .iter()
                 .map(|k| Regex::new(k).map_err(|e| anyhow!("Rule '{}': invalid regex '{}': {}", raw.label, k, e)))
                 .collect::<Result<Vec<_>>>()?;
-            Ok(Rule::Regex(RegexRule { label: raw.label, patterns, keywords, message: raw.message, ext_filter }))
+            Ok(Rule::Regex(RegexRule {
+                label: raw.label,
+                patterns,
+                keywords,
+                message: raw.message,
+                ext_filter,
+                exclude_filter,
+            }))
         }
         "custom" => {
             let exec = raw.exec.ok_or_else(|| anyhow!("Rule '{}': validator 'custom' requires 'exec'", raw.label))?;
             if raw.keywords.is_some() {
                 return Err(anyhow!("Rule '{}': validator 'custom' must not have 'keywords'", raw.label));
             }
-            Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, ext_filter }))
+            Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, ext_filter, exclude_filter }))
         }
         other => Err(anyhow!("Rule '{}': unknown validator '{}'", raw.label, other)),
     }
@@ -156,44 +164,6 @@ fn convert_review(raw: RawReviewItem) -> ReviewItem {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::RawConfig;
-
-    // =========================================================================
-    // ExtFilter tests
-    // =========================================================================
-
-    #[test]
-    fn test_ext_filter_empty_matches_all() {
-        let filter = ExtFilter::default();
-        assert!(filter.matches("test.java"));
-        assert!(filter.matches("test.txt"));
-        assert!(filter.matches("anything"));
-    }
-
-    #[test]
-    fn test_ext_filter_include_only() {
-        let filter = ExtFilter { include: vec![".java".to_string(), ".kt".to_string()], exclude: vec![] };
-        assert!(filter.matches("Test.java"));
-        assert!(filter.matches("Test.kt"));
-        assert!(!filter.matches("Test.txt"));
-        assert!(!filter.matches("Test.py"));
-    }
-
-    #[test]
-    fn test_ext_filter_exclude_only() {
-        let filter = ExtFilter { include: vec![], exclude: vec![".test.java".to_string()] };
-        assert!(filter.matches("Test.java"));
-        assert!(!filter.matches("Test.test.java"));
-        assert!(filter.matches("Test.txt"));
-    }
-
-    #[test]
-    fn test_ext_filter_include_and_exclude() {
-        let filter = ExtFilter { include: vec![".java".to_string()], exclude: vec![".test.java".to_string()] };
-        assert!(filter.matches("Main.java"));
-        assert!(!filter.matches("Main.test.java"));
-        assert!(!filter.matches("Main.txt"));
-    }
 
     // =========================================================================
     // Config TryFrom tests - success cases
@@ -229,6 +199,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -241,6 +212,7 @@ mod tests {
                 assert_eq!(r.message, "msg");
                 assert!(r.ext_filter.include.is_empty());
                 assert!(r.ext_filter.exclude.is_empty());
+                assert!(r.exclude_filter.filters.is_empty());
             }
             _ => panic!("Expected Text rule"),
         }
@@ -258,6 +230,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: Some(vec![".java".to_string()]),
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -284,6 +257,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: Some(vec![".txt".to_string()]),
+                exclude_files: None,
             }]),
             deny: None,
             review: None,
@@ -337,6 +311,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -356,6 +331,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -375,6 +351,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -394,6 +371,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -413,6 +391,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -432,6 +411,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -451,6 +431,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -470,6 +451,7 @@ mod tests {
                 message: "msg".to_string(),
                 include_exts: None,
                 exclude_exts: None,
+                exclude_files: None,
             }]),
             review: None,
         };
@@ -488,6 +470,7 @@ mod tests {
             keywords: vec![],
             message: "".to_string(),
             ext_filter: ExtFilter::default(),
+            exclude_filter: ExcludeFilter::default(),
         });
         assert_eq!(text_rule.label(), "text-label");
 
@@ -496,6 +479,7 @@ mod tests {
             exec: "".to_string(),
             message: "".to_string(),
             ext_filter: ExtFilter::default(),
+            exclude_filter: ExcludeFilter::default(),
         });
         assert_eq!(custom_rule.label(), "custom-label");
     }
@@ -507,6 +491,7 @@ mod tests {
             keywords: vec!["a".to_string(), "b".to_string()],
             message: "".to_string(),
             ext_filter: ExtFilter::default(),
+            exclude_filter: ExcludeFilter::default(),
         });
         assert_eq!(text_rule.keywords(), Some(&["a".to_string(), "b".to_string()][..]));
 
@@ -515,6 +500,7 @@ mod tests {
             exec: "".to_string(),
             message: "".to_string(),
             ext_filter: ExtFilter::default(),
+            exclude_filter: ExcludeFilter::default(),
         });
         assert!(custom_rule.keywords().is_none());
     }

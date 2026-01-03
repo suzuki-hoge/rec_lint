@@ -2,8 +2,8 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
 
-use crate::config::RawConfig;
-use crate::rule::{Config, ReviewItem, Rule};
+use super::parser::RawConfig;
+use super::{Config, ReviewItem, Rule};
 
 const CONFIG_FILENAME: &str = "rec_lint.yaml";
 const ROOT_CONFIG_FILENAME: &str = "rec_lint_config.yaml";

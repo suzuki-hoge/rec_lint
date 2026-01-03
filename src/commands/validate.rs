@@ -7,10 +7,9 @@ use anyhow::Result;
 use rayon::prelude::*;
 use walkdir::WalkDir;
 
-use crate::collector::{collect_rules, CollectedRules};
-use crate::rule::Rule;
-use crate::validator::{validate_custom, validate_regex, validate_text, CustomViolation, Violation};
-use crate::SortMode;
+use crate::commands::SortMode;
+use crate::rule::{collect_rules, CollectedRules, Rule};
+use crate::validate::{custom, regex, text, CustomViolation, Violation};
 
 struct FileViolation {
     file: PathBuf,
@@ -108,6 +107,9 @@ fn validate_file(file: &Path, rules: &CollectedRules) -> Result<Vec<FileViolatio
         if !rule.ext_filter().matches(filename) {
             continue;
         }
+        if rule.exclude_filter().should_exclude(&file) {
+            continue;
+        }
         if let Some(v) = validate_rule(&file, root_dir, rule, &content)? {
             violations.push(v);
         }
@@ -115,6 +117,9 @@ fn validate_file(file: &Path, rules: &CollectedRules) -> Result<Vec<FileViolatio
 
     for (rule, _source) in &rules.deny {
         if !rule.ext_filter().matches(filename) {
+            continue;
+        }
+        if rule.exclude_filter().should_exclude(&file) {
             continue;
         }
         if let Some(v) = validate_rule(&file, root_dir, rule, &content)? {
@@ -128,7 +133,7 @@ fn validate_file(file: &Path, rules: &CollectedRules) -> Result<Vec<FileViolatio
 fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Result<Option<FileViolation>> {
     match rule {
         Rule::Text(text_rule) => {
-            let line_violations = validate_text(content, text_rule);
+            let line_violations = text::validate(content, text_rule);
             if !line_violations.is_empty() {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),
@@ -139,7 +144,7 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
             }
         }
         Rule::Regex(regex_rule) => {
-            let line_violations = validate_regex(content, regex_rule);
+            let line_violations = regex::validate(content, regex_rule);
             if !line_violations.is_empty() {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),
@@ -150,7 +155,7 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
             }
         }
         Rule::Custom(custom_rule) => {
-            if let Some(custom_violation) = validate_custom(file, custom_rule)? {
+            if let Some(custom_violation) = custom::validate(file, custom_rule)? {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),
                     root_dir: root_dir.to_path_buf(),
