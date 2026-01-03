@@ -22,8 +22,6 @@ pub fn extract_comments(content: &str, syntax: &CustomCommentSyntax) -> Vec<Comm
 
     // State for block comment tracking
     let mut in_block_comment = false;
-    let mut block_start_line = 0;
-    let mut block_text = String::new();
     let mut current_block_end = String::new();
 
     while i < lines.len() {
@@ -34,17 +32,13 @@ pub fn extract_comments(content: &str, syntax: &CustomCommentSyntax) -> Vec<Comm
         if in_block_comment {
             // Continue block comment
             if let Some(end_pos) = line.find(current_block_end.as_str()) {
-                // End of block comment
-                let before_end = &line[..end_pos];
-                if !block_text.is_empty() {
-                    block_text.push('\n');
+                // End of block comment - extract text before end marker
+                let before_end = line[..end_pos].trim();
+                if !before_end.is_empty() {
+                    comments.push(Comment { line: line_num, text: before_end.to_string() });
                 }
-                block_text.push_str(before_end.trim());
-
-                comments.push(Comment { line: block_start_line, text: block_text.clone() });
 
                 in_block_comment = false;
-                block_text.clear();
 
                 // Check for line comment after block end
                 let after_end = &line[end_pos + current_block_end.len()..];
@@ -52,11 +46,10 @@ pub fn extract_comments(content: &str, syntax: &CustomCommentSyntax) -> Vec<Comm
                     comments.push(comment);
                 }
             } else {
-                // Middle of block comment
-                if !block_text.is_empty() {
-                    block_text.push('\n');
+                // Middle of block comment - each line is a separate comment
+                if !trimmed.is_empty() {
+                    comments.push(Comment { line: line_num, text: trimmed.to_string() });
                 }
-                block_text.push_str(trimmed);
             }
         } else {
             // Check for line comment
@@ -79,9 +72,12 @@ pub fn extract_comments(content: &str, syntax: &CustomCommentSyntax) -> Vec<Comm
                 } else {
                     // Start of multi-line block comment
                     in_block_comment = true;
-                    block_start_line = line_num;
-                    block_text = after.trim().to_string();
                     current_block_end = block.end.clone();
+                    // Extract first line content if any
+                    let first_line_text = after.trim();
+                    if !first_line_text.is_empty() {
+                        comments.push(Comment { line: line_num, text: first_line_text.to_string() });
+                    }
                     break;
                 }
             }
@@ -207,8 +203,11 @@ mod tests {
     fn test_html_multiline_comment() {
         let content = "<!--\n  Multi-line\n  comment\n-->";
         let comments = extract_comments(content, &syntax_html());
-        assert_eq!(comments.len(), 1);
-        assert!(comments[0].text.contains("Multi-line"));
+        assert_eq!(comments.len(), 2);
+        assert_eq!(comments[0].line, 2);
+        assert_eq!(comments[0].text, "Multi-line");
+        assert_eq!(comments[1].line, 3);
+        assert_eq!(comments[1].text, "comment");
     }
 
     #[test]
@@ -240,8 +239,11 @@ mod tests {
     fn test_shell_heredoc_style() {
         let content = ": '\nBlock comment\ntext\n'";
         let comments = extract_comments(content, &syntax_shell());
-        assert_eq!(comments.len(), 1);
-        assert!(comments[0].text.contains("Block comment"));
+        assert_eq!(comments.len(), 2);
+        assert_eq!(comments[0].line, 2);
+        assert_eq!(comments[0].text, "Block comment");
+        assert_eq!(comments[1].line, 3);
+        assert_eq!(comments[1].text, "text");
     }
 
     // =========================================================================
