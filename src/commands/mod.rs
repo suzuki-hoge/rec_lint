@@ -40,8 +40,8 @@ down to the target directory. Output format:\n\n\
   [ rule ] <source_dir>: <label>\n\
   [ guideline ] <source_dir>: <message>")]
     Show {
-        /// Target directory to show rules for
-        #[arg(value_name = "DIR")]
+        /// Target directory to show rules for (default: current directory)
+        #[arg(value_name = "DIR", default_value = ".")]
         dir: PathBuf,
     },
 
@@ -54,8 +54,8 @@ Validators:\n\
   - regex: Check if patterns match in file\n\
   - custom: Run external command (exit code 0 = pass)")]
     Validate {
-        /// Files or directories to validate
-        #[arg(required = true, value_name = "PATH")]
+        /// Files or directories to validate (default: current directory)
+        #[arg(value_name = "PATH", default_value = ".")]
         paths: Vec<PathBuf>,
 
         /// Sort order for output
@@ -67,8 +67,8 @@ Validators:\n\
     #[command(long_about = "Display guideline checklist items for the specified directory.\n\n\
 Guideline items are informational reminders for code reviewers.")]
     Guideline {
-        /// Target directory to show guideline points for
-        #[arg(value_name = "DIR")]
+        /// Target directory to show guideline points for (default: current directory)
+        #[arg(value_name = "DIR", default_value = ".")]
         dir: PathBuf,
     },
 
