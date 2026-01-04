@@ -2,6 +2,7 @@ pub mod comment;
 pub mod custom;
 pub mod doc;
 pub mod regex;
+pub mod test;
 pub mod text;
 
 /// A violation found by text or regex validator

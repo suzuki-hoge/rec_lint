@@ -21,6 +21,9 @@ pub enum Rule {
     RustDoc(RustDocRule),
     JapaneseComment(CommentRule),
     EnglishComment(CommentRule),
+    JUnitTest(TestRule),
+    KotestTest(TestRule),
+    RustTest(TestRule),
 }
 
 impl Rule {
@@ -34,6 +37,9 @@ impl Rule {
             Rule::RustDoc(r) => &r.label,
             Rule::JapaneseComment(r) => &r.label,
             Rule::EnglishComment(r) => &r.label,
+            Rule::JUnitTest(r) => &r.label,
+            Rule::KotestTest(r) => &r.label,
+            Rule::RustTest(r) => &r.label,
         }
     }
 
@@ -47,6 +53,9 @@ impl Rule {
             Rule::RustDoc(r) => &r.matcher,
             Rule::JapaneseComment(r) => &r.matcher,
             Rule::EnglishComment(r) => &r.matcher,
+            Rule::JUnitTest(r) => &r.matcher,
+            Rule::KotestTest(r) => &r.matcher,
+            Rule::RustTest(r) => &r.matcher,
         }
     }
 
@@ -60,6 +69,9 @@ impl Rule {
             Rule::RustDoc(_) => None,
             Rule::JapaneseComment(_) => None,
             Rule::EnglishComment(_) => None,
+            Rule::JUnitTest(_) => None,
+            Rule::KotestTest(_) => None,
+            Rule::RustTest(_) => None,
         }
     }
 }
@@ -124,6 +136,13 @@ pub enum CommentSource {
 pub struct CommentRule {
     pub label: String,
     pub source: CommentSource,
+    pub message: String,
+    pub matcher: Matcher,
+}
+
+#[derive(Clone, Debug)]
+pub struct TestRule {
+    pub label: String,
     pub message: String,
     pub matcher: Matcher,
 }
@@ -279,6 +298,15 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
         "require_japanese_comment" => {
             let source = convert_comment_source(&raw)?;
             Ok(Rule::EnglishComment(CommentRule { label: raw.label, source, message: raw.message, matcher }))
+        }
+        "require_japanese_junit_test" => {
+            Ok(Rule::JUnitTest(TestRule { label: raw.label, message: raw.message, matcher }))
+        }
+        "require_japanese_kotest_test" => {
+            Ok(Rule::KotestTest(TestRule { label: raw.label, message: raw.message, matcher }))
+        }
+        "require_japanese_rust_test" => {
+            Ok(Rule::RustTest(TestRule { label: raw.label, message: raw.message, matcher }))
         }
         other => Err(anyhow!("Rule '{}': unknown type '{}'", raw.label, other)),
     }

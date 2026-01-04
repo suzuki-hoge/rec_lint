@@ -11,6 +11,7 @@ use crate::commands::SortMode;
 use crate::rule::{collect_rules, CollectedRules, CommentSource, Rule};
 use crate::validate::comment::{self, CommentViolation};
 use crate::validate::doc::{self, DocViolation};
+use crate::validate::test::{self, TestViolation};
 use crate::validate::{custom, regex, text, CustomViolation, Violation};
 
 struct FileViolation {
@@ -25,6 +26,7 @@ enum ViolationDetail {
     CustomViolation(CustomViolation),
     DocViolations(Vec<DocViolation>),
     CommentViolations(Vec<CommentViolation>),
+    TestViolations(Vec<TestViolation>),
 }
 
 pub fn run(paths: &[PathBuf], sort_mode: SortMode) -> Result<Vec<String>> {
@@ -209,6 +211,39 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
                 }));
             }
         }
+        Rule::JUnitTest(rule) => {
+            let violations = test::junit::validate(content);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::TestViolations(violations),
+                }));
+            }
+        }
+        Rule::KotestTest(rule) => {
+            let violations = test::kotest::validate(content);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::TestViolations(violations),
+                }));
+            }
+        }
+        Rule::RustTest(rule) => {
+            let violations = test::rust::validate(content);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::TestViolations(violations),
+                }));
+            }
+        }
     }
     Ok(None)
 }
@@ -281,6 +316,17 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                         line: cv.line,
                         col: 1, // Comment violations don't have column info
                         message: format!("{}: \"{}\"", v.message, truncate_text(&cv.text, 40)),
+                        custom_output: None,
+                    });
+                }
+            }
+            ViolationDetail::TestViolations(test_violations) => {
+                for tv in test_violations {
+                    flat.push(FlatViolation {
+                        file: relative_path.clone(),
+                        line: tv.line,
+                        col: 1, // Test violations don't have column info
+                        message: format!("{}: \"{}\"", v.message, truncate_text(&tv.name, 40)),
                         custom_output: None,
                     });
                 }
