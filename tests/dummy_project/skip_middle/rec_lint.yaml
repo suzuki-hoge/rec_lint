@@ -1,6 +1,6 @@
 deny:
   - label: no-system-exit
-    validator: text
+    type: text
     keywords:
       - System.exit
     message: Do not use System.exit

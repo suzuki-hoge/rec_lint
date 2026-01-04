@@ -401,18 +401,39 @@
     "javaDocConfig": {
       "x-doc-order": 4,
       "title": "JavaDocConfig",
-      "description": "JavaDoc 検証設定の定義",
+      "description": "JavaDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: constructor, field, enum_constant",
       "type": "object",
       "additionalProperties": false,
+      "minProperties": 1,
       "properties": {
-        "type": {
+        "class": {
           "x-property-order": 0,
-          "description": "型の定義に JavaDoc がないことを認めない",
+          "description": "class 宣言に JavaDoc がないことを認めない",
           "$ref": "#/definitions/visibility"
         },
-        "function": {
+        "interface": {
           "x-property-order": 1,
-          "description": "メソッドの定義に JavaDoc がないことを認めない",
+          "description": "interface 宣言に JavaDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "enum": {
+          "x-property-order": 2,
+          "description": "enum 宣言に JavaDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "record": {
+          "x-property-order": 3,
+          "description": "record 宣言に JavaDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "annotation": {
+          "x-property-order": 4,
+          "description": "@interface 宣言に JavaDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "method": {
+          "x-property-order": 5,
+          "description": "メソッド宣言に JavaDoc がないことを認めない",
           "$ref": "#/definitions/visibility"
         }
       }
@@ -420,18 +441,64 @@
     "kotlinDocConfig": {
       "x-doc-order": 5,
       "title": "KotlinDocConfig",
-      "description": "KDoc 検証設定の定義",
+      "description": "KDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: property, constructor, enum_entry, companion_object",
       "type": "object",
       "additionalProperties": false,
+      "minProperties": 1,
       "properties": {
-        "type": {
+        "class": {
           "x-property-order": 0,
-          "description": "型の定義に KDoc がないことを認めない",
+          "description": "class 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "interface": {
+          "x-property-order": 1,
+          "description": "interface 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "object": {
+          "x-property-order": 2,
+          "description": "object 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "enum_class": {
+          "x-property-order": 3,
+          "description": "enum class 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "sealed_class": {
+          "x-property-order": 4,
+          "description": "sealed class 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "sealed_interface": {
+          "x-property-order": 5,
+          "description": "sealed interface 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "data_class": {
+          "x-property-order": 6,
+          "description": "data class 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "value_class": {
+          "x-property-order": 7,
+          "description": "value class 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "annotation_class": {
+          "x-property-order": 8,
+          "description": "annotation class 宣言に KDoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "typealias": {
+          "x-property-order": 9,
+          "description": "typealias 宣言に KDoc がないことを認めない",
           "$ref": "#/definitions/visibility"
         },
         "function": {
-          "x-property-order": 1,
-          "description": "メソッドの定義に KDoc がないことを認めない",
+          "x-property-order": 10,
+          "description": "fun 宣言に KDoc がないことを認めない",
           "$ref": "#/definitions/visibility"
         }
       }
@@ -439,18 +506,49 @@
     "rustDocConfig": {
       "x-doc-order": 6,
       "title": "RustDocConfig",
-      "description": "rustdoc 検証設定の定義",
+      "description": "rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: const, static, struct_field, enum_variant, impl, trait_impl",
       "type": "object",
       "additionalProperties": false,
+      "minProperties": 1,
       "properties": {
-        "type": {
+        "struct": {
           "x-property-order": 0,
-          "description": "型の定義に rustdoc がないことを認めない",
+          "description": "struct 宣言に rustdoc がないことを認めない",
           "$ref": "#/definitions/visibility"
         },
-        "function": {
+        "enum": {
           "x-property-order": 1,
-          "description": "関数の定義に rustdoc がないことを認めない",
+          "description": "enum 宣言に rustdoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "trait": {
+          "x-property-order": 2,
+          "description": "trait 宣言に rustdoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "type_alias": {
+          "x-property-order": 3,
+          "description": "type 宣言に rustdoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "union": {
+          "x-property-order": 4,
+          "description": "union 宣言に rustdoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "fn": {
+          "x-property-order": 5,
+          "description": "fn 宣言に rustdoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "macro_rules": {
+          "x-property-order": 6,
+          "description": "macro_rules! 宣言に rustdoc がないことを認めない",
+          "$ref": "#/definitions/visibility"
+        },
+        "mod": {
+          "x-property-order": 7,
+          "description": "mod 宣言に rustdoc がないことを認めない",
           "$ref": "#/definitions/visibility"
         }
       }

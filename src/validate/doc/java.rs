@@ -10,8 +10,8 @@ pub fn validate(content: &str, config: &JavaDocConfig) -> Vec<DocViolation> {
     while i < lines.len() {
         let line = lines[i].trim();
 
-        // Skip empty lines and single-line comments
-        if line.is_empty() || line.starts_with("//") {
+        // Skip empty lines and comments
+        if line.is_empty() || is_comment_line(line) {
             i += 1;
             continue;
         }
@@ -25,14 +25,19 @@ pub fn validate(content: &str, config: &JavaDocConfig) -> Vec<DocViolation> {
         // Check if there's a JavaDoc before this line
         let has_javadoc = check_javadoc_before(&lines, i);
 
-        // Check for type declaration
-        if let Some(violation) = check_type_declaration(line, i + 1, has_javadoc, config) {
-            violations.push(violation);
-        }
-
-        // Check for method declaration
-        if let Some(violation) = check_method_declaration(line, i + 1, has_javadoc, config) {
-            violations.push(violation);
+        // Check each element type independently
+        if let Some(v) = check_class(line, i + 1, has_javadoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_interface(line, i + 1, has_javadoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_enum(line, i + 1, has_javadoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_record(line, i + 1, has_javadoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_annotation(line, i + 1, has_javadoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_method(line, i + 1, has_javadoc, config) {
+            violations.push(v);
         }
 
         i += 1;
@@ -80,6 +85,7 @@ fn check_javadoc_before(lines: &[&str], current: usize) -> bool {
         }
         // Multi-line JavaDoc - look for start
         while i > 0 {
+            i -= 1;
             let prev = lines[i].trim();
             if prev.starts_with("/**") {
                 return true;
@@ -87,109 +93,27 @@ fn check_javadoc_before(lines: &[&str], current: usize) -> bool {
             if prev.starts_with("/*") && !prev.starts_with("/**") {
                 return false; // Regular comment, not JavaDoc
             }
-            i -= 1;
         }
     }
 
     false
 }
 
-fn check_type_declaration(
-    line: &str,
-    line_num: usize,
-    has_javadoc: bool,
-    config: &JavaDocConfig,
-) -> Option<DocViolation> {
-    let visibility = config.type_visibility.as_ref()?;
+/// Check for class declaration
+fn check_class(line: &str, line_num: usize, has_javadoc: bool, config: &JavaDocConfig) -> Option<DocViolation> {
+    let visibility = config.class.as_ref()?;
 
-    // Skip comment lines (they may contain keywords like "class" in text)
-    if line.starts_with("//") || line.starts_with("/*") || line.starts_with("*") {
+    // Must contain " class " but not other type keywords before it
+    let pos = line.find(" class ")?;
+    let before = &line[..pos];
+
+    // Exclude: enum class, sealed class, data class, etc. (Kotlin keywords that might appear)
+    if before.contains("enum") || before.contains("sealed") || before.contains("data") || before.contains("value") {
         return None;
     }
 
-    // Check for class, interface, enum, record, @interface
-    let type_keywords = ["class ", "interface ", "enum ", "record ", "@interface "];
-
-    for keyword in type_keywords {
-        if let Some(pos) = line.find(keyword) {
-            let before = &line[..pos];
-
-            // Check visibility
-            let is_public = before.contains("public");
-            if *visibility == Visibility::Public && !is_public {
-                return None;
-            }
-
-            // Skip if has javadoc
-            if has_javadoc {
-                return None;
-            }
-
-            // Extract name
-            let after = &line[pos + keyword.len()..];
-            let name = extract_identifier(after);
-
-            return Some(DocViolation { line: line_num, kind: DocKind::Type, name });
-        }
-    }
-
-    None
-}
-
-fn check_method_declaration(
-    line: &str,
-    line_num: usize,
-    has_javadoc: bool,
-    config: &JavaDocConfig,
-) -> Option<DocViolation> {
-    let visibility = config.function_visibility.as_ref()?;
-
-    // Skip comment lines
-    if line.starts_with("//") || line.starts_with("/*") || line.starts_with("*") {
-        return None;
-    }
-
-    // Method pattern: visibility? modifiers? ReturnType methodName(
-    // Skip constructors (uppercase first letter), fields (no parens or =)
-
-    if line.contains(" class ")
-        || line.contains(" interface ")
-        || line.contains(" enum ")
-        || line.contains(" record ")
-        || line.contains("=")
-        || !line.contains('(')
-    {
-        return None;
-    }
-
-    let trimmed = line.trim();
-
-    // Skip if looks like constructor
-    let parts: Vec<&str> = trimmed.split_whitespace().collect();
-    if parts.len() < 2 {
-        return None;
-    }
-
-    // Find method name (word before '(')
-    let paren_pos = trimmed.find('(')?;
-    let before_paren = &trimmed[..paren_pos];
-    let words: Vec<&str> = before_paren.split_whitespace().collect();
-
-    if words.len() < 2 {
-        return None; // Need at least return type and name
-    }
-
-    let method_name = words.last()?;
-
-    // Constructor check: name starts with uppercase and matches a type keyword pattern
-    if method_name.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
-        // This is likely a constructor
-        return None;
-    }
-
-    let is_public = before_paren.contains("public");
-
-    if *visibility == Visibility::Public && !is_public {
+    // Check visibility
+    if !check_visibility(before, visibility) {
         return None;
     }
 
@@ -197,132 +121,399 @@ fn check_method_declaration(
         return None;
     }
 
-    Some(DocViolation { line: line_num, kind: DocKind::Function, name: method_name.to_string() })
+    let name = extract_identifier(&line[pos + 7..]);
+    Some(DocViolation { line: line_num, kind: DocKind::Class, name })
+}
+
+/// Check for interface declaration
+fn check_interface(line: &str, line_num: usize, has_javadoc: bool, config: &JavaDocConfig) -> Option<DocViolation> {
+    let visibility = config.interface.as_ref()?;
+
+    // Must contain " interface " but not "@interface"
+    if line.contains("@interface") {
+        return None;
+    }
+
+    let pos = line.find(" interface ")?;
+    let before = &line[..pos];
+
+    // Exclude sealed interface (Kotlin)
+    if before.contains("sealed") {
+        return None;
+    }
+
+    if !check_visibility(before, visibility) {
+        return None;
+    }
+
+    if has_javadoc {
+        return None;
+    }
+
+    let name = extract_identifier(&line[pos + 11..]);
+    Some(DocViolation { line: line_num, kind: DocKind::Interface, name })
+}
+
+/// Check for enum declaration
+fn check_enum(line: &str, line_num: usize, has_javadoc: bool, config: &JavaDocConfig) -> Option<DocViolation> {
+    let visibility = config.enum_.as_ref()?;
+
+    let pos = line.find(" enum ")?;
+    let before = &line[..pos];
+
+    if !check_visibility(before, visibility) {
+        return None;
+    }
+
+    if has_javadoc {
+        return None;
+    }
+
+    let name = extract_identifier(&line[pos + 6..]);
+    Some(DocViolation { line: line_num, kind: DocKind::Enum, name })
+}
+
+/// Check for record declaration
+fn check_record(line: &str, line_num: usize, has_javadoc: bool, config: &JavaDocConfig) -> Option<DocViolation> {
+    let visibility = config.record.as_ref()?;
+
+    let pos = line.find(" record ")?;
+    let before = &line[..pos];
+
+    if !check_visibility(before, visibility) {
+        return None;
+    }
+
+    if has_javadoc {
+        return None;
+    }
+
+    let name = extract_identifier(&line[pos + 8..]);
+    Some(DocViolation { line: line_num, kind: DocKind::Record, name })
+}
+
+/// Check for annotation type declaration (@interface)
+fn check_annotation(line: &str, line_num: usize, has_javadoc: bool, config: &JavaDocConfig) -> Option<DocViolation> {
+    let visibility = config.annotation.as_ref()?;
+
+    let pos = line.find("@interface ")?;
+    let before = &line[..pos];
+
+    if !check_visibility(before, visibility) {
+        return None;
+    }
+
+    if has_javadoc {
+        return None;
+    }
+
+    let name = extract_identifier(&line[pos + 11..]);
+    Some(DocViolation { line: line_num, kind: DocKind::Annotation, name })
+}
+
+/// Check for method declaration
+fn check_method(line: &str, line_num: usize, has_javadoc: bool, config: &JavaDocConfig) -> Option<DocViolation> {
+    let visibility = config.method.as_ref()?;
+
+    // Method must have parentheses and not be a type declaration
+    if !line.contains('(') {
+        return None;
+    }
+
+    // Exclude type declarations
+    if line.contains(" class ")
+        || line.contains(" interface ")
+        || line.contains(" enum ")
+        || line.contains(" record ")
+        || line.contains("@interface ")
+    {
+        return None;
+    }
+
+    // Exclude field declarations (contain =)
+    if line.contains('=') {
+        return None;
+    }
+
+    let paren_pos = line.find('(')?;
+    let before_paren = &line[..paren_pos];
+    let words: Vec<&str> = before_paren.split_whitespace().collect();
+
+    // Need at least return type and method name
+    if words.len() < 2 {
+        return None;
+    }
+
+    let method_name = words.last()?;
+
+    // Skip constructors (name starts with uppercase)
+    if method_name.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+        return None;
+    }
+
+    if !check_visibility(before_paren, visibility) {
+        return None;
+    }
+
+    if has_javadoc {
+        return None;
+    }
+
+    Some(DocViolation { line: line_num, kind: DocKind::Method, name: method_name.to_string() })
+}
+
+fn is_comment_line(line: &str) -> bool {
+    line.starts_with("//") || line.starts_with("/*") || line.starts_with("*")
+}
+
+fn check_visibility(before: &str, visibility: &Visibility) -> bool {
+    let is_public = before.contains("public");
+    match visibility {
+        Visibility::Public => is_public,
+        Visibility::All => true,
+    }
 }
 
 fn extract_identifier(s: &str) -> String {
-    s.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect()
+    s.trim().chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn config_all() -> JavaDocConfig {
-        JavaDocConfig { type_visibility: Some(Visibility::All), function_visibility: Some(Visibility::All) }
-    }
-
-    fn config_public() -> JavaDocConfig {
-        JavaDocConfig { type_visibility: Some(Visibility::Public), function_visibility: Some(Visibility::Public) }
-    }
-
     // =========================================================================
-    // Type declaration tests
+    // Class tests
     // =========================================================================
 
     #[test]
     fn test_class_without_javadoc() {
         let content = "public class MyClass {}";
-        let violations = validate(content, &config_all());
+        let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
         assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Type);
+        assert_eq!(violations[0].kind, DocKind::Class);
         assert_eq!(violations[0].name, "MyClass");
     }
 
     #[test]
     fn test_class_with_javadoc() {
-        let content = r#"
-/** This is a class */
-public class MyClass {}
-"#;
-        let violations = validate(content, &config_all());
-        assert!(violations.is_empty());
-    }
-
-    #[test]
-    fn test_interface_without_javadoc() {
-        let content = "public interface MyInterface {}";
-        let violations = validate(content, &config_all());
-        assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Type);
-        assert_eq!(violations[0].name, "MyInterface");
-    }
-
-    #[test]
-    fn test_enum_without_javadoc() {
-        let content = "public enum MyEnum { A, B }";
-        let violations = validate(content, &config_all());
-        assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Type);
-    }
-
-    #[test]
-    fn test_record_without_javadoc() {
-        let content = "public record MyRecord(String name) {}";
-        let violations = validate(content, &config_all());
-        assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Type);
-    }
-
-    #[test]
-    fn test_private_class_skipped_with_public_config() {
-        let content = "class MyClass {}";
-        let violations = validate(content, &config_public());
-        assert!(violations.is_empty());
-    }
-
-    #[test]
-    fn test_multiline_javadoc() {
-        let content = r#"
-/**
- * This is a multi-line
- * JavaDoc comment.
- */
-public class MyClass {}
-"#;
-        let violations = validate(content, &config_all());
-        assert!(violations.is_empty());
-    }
-
-    // =========================================================================
-    // Method declaration tests
-    // =========================================================================
-
-    #[test]
-    fn test_method_without_javadoc() {
-        let content = r#"
-public class MyClass {
-    public void doSomething() {}
-}
-"#;
-        let violations = validate(content, &config_all());
-        assert!(violations.iter().any(|v| v.kind == DocKind::Function && v.name == "doSomething"));
-    }
-
-    #[test]
-    fn test_method_with_javadoc() {
-        let content = r#"
-public class MyClass {
-    /** Does something */
-    public void doSomething() {}
-}
-"#;
-        let config = JavaDocConfig {
-            type_visibility: None, // Skip type check
-            function_visibility: Some(Visibility::All),
-        };
+        let content = "/** Doc */\npublic class MyClass {}";
+        let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
 
     #[test]
-    fn test_private_method_skipped_with_public_config() {
-        let content = r#"
-public class MyClass {
-    private void helper() {}
-}
-"#;
-        let config = JavaDocConfig { type_visibility: None, function_visibility: Some(Visibility::Public) };
+    fn test_class_public_only_skips_private() {
+        let content = "class MyClass {}";
+        let config = JavaDocConfig { class: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_class_disabled() {
+        let content = "public class MyClass {}";
+        let config = JavaDocConfig { class: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Interface tests
+    // =========================================================================
+
+    #[test]
+    fn test_interface_without_javadoc() {
+        let content = "public interface MyInterface {}";
+        let config = JavaDocConfig { interface: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::Interface);
+        assert_eq!(violations[0].name, "MyInterface");
+    }
+
+    #[test]
+    fn test_interface_with_javadoc() {
+        let content = "/** Doc */\npublic interface MyInterface {}";
+        let config = JavaDocConfig { interface: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_interface_public_only_skips_private() {
+        let content = "interface MyInterface {}";
+        let config = JavaDocConfig { interface: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_interface_disabled() {
+        let content = "public interface MyInterface {}";
+        let config = JavaDocConfig { interface: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Enum tests
+    // =========================================================================
+
+    #[test]
+    fn test_enum_without_javadoc() {
+        let content = "public enum MyEnum { A, B }";
+        let config = JavaDocConfig { enum_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::Enum);
+        assert_eq!(violations[0].name, "MyEnum");
+    }
+
+    #[test]
+    fn test_enum_with_javadoc() {
+        let content = "/** Doc */\npublic enum MyEnum { A }";
+        let config = JavaDocConfig { enum_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_enum_public_only_skips_private() {
+        let content = "enum MyEnum { A }";
+        let config = JavaDocConfig { enum_: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_enum_disabled() {
+        let content = "public enum MyEnum { A }";
+        let config = JavaDocConfig { enum_: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Record tests
+    // =========================================================================
+
+    #[test]
+    fn test_record_without_javadoc() {
+        let content = "public record MyRecord(String name) {}";
+        let config = JavaDocConfig { record: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::Record);
+        assert_eq!(violations[0].name, "MyRecord");
+    }
+
+    #[test]
+    fn test_record_with_javadoc() {
+        let content = "/** Doc */\npublic record MyRecord(String name) {}";
+        let config = JavaDocConfig { record: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_record_public_only_skips_private() {
+        let content = "record MyRecord(String name) {}";
+        let config = JavaDocConfig { record: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_record_disabled() {
+        let content = "public record MyRecord(String name) {}";
+        let config = JavaDocConfig { record: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Annotation tests
+    // =========================================================================
+
+    #[test]
+    fn test_annotation_without_javadoc() {
+        let content = "public @interface MyAnnotation {}";
+        let config = JavaDocConfig { annotation: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::Annotation);
+        assert_eq!(violations[0].name, "MyAnnotation");
+    }
+
+    #[test]
+    fn test_annotation_with_javadoc() {
+        let content = "/** Doc */\npublic @interface MyAnnotation {}";
+        let config = JavaDocConfig { annotation: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_annotation_public_only_skips_private() {
+        let content = "@interface MyAnnotation {}";
+        let config = JavaDocConfig { annotation: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_annotation_disabled() {
+        let content = "public @interface MyAnnotation {}";
+        let config = JavaDocConfig { annotation: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Method tests
+    // =========================================================================
+
+    #[test]
+    fn test_method_without_javadoc() {
+        let content = "public void doSomething() {}";
+        let config = JavaDocConfig { method: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::Method);
+        assert_eq!(violations[0].name, "doSomething");
+    }
+
+    #[test]
+    fn test_method_with_javadoc() {
+        let content = "/** Doc */\npublic void doSomething() {}";
+        let config = JavaDocConfig { method: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_method_public_only_skips_private() {
+        let content = "void doSomething() {}";
+        let config = JavaDocConfig { method: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_method_disabled() {
+        let content = "public void doSomething() {}";
+        let config = JavaDocConfig { method: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_method_skips_constructor() {
+        let content = "public MyClass() {}";
+        let config = JavaDocConfig { method: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
@@ -333,30 +524,54 @@ public class MyClass {
 
     #[test]
     fn test_annotation_before_class() {
-        let content = r#"
-/** MyClass doc */
-@Component
-public class MyClass {}
-"#;
-        let violations = validate(content, &config_all());
+        let content = "/** Doc */\n@Component\npublic class MyClass {}";
+        let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_multiline_javadoc() {
+        let content = "/**\n * Multi-line\n */\npublic class MyClass {}";
+        let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
 
     #[test]
     fn test_regular_comment_not_javadoc() {
-        let content = r#"
-/* This is not JavaDoc */
-public class MyClass {}
-"#;
-        let violations = validate(content, &config_all());
-        assert!(!violations.is_empty());
+        let content = "/* Not JavaDoc */\npublic class MyClass {}";
+        let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+    }
+
+    #[test]
+    fn test_multiline_regular_comment_not_javadoc() {
+        let content = "/*\n * Not JavaDoc\n */\npublic class MyClass {}";
+        let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
     }
 
     #[test]
     fn test_empty_config_no_violations() {
-        let content = "public class MyClass {}";
+        let content = "public class MyClass {}\npublic void foo() {}";
         let config = JavaDocConfig::default();
         let violations = validate(content, &config);
         assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_multiple_elements() {
+        let content = "public class A {}\npublic interface B {}\npublic enum C {}";
+        let config = JavaDocConfig {
+            class: Some(Visibility::All),
+            interface: Some(Visibility::All),
+            enum_: Some(Visibility::All),
+            ..Default::default()
+        };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 3);
     }
 }

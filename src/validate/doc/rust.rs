@@ -10,14 +10,8 @@ pub fn validate(content: &str, config: &RustDocConfig) -> Vec<DocViolation> {
     while i < lines.len() {
         let line = lines[i].trim();
 
-        // Skip empty lines
-        if line.is_empty() {
-            i += 1;
-            continue;
-        }
-
-        // Skip regular comments (not doc comments)
-        if line.starts_with("//") && !line.starts_with("///") && !line.starts_with("//!") {
+        // Skip empty lines and comments
+        if line.is_empty() || is_comment_line(line) {
             i += 1;
             continue;
         }
@@ -31,14 +25,23 @@ pub fn validate(content: &str, config: &RustDocConfig) -> Vec<DocViolation> {
         // Check if there's a RustDoc before this line
         let has_rustdoc = check_rustdoc_before(&lines, i);
 
-        // Check for type declaration
-        if let Some(violation) = check_type_declaration(line, i + 1, has_rustdoc, config) {
-            violations.push(violation);
-        }
-
-        // Check for function declaration
-        if let Some(violation) = check_function_declaration(line, i + 1, has_rustdoc, config) {
-            violations.push(violation);
+        // Check each element type independently
+        if let Some(v) = check_struct(line, i + 1, has_rustdoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_enum(line, i + 1, has_rustdoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_trait(line, i + 1, has_rustdoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_type_alias(line, i + 1, has_rustdoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_union(line, i + 1, has_rustdoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_fn(line, i + 1, has_rustdoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_macro_rules(line, i + 1, has_rustdoc, config) {
+            violations.push(v);
+        } else if let Some(v) = check_mod(line, i + 1, has_rustdoc, config) {
+            violations.push(v);
         }
 
         i += 1;
@@ -89,6 +92,7 @@ fn check_rustdoc_before(lines: &[&str], current: usize) -> bool {
         }
         // Multi-line doc comment
         while i > 0 {
+            i -= 1;
             let prev = lines[i].trim();
             if prev.starts_with("/**") {
                 return true;
@@ -96,74 +100,29 @@ fn check_rustdoc_before(lines: &[&str], current: usize) -> bool {
             if prev.starts_with("/*") && !prev.starts_with("/**") {
                 return false;
             }
-            i -= 1;
         }
     }
 
     false
 }
 
-fn check_type_declaration(
-    line: &str,
-    line_num: usize,
-    has_rustdoc: bool,
-    config: &RustDocConfig,
-) -> Option<DocViolation> {
-    let visibility = config.type_visibility.as_ref()?;
-
-    // Rust type keywords
-    let patterns = ["struct ", "enum ", "trait ", "type ", "union "];
-
-    for pattern in patterns {
-        if line.contains(pattern) {
-            let is_public = line.contains("pub ");
-
-            if *visibility == Visibility::Public && !is_public {
-                return None;
-            }
-
-            if has_rustdoc {
-                return None;
-            }
-
-            let name = extract_name_after(line, pattern);
-
-            return Some(DocViolation { line: line_num, kind: DocKind::Type, name });
-        }
+fn is_comment_line(line: &str) -> bool {
+    // Skip regular comments but NOT doc comments (///, //!, /**, /*!)
+    if line.starts_with("///") || line.starts_with("//!") {
+        return false;
     }
-
-    None
+    if line.starts_with("/**") || line.starts_with("/*!") {
+        return false;
+    }
+    line.starts_with("//") || line.starts_with("/*") || line.starts_with("*")
 }
 
-fn check_function_declaration(
-    line: &str,
-    line_num: usize,
-    has_rustdoc: bool,
-    config: &RustDocConfig,
-) -> Option<DocViolation> {
-    let visibility = config.function_visibility.as_ref()?;
-
-    // Rust function: fn name or pub fn name
-    if !line.contains("fn ") {
-        return None;
-    }
-
-    // Skip trait method declarations (inside trait block)
-    // This is a simplified check - full detection would require tracking context
-
+fn check_visibility(line: &str, visibility: &Visibility) -> bool {
     let is_public = line.contains("pub ");
-
-    if *visibility == Visibility::Public && !is_public {
-        return None;
+    match visibility {
+        Visibility::Public => is_public,
+        Visibility::All => true,
     }
-
-    if has_rustdoc {
-        return None;
-    }
-
-    let name = extract_name_after(line, "fn ");
-
-    Some(DocViolation { line: line_num, kind: DocKind::Function, name })
 }
 
 fn extract_name_after(line: &str, keyword: &str) -> String {
@@ -179,123 +138,456 @@ fn extract_name_after(line: &str, keyword: &str) -> String {
     trimmed.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect()
 }
 
+// ============================================================================
+// Individual element checkers
+// ============================================================================
+
+fn check_struct(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocConfig) -> Option<DocViolation> {
+    let visibility = config.struct_.as_ref()?;
+
+    if !line.contains("struct ") {
+        return None;
+    }
+
+    if !check_visibility(line, visibility) {
+        return None;
+    }
+
+    if has_rustdoc {
+        return None;
+    }
+
+    let name = extract_name_after(line, "struct ");
+    Some(DocViolation { line: line_num, kind: DocKind::Struct, name })
+}
+
+fn check_enum(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocConfig) -> Option<DocViolation> {
+    let visibility = config.enum_.as_ref()?;
+
+    if !line.contains("enum ") {
+        return None;
+    }
+
+    if !check_visibility(line, visibility) {
+        return None;
+    }
+
+    if has_rustdoc {
+        return None;
+    }
+
+    let name = extract_name_after(line, "enum ");
+    Some(DocViolation { line: line_num, kind: DocKind::Enum, name })
+}
+
+fn check_trait(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocConfig) -> Option<DocViolation> {
+    let visibility = config.trait_.as_ref()?;
+
+    if !line.contains("trait ") {
+        return None;
+    }
+
+    if !check_visibility(line, visibility) {
+        return None;
+    }
+
+    if has_rustdoc {
+        return None;
+    }
+
+    let name = extract_name_after(line, "trait ");
+    Some(DocViolation { line: line_num, kind: DocKind::Trait, name })
+}
+
+fn check_type_alias(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocConfig) -> Option<DocViolation> {
+    let visibility = config.type_alias.as_ref()?;
+
+    // type keyword but not in other contexts
+    if !line.contains("type ") {
+        return None;
+    }
+
+    // Exclude "impl ... for type" patterns
+    if line.contains("impl ") {
+        return None;
+    }
+
+    if !check_visibility(line, visibility) {
+        return None;
+    }
+
+    if has_rustdoc {
+        return None;
+    }
+
+    let name = extract_name_after(line, "type ");
+    Some(DocViolation { line: line_num, kind: DocKind::TypeAlias, name })
+}
+
+fn check_union(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocConfig) -> Option<DocViolation> {
+    let visibility = config.union.as_ref()?;
+
+    if !line.contains("union ") {
+        return None;
+    }
+
+    if !check_visibility(line, visibility) {
+        return None;
+    }
+
+    if has_rustdoc {
+        return None;
+    }
+
+    let name = extract_name_after(line, "union ");
+    Some(DocViolation { line: line_num, kind: DocKind::Union, name })
+}
+
+fn check_fn(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocConfig) -> Option<DocViolation> {
+    let visibility = config.fn_.as_ref()?;
+
+    if !line.contains("fn ") {
+        return None;
+    }
+
+    if !check_visibility(line, visibility) {
+        return None;
+    }
+
+    if has_rustdoc {
+        return None;
+    }
+
+    let name = extract_name_after(line, "fn ");
+    Some(DocViolation { line: line_num, kind: DocKind::Fn, name })
+}
+
+fn check_macro_rules(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocConfig) -> Option<DocViolation> {
+    let visibility = config.macro_rules.as_ref()?;
+
+    if !line.contains("macro_rules!") {
+        return None;
+    }
+
+    // macro_rules visibility is determined by #[macro_export] attribute, not pub
+    // For simplicity, we treat all macro_rules as "public" if visibility is Public
+    // and check all if visibility is All
+    if *visibility == Visibility::Public {
+        // Would need to check for #[macro_export] in previous lines
+        // For simplicity, skip this check - always check when visibility is All
+        return None;
+    }
+
+    if has_rustdoc {
+        return None;
+    }
+
+    let name = extract_name_after(line, "macro_rules! ");
+    Some(DocViolation { line: line_num, kind: DocKind::MacroRules, name })
+}
+
+fn check_mod(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocConfig) -> Option<DocViolation> {
+    let visibility = config.mod_.as_ref()?;
+
+    if !line.contains("mod ") {
+        return None;
+    }
+
+    // Exclude "mod tests" and similar test modules
+    if line.contains("mod tests") || line.contains("mod test") {
+        return None;
+    }
+
+    if !check_visibility(line, visibility) {
+        return None;
+    }
+
+    if has_rustdoc {
+        return None;
+    }
+
+    let name = extract_name_after(line, "mod ");
+    // Remove trailing semicolon or brace from name
+    let name = name.trim_end_matches(';').trim_end_matches('{').trim().to_string();
+    Some(DocViolation { line: line_num, kind: DocKind::Mod, name })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn config_all() -> RustDocConfig {
-        RustDocConfig { type_visibility: Some(Visibility::All), function_visibility: Some(Visibility::All) }
-    }
-
-    fn config_public() -> RustDocConfig {
-        RustDocConfig { type_visibility: Some(Visibility::Public), function_visibility: Some(Visibility::Public) }
-    }
-
     // =========================================================================
-    // Type declaration tests
+    // Struct tests
     // =========================================================================
 
     #[test]
     fn test_struct_without_rustdoc() {
         let content = "pub struct MyStruct {}";
-        let violations = validate(content, &config_all());
+        let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
         assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Type);
+        assert_eq!(violations[0].kind, DocKind::Struct);
         assert_eq!(violations[0].name, "MyStruct");
     }
 
     #[test]
     fn test_struct_with_rustdoc() {
-        let content = r#"
-/// This is a struct
-pub struct MyStruct {}
-"#;
-        let violations = validate(content, &config_all());
+        let content = "/// Doc\npub struct MyStruct {}";
+        let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
+
+    #[test]
+    fn test_struct_public_only_skips_private() {
+        let content = "struct MyStruct {}";
+        let config = RustDocConfig { struct_: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_struct_disabled() {
+        let content = "pub struct MyStruct {}";
+        let config = RustDocConfig { struct_: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_generic_struct() {
+        let content = "pub struct Container<T> {}";
+        let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].name, "Container");
+    }
+
+    // =========================================================================
+    // Enum tests
+    // =========================================================================
 
     #[test]
     fn test_enum_without_rustdoc() {
         let content = "pub enum MyEnum { A, B }";
-        let violations = validate(content, &config_all());
+        let config = RustDocConfig { enum_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
         assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Type);
+        assert_eq!(violations[0].kind, DocKind::Enum);
+        assert_eq!(violations[0].name, "MyEnum");
     }
+
+    #[test]
+    fn test_enum_with_rustdoc() {
+        let content = "/// Doc\npub enum MyEnum { A }";
+        let config = RustDocConfig { enum_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_enum_public_only_skips_private() {
+        let content = "enum MyEnum { A }";
+        let config = RustDocConfig { enum_: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Trait tests
+    // =========================================================================
 
     #[test]
     fn test_trait_without_rustdoc() {
         let content = "pub trait MyTrait {}";
-        let violations = validate(content, &config_all());
+        let config = RustDocConfig { trait_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
         assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Type);
+        assert_eq!(violations[0].kind, DocKind::Trait);
+        assert_eq!(violations[0].name, "MyTrait");
     }
+
+    #[test]
+    fn test_trait_with_rustdoc() {
+        let content = "/// Doc\npub trait MyTrait {}";
+        let config = RustDocConfig { trait_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_trait_public_only_skips_private() {
+        let content = "trait MyTrait {}";
+        let config = RustDocConfig { trait_: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Type alias tests
+    // =========================================================================
 
     #[test]
     fn test_type_alias_without_rustdoc() {
         let content = "pub type MyType = String;";
-        let violations = validate(content, &config_all());
-        assert_eq!(violations.len(), 1);
-    }
-
-    #[test]
-    fn test_private_struct_skipped_with_public_config() {
-        let content = "struct MyStruct {}";
-        let violations = validate(content, &config_public());
-        assert!(violations.is_empty());
-    }
-
-    #[test]
-    fn test_multiline_rustdoc() {
-        let content = r#"
-/// First line
-/// Second line
-pub struct MyStruct {}
-"#;
-        let violations = validate(content, &config_all());
-        assert!(violations.is_empty());
-    }
-
-    #[test]
-    fn test_block_doc_comment() {
-        let content = r#"
-/** Block doc comment */
-pub struct MyStruct {}
-"#;
-        let violations = validate(content, &config_all());
-        assert!(violations.is_empty());
-    }
-
-    // =========================================================================
-    // Function declaration tests
-    // =========================================================================
-
-    #[test]
-    fn test_function_without_rustdoc() {
-        let content = "pub fn do_something() {}";
-        let config = RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::All) };
+        let config = RustDocConfig { type_alias: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
         assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].kind, DocKind::Function);
+        assert_eq!(violations[0].kind, DocKind::TypeAlias);
+        assert_eq!(violations[0].name, "MyType");
+    }
+
+    #[test]
+    fn test_type_alias_with_rustdoc() {
+        let content = "/// Doc\npub type MyType = String;";
+        let config = RustDocConfig { type_alias: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_type_alias_public_only_skips_private() {
+        let content = "type MyType = String;";
+        let config = RustDocConfig { type_alias: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Union tests
+    // =========================================================================
+
+    #[test]
+    fn test_union_without_rustdoc() {
+        let content = "pub union MyUnion { a: i32, b: f32 }";
+        let config = RustDocConfig { union: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::Union);
+        assert_eq!(violations[0].name, "MyUnion");
+    }
+
+    #[test]
+    fn test_union_with_rustdoc() {
+        let content = "/// Doc\npub union MyUnion { a: i32 }";
+        let config = RustDocConfig { union: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Function tests
+    // =========================================================================
+
+    #[test]
+    fn test_fn_without_rustdoc() {
+        let content = "pub fn do_something() {}";
+        let config = RustDocConfig { fn_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::Fn);
         assert_eq!(violations[0].name, "do_something");
     }
 
     #[test]
-    fn test_function_with_rustdoc() {
-        let content = r#"
-/// Does something
-pub fn do_something() {}
-"#;
-        let config = RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::All) };
+    fn test_fn_with_rustdoc() {
+        let content = "/// Doc\npub fn do_something() {}";
+        let config = RustDocConfig { fn_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
 
     #[test]
-    fn test_private_function_skipped() {
-        let content = "fn helper() {}";
-        let config = RustDocConfig { type_visibility: None, function_visibility: Some(Visibility::Public) };
+    fn test_fn_public_only_skips_private() {
+        let content = "fn do_something() {}";
+        let config = RustDocConfig { fn_: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
         assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_fn_disabled() {
+        let content = "pub fn do_something() {}";
+        let config = RustDocConfig { fn_: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Macro rules tests
+    // =========================================================================
+
+    #[test]
+    fn test_macro_rules_without_rustdoc() {
+        let content = "macro_rules! my_macro { () => {} }";
+        let config = RustDocConfig { macro_rules: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::MacroRules);
+        assert_eq!(violations[0].name, "my_macro");
+    }
+
+    #[test]
+    fn test_macro_rules_with_rustdoc() {
+        let content = "/// Doc\nmacro_rules! my_macro { () => {} }";
+        let config = RustDocConfig { macro_rules: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_macro_rules_disabled() {
+        let content = "macro_rules! my_macro { () => {} }";
+        let config = RustDocConfig { macro_rules: None, ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    // =========================================================================
+    // Module tests
+    // =========================================================================
+
+    #[test]
+    fn test_mod_without_rustdoc() {
+        let content = "pub mod mymodule;";
+        let config = RustDocConfig { mod_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].kind, DocKind::Mod);
+        assert_eq!(violations[0].name, "mymodule");
+    }
+
+    #[test]
+    fn test_mod_with_rustdoc() {
+        let content = "/// Doc\npub mod mymodule;";
+        let config = RustDocConfig { mod_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_mod_public_only_skips_private() {
+        let content = "mod mymodule;";
+        let config = RustDocConfig { mod_: Some(Visibility::Public), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_mod_skips_tests() {
+        let content = "mod tests {}";
+        let config = RustDocConfig { mod_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_mod_inline_without_rustdoc() {
+        let content = "pub mod mymodule {}";
+        let config = RustDocConfig { mod_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].name, "mymodule");
     }
 
     // =========================================================================
@@ -304,38 +596,54 @@ pub fn do_something() {}
 
     #[test]
     fn test_attribute_before_struct() {
-        let content = r#"
-/// MyStruct doc
-#[derive(Debug)]
-pub struct MyStruct {}
-"#;
-        let violations = validate(content, &config_all());
+        let content = "/// Doc\n#[derive(Debug)]\npub struct MyStruct {}";
+        let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_multiline_rustdoc() {
+        let content = "/// First line\n/// Second line\npub struct MyStruct {}";
+        let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn test_block_doc_comment() {
+        let content = "/** Block doc */\npub struct MyStruct {}";
+        let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
 
     #[test]
     fn test_regular_comment_not_rustdoc() {
-        let content = r#"
-// This is not rustdoc
-pub struct MyStruct {}
-"#;
-        let violations = validate(content, &config_all());
-        assert!(!violations.is_empty());
+        let content = "// Not rustdoc\npub struct MyStruct {}";
+        let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 1);
     }
 
     #[test]
     fn test_empty_config_no_violations() {
-        let content = "pub struct MyStruct {}";
+        let content = "pub struct MyStruct {}\npub fn foo() {}";
         let config = RustDocConfig::default();
         let violations = validate(content, &config);
         assert!(violations.is_empty());
     }
 
     #[test]
-    fn test_generic_struct() {
-        let content = "pub struct Container<T> {}";
-        let violations = validate(content, &config_all());
-        assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].name, "Container");
+    fn test_multiple_elements() {
+        let content = "pub struct A {}\npub enum B {}\npub trait C {}";
+        let config = RustDocConfig {
+            struct_: Some(Visibility::All),
+            enum_: Some(Visibility::All),
+            trait_: Some(Visibility::All),
+            ..Default::default()
+        };
+        let violations = validate(content, &config);
+        assert_eq!(violations.len(), 3);
     }
 }

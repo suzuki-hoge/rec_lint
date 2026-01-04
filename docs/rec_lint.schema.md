@@ -144,30 +144,49 @@ review に列挙するレビューガイドラインの定義
 
 ## JavaDocConfig
 
-JavaDoc 検証設定の定義
+JavaDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: constructor, field, enum_constant
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | [visibility](#visibility) | - | 型の定義に JavaDoc がないことを認めない |
-| function | [visibility](#visibility) | - | メソッドの定義に JavaDoc がないことを認めない |
+| class | [visibility](#visibility) | - | class 宣言に JavaDoc がないことを認めない |
+| interface | [visibility](#visibility) | - | interface 宣言に JavaDoc がないことを認めない |
+| enum | [visibility](#visibility) | - | enum 宣言に JavaDoc がないことを認めない |
+| record | [visibility](#visibility) | - | record 宣言に JavaDoc がないことを認めない |
+| annotation | [visibility](#visibility) | - | @interface 宣言に JavaDoc がないことを認めない |
+| method | [visibility](#visibility) | - | メソッド宣言に JavaDoc がないことを認めない |
 
 ## KotlinDocConfig
 
-KDoc 検証設定の定義
+KDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: property, constructor, enum_entry, companion_object
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | [visibility](#visibility) | - | 型の定義に KDoc がないことを認めない |
-| function | [visibility](#visibility) | - | メソッドの定義に KDoc がないことを認めない |
+| class | [visibility](#visibility) | - | class 宣言に KDoc がないことを認めない |
+| interface | [visibility](#visibility) | - | interface 宣言に KDoc がないことを認めない |
+| object | [visibility](#visibility) | - | object 宣言に KDoc がないことを認めない |
+| enum_class | [visibility](#visibility) | - | enum class 宣言に KDoc がないことを認めない |
+| sealed_class | [visibility](#visibility) | - | sealed class 宣言に KDoc がないことを認めない |
+| sealed_interface | [visibility](#visibility) | - | sealed interface 宣言に KDoc がないことを認めない |
+| data_class | [visibility](#visibility) | - | data class 宣言に KDoc がないことを認めない |
+| value_class | [visibility](#visibility) | - | value class 宣言に KDoc がないことを認めない |
+| annotation_class | [visibility](#visibility) | - | annotation class 宣言に KDoc がないことを認めない |
+| typealias | [visibility](#visibility) | - | typealias 宣言に KDoc がないことを認めない |
+| function | [visibility](#visibility) | - | fun 宣言に KDoc がないことを認めない |
 
 ## RustDocConfig
 
-rustdoc 検証設定の定義
+rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: const, static, struct_field, enum_variant, impl, trait_impl
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | [visibility](#visibility) | - | 型の定義に rustdoc がないことを認めない |
-| function | [visibility](#visibility) | - | 関数の定義に rustdoc がないことを認めない |
+| struct | [visibility](#visibility) | - | struct 宣言に rustdoc がないことを認めない |
+| enum | [visibility](#visibility) | - | enum 宣言に rustdoc がないことを認めない |
+| trait | [visibility](#visibility) | - | trait 宣言に rustdoc がないことを認めない |
+| type_alias | [visibility](#visibility) | - | type 宣言に rustdoc がないことを認めない |
+| union | [visibility](#visibility) | - | union 宣言に rustdoc がないことを認めない |
+| fn | [visibility](#visibility) | - | fn 宣言に rustdoc がないことを認めない |
+| macro_rules | [visibility](#visibility) | - | macro_rules! 宣言に rustdoc がないことを認めない |
+| mod | [visibility](#visibility) | - | mod 宣言に rustdoc がないことを認めない |
 
 ## CommentConfig
 

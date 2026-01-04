@@ -1,6 +1,6 @@
 deny:
   - label: no-println
-    validator: text
+    type: text
     keywords:
       - System.out.println
     message: Use logger instead

@@ -1,14 +1,6 @@
-required:
-  - label: check-todo
-    validator: text
-    keywords:
-      - "TODO:"
-    message: TODO comments must be resolved
-    include_exts: [.java]
-
 deny:
   - label: no-legacy-date
-    validator: text
+    type: text
     keywords:
       - java.util.Date
     message: Use LocalDate instead

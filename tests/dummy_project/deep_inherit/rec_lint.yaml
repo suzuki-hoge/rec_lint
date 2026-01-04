@@ -1,6 +1,6 @@
 deny:
   - label: no-deprecated
-    validator: regex
+    type: regex
     keywords:
       - "@Deprecated"
     message: Remove deprecated code

@@ -3,3 +3,6 @@ fix:
 	@cargo fix --allow-dirty --allow-staged
 	@cargo clippy --fix --allow-dirty --allow-staged
 	@cargo test
+
+doc:
+	@cd tools/schema-tools && cargo run

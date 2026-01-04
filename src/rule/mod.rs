@@ -217,10 +217,28 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, ext_filter, exclude_filter }))
         }
         "no_java_doc" => {
-            let raw_config = raw.java_doc.unwrap_or_default();
+            let raw_config = raw
+                .java_doc
+                .ok_or_else(|| anyhow!("Rule '{}': type 'no_java_doc' requires 'java_doc' config", raw.label))?;
+            if raw_config.class.is_none()
+                && raw_config.interface.is_none()
+                && raw_config.enum_.is_none()
+                && raw_config.record.is_none()
+                && raw_config.annotation.is_none()
+                && raw_config.method.is_none()
+            {
+                return Err(anyhow!(
+                    "Rule '{}': 'java_doc' config requires at least one element (class, interface, enum, record, annotation, method)",
+                    raw.label
+                ));
+            }
             let config = JavaDocConfig {
-                type_visibility: raw_config.type_.map(convert_visibility),
-                function_visibility: raw_config.function.map(convert_visibility),
+                class: raw_config.class.map(convert_visibility),
+                interface: raw_config.interface.map(convert_visibility),
+                enum_: raw_config.enum_.map(convert_visibility),
+                record: raw_config.record.map(convert_visibility),
+                annotation: raw_config.annotation.map(convert_visibility),
+                method: raw_config.method.map(convert_visibility),
             };
             Ok(Rule::JavaDoc(JavaDocRule {
                 label: raw.label,
@@ -231,10 +249,35 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             }))
         }
         "no_kotlin_doc" => {
-            let raw_config = raw.kotlin_doc.unwrap_or_default();
+            let raw_config = raw
+                .kotlin_doc
+                .ok_or_else(|| anyhow!("Rule '{}': type 'no_kotlin_doc' requires 'kotlin_doc' config", raw.label))?;
+            if raw_config.class.is_none()
+                && raw_config.interface.is_none()
+                && raw_config.object.is_none()
+                && raw_config.enum_class.is_none()
+                && raw_config.sealed_class.is_none()
+                && raw_config.sealed_interface.is_none()
+                && raw_config.data_class.is_none()
+                && raw_config.value_class.is_none()
+                && raw_config.annotation_class.is_none()
+                && raw_config.typealias.is_none()
+                && raw_config.function.is_none()
+            {
+                return Err(anyhow!("Rule '{}': 'kotlin_doc' config requires at least one element", raw.label));
+            }
             let config = KotlinDocConfig {
-                type_visibility: raw_config.type_.map(convert_visibility),
-                function_visibility: raw_config.function.map(convert_visibility),
+                class: raw_config.class.map(convert_visibility),
+                interface: raw_config.interface.map(convert_visibility),
+                object: raw_config.object.map(convert_visibility),
+                enum_class: raw_config.enum_class.map(convert_visibility),
+                sealed_class: raw_config.sealed_class.map(convert_visibility),
+                sealed_interface: raw_config.sealed_interface.map(convert_visibility),
+                data_class: raw_config.data_class.map(convert_visibility),
+                value_class: raw_config.value_class.map(convert_visibility),
+                annotation_class: raw_config.annotation_class.map(convert_visibility),
+                typealias: raw_config.typealias.map(convert_visibility),
+                function: raw_config.function.map(convert_visibility),
             };
             Ok(Rule::KotlinDoc(KotlinDocRule {
                 label: raw.label,
@@ -245,10 +288,29 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             }))
         }
         "no_rust_doc" => {
-            let raw_config = raw.rust_doc.unwrap_or_default();
+            let raw_config = raw
+                .rust_doc
+                .ok_or_else(|| anyhow!("Rule '{}': type 'no_rust_doc' requires 'rust_doc' config", raw.label))?;
+            if raw_config.struct_.is_none()
+                && raw_config.enum_.is_none()
+                && raw_config.trait_.is_none()
+                && raw_config.type_alias.is_none()
+                && raw_config.union.is_none()
+                && raw_config.fn_.is_none()
+                && raw_config.macro_rules.is_none()
+                && raw_config.mod_.is_none()
+            {
+                return Err(anyhow!("Rule '{}': 'rust_doc' config requires at least one element", raw.label));
+            }
             let config = RustDocConfig {
-                type_visibility: raw_config.type_.map(convert_visibility),
-                function_visibility: raw_config.function.map(convert_visibility),
+                struct_: raw_config.struct_.map(convert_visibility),
+                enum_: raw_config.enum_.map(convert_visibility),
+                trait_: raw_config.trait_.map(convert_visibility),
+                type_alias: raw_config.type_alias.map(convert_visibility),
+                union: raw_config.union.map(convert_visibility),
+                fn_: raw_config.fn_.map(convert_visibility),
+                macro_rules: raw_config.macro_rules.map(convert_visibility),
+                mod_: raw_config.mod_.map(convert_visibility),
             };
             Ok(Rule::RustDoc(RustDocRule {
                 label: raw.label,

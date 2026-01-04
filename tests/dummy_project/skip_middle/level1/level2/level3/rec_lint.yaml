@@ -1,6 +1,6 @@
 deny:
   - label: no-raw-types
-    validator: regex
+    type: regex
     keywords:
       - "List[^<]"
       - "Map[^<]"

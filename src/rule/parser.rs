@@ -38,25 +38,47 @@ pub enum Visibility {
 /// Config for no_java_doc validator
 #[derive(Clone, Debug, Deserialize, Default)]
 pub struct RawJavaDocConfig {
-    #[serde(rename = "type")]
-    pub type_: Option<Visibility>,
-    pub function: Option<Visibility>,
+    pub class: Option<Visibility>,
+    pub interface: Option<Visibility>,
+    #[serde(rename = "enum")]
+    pub enum_: Option<Visibility>,
+    pub record: Option<Visibility>,
+    pub annotation: Option<Visibility>,
+    pub method: Option<Visibility>,
 }
 
 /// Config for no_kotlin_doc validator
 #[derive(Clone, Debug, Deserialize, Default)]
 pub struct RawKotlinDocConfig {
-    #[serde(rename = "type")]
-    pub type_: Option<Visibility>,
+    pub class: Option<Visibility>,
+    pub interface: Option<Visibility>,
+    pub object: Option<Visibility>,
+    pub enum_class: Option<Visibility>,
+    pub sealed_class: Option<Visibility>,
+    pub sealed_interface: Option<Visibility>,
+    pub data_class: Option<Visibility>,
+    pub value_class: Option<Visibility>,
+    pub annotation_class: Option<Visibility>,
+    pub typealias: Option<Visibility>,
     pub function: Option<Visibility>,
 }
 
 /// Config for no_rust_doc validator
 #[derive(Clone, Debug, Deserialize, Default)]
 pub struct RawRustDocConfig {
-    #[serde(rename = "type")]
-    pub type_: Option<Visibility>,
-    pub function: Option<Visibility>,
+    #[serde(rename = "struct")]
+    pub struct_: Option<Visibility>,
+    #[serde(rename = "enum")]
+    pub enum_: Option<Visibility>,
+    #[serde(rename = "trait")]
+    pub trait_: Option<Visibility>,
+    pub type_alias: Option<Visibility>,
+    pub union: Option<Visibility>,
+    #[serde(rename = "fn")]
+    pub fn_: Option<Visibility>,
+    pub macro_rules: Option<Visibility>,
+    #[serde(rename = "mod")]
+    pub mod_: Option<Visibility>,
 }
 
 // =============================================================================
@@ -309,15 +331,23 @@ deny:
     type: no_java_doc
     message: Missing JavaDoc
     java_doc:
-      type: public
-      function: public
+      class: public
+      interface: public
+      enum: all
+      record: public
+      annotation: public
+      method: public
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
         assert_eq!(rule.type_, "no_java_doc");
         let doc = rule.java_doc.as_ref().unwrap();
-        assert_eq!(doc.type_, Some(Visibility::Public));
-        assert_eq!(doc.function, Some(Visibility::Public));
+        assert_eq!(doc.class, Some(Visibility::Public));
+        assert_eq!(doc.interface, Some(Visibility::Public));
+        assert_eq!(doc.enum_, Some(Visibility::All));
+        assert_eq!(doc.record, Some(Visibility::Public));
+        assert_eq!(doc.annotation, Some(Visibility::Public));
+        assert_eq!(doc.method, Some(Visibility::Public));
     }
 
     #[test]
@@ -328,13 +358,13 @@ deny:
     type: no_java_doc
     message: Missing JavaDoc
     java_doc:
-      type: all
+      class: all
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
         let doc = rule.java_doc.as_ref().unwrap();
-        assert_eq!(doc.type_, Some(Visibility::All));
-        assert!(doc.function.is_none());
+        assert_eq!(doc.class, Some(Visibility::All));
+        assert!(doc.method.is_none());
     }
 
     #[test]
@@ -345,14 +375,32 @@ deny:
     type: no_kotlin_doc
     message: Missing KDoc
     kotlin_doc:
-      type: public
+      class: public
+      interface: public
+      object: all
+      enum_class: public
+      sealed_class: public
+      sealed_interface: public
+      data_class: public
+      value_class: public
+      annotation_class: public
+      typealias: all
       function: all
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
         assert_eq!(rule.type_, "no_kotlin_doc");
         let doc = rule.kotlin_doc.as_ref().unwrap();
-        assert_eq!(doc.type_, Some(Visibility::Public));
+        assert_eq!(doc.class, Some(Visibility::Public));
+        assert_eq!(doc.interface, Some(Visibility::Public));
+        assert_eq!(doc.object, Some(Visibility::All));
+        assert_eq!(doc.enum_class, Some(Visibility::Public));
+        assert_eq!(doc.sealed_class, Some(Visibility::Public));
+        assert_eq!(doc.sealed_interface, Some(Visibility::Public));
+        assert_eq!(doc.data_class, Some(Visibility::Public));
+        assert_eq!(doc.value_class, Some(Visibility::Public));
+        assert_eq!(doc.annotation_class, Some(Visibility::Public));
+        assert_eq!(doc.typealias, Some(Visibility::All));
         assert_eq!(doc.function, Some(Visibility::All));
     }
 
@@ -364,15 +412,27 @@ deny:
     type: no_rust_doc
     message: Missing RustDoc
     rust_doc:
-      type: public
-      function: all
+      struct: public
+      enum: public
+      trait: public
+      type_alias: public
+      union: public
+      fn: all
+      macro_rules: public
+      mod: all
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.deny.unwrap()[0];
         assert_eq!(rule.type_, "no_rust_doc");
         let doc = rule.rust_doc.as_ref().unwrap();
-        assert_eq!(doc.type_, Some(Visibility::Public));
-        assert_eq!(doc.function, Some(Visibility::All));
+        assert_eq!(doc.struct_, Some(Visibility::Public));
+        assert_eq!(doc.enum_, Some(Visibility::Public));
+        assert_eq!(doc.trait_, Some(Visibility::Public));
+        assert_eq!(doc.type_alias, Some(Visibility::Public));
+        assert_eq!(doc.union, Some(Visibility::Public));
+        assert_eq!(doc.fn_, Some(Visibility::All));
+        assert_eq!(doc.macro_rules, Some(Visibility::Public));
+        assert_eq!(doc.mod_, Some(Visibility::All));
     }
 
     // =========================================================================

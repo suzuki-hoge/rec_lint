@@ -26,11 +26,10 @@ fn ルートディレクトリでは親ルールのみ表示される() {
     let dir = dummy_project_path("nested");
     let result = rec_lint::commands::show::run(&dir).unwrap();
 
-    // required → deny → review の順, ルート定義なので @ なし
-    assert_eq!(result.len(), 3);
-    assert_eq!(result[0], "required: check-todo [ TODO: ]");
-    assert_eq!(result[1], "deny: no-legacy-date [ java.util.Date ]");
-    assert_eq!(result[2], "review: Review error handling");
+    // deny → review の順, ルート定義なので @ なし
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0], "deny: no-legacy-date [ java.util.Date ]");
+    assert_eq!(result[1], "review: Review error handling");
 }
 
 #[test]
@@ -38,14 +37,13 @@ fn サブディレクトリでは親と子のルールが順に表示される()
     let dir = dummy_project_path("nested/sub");
     let result = rec_lint::commands::show::run(&dir).unwrap();
 
-    // 順序: required → deny → review, 親 → 子
+    // 順序: deny → review, 親 → 子
     // ルート定義 = @ なし, sub 定義 = @ sub
-    assert_eq!(result.len(), 5);
-    assert_eq!(result[0], "required: check-todo [ TODO: ]");
-    assert_eq!(result[1], "deny: no-legacy-date [ java.util.Date ]");
-    assert_eq!(result[2], r"deny: no-wildcard-import [ import.*\*; ] @ sub");
-    assert_eq!(result[3], "review: Review error handling");
-    assert_eq!(result[4], "review: Check for code duplication @ sub");
+    assert_eq!(result.len(), 4);
+    assert_eq!(result[0], "deny: no-legacy-date [ java.util.Date ]");
+    assert_eq!(result[1], r"deny: no-wildcard-import [ import.*\*; ] @ sub");
+    assert_eq!(result[2], "review: Review error handling");
+    assert_eq!(result[3], "review: Check for code duplication @ sub");
 }
 
 // =============================================================================
