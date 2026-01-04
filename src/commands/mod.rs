@@ -80,5 +80,9 @@ Guideline items are informational reminders for code reviewers.")]
         /// Target directory (default: current directory)
         #[arg(value_name = "DIR", default_value = ".")]
         dir: PathBuf,
+
+        /// Create as root configuration (also creates .rec_lint_config.yaml)
+        #[arg(long)]
+        root: bool,
     },
 }
