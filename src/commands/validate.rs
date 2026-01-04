@@ -8,7 +8,7 @@ use rayon::prelude::*;
 use walkdir::WalkDir;
 
 use crate::commands::SortMode;
-use crate::rule::{collect_rules, CollectedRules, CommentSource, Rule};
+use crate::rule::{collect_rules, CollectedRules, CommentSource, RootConfig, Rule};
 use crate::validate::comment::{self, CommentViolation};
 use crate::validate::doc::{self, DocViolation};
 use crate::validate::test::{self, TestViolation};
@@ -30,7 +30,9 @@ enum ViolationDetail {
 }
 
 pub fn run(paths: &[PathBuf], sort_mode: SortMode) -> Result<Vec<String>> {
-    let files = collect_files(paths);
+    // First, get root_config from the first path
+    let root_config = get_root_config_for_paths(paths);
+    let files = collect_files(paths, &root_config);
     if files.is_empty() {
         return Ok(Vec::new());
     }
@@ -59,22 +61,55 @@ pub fn run(paths: &[PathBuf], sort_mode: SortMode) -> Result<Vec<String>> {
     Ok(output)
 }
 
-fn collect_files(paths: &[PathBuf]) -> Vec<PathBuf> {
+/// Get root config for the given paths (uses the first path's root config)
+fn get_root_config_for_paths(paths: &[PathBuf]) -> RootConfig {
+    for path in paths {
+        let dir = if path.is_file() { path.parent().unwrap_or(path) } else { path.as_path() };
+        if let Ok(rules) = collect_rules(dir) {
+            return rules.root_config;
+        }
+    }
+    RootConfig::default()
+}
+
+fn collect_files(paths: &[PathBuf], root_config: &RootConfig) -> Vec<PathBuf> {
     let mut files = Vec::new();
     for path in paths {
         if path.is_file() {
-            if !is_config_file(path) {
+            if !is_config_file(path) && should_include_file(path, root_config) {
                 files.push(path.clone());
             }
         } else if path.is_dir() {
-            for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
-                if entry.file_type().is_file() && !is_config_file(entry.path()) {
+            let walker = WalkDir::new(path).into_iter().filter_entry(|e| {
+                // Skip excluded directories
+                if e.file_type().is_dir() {
+                    if let Some(name) = e.file_name().to_str() {
+                        // Always exclude .git directory
+                        if name == ".git" {
+                            return false;
+                        }
+                        if root_config.should_exclude_dir(std::ffi::OsStr::new(name)) {
+                            return false;
+                        }
+                    }
+                }
+                true
+            });
+            for entry in walker.filter_map(|e| e.ok()) {
+                if entry.file_type().is_file()
+                    && !is_config_file(entry.path())
+                    && should_include_file(entry.path(), root_config)
+                {
                     files.push(entry.into_path());
                 }
             }
         }
     }
     files
+}
+
+fn should_include_file(path: &Path, root_config: &RootConfig) -> bool {
+    root_config.should_include_extension(path.extension())
 }
 
 fn is_config_file(path: &Path) -> bool {

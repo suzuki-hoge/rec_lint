@@ -1,5 +1,6 @@
+pub mod add;
 pub mod guideline;
-pub mod new;
+pub mod init;
 pub mod show;
 pub mod validate;
 pub mod version;
@@ -75,14 +76,17 @@ Guideline items are informational reminders for code reviewers.")]
     /// Show version
     Version,
 
-    /// Create a new .rec_lint.yaml file
-    New {
+    /// Initialize a new project (create .rec_lint_config.yaml)
+    Init {
         /// Target directory (default: current directory)
         #[arg(value_name = "DIR", default_value = ".")]
         dir: PathBuf,
+    },
 
-        /// Create as root configuration (also creates .rec_lint_config.yaml)
-        #[arg(long)]
-        root: bool,
+    /// Add a new .rec_lint.yaml file
+    Add {
+        /// Target directory (default: current directory)
+        #[arg(value_name = "DIR", default_value = ".")]
+        dir: PathBuf,
     },
 }

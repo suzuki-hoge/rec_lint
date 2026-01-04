@@ -1,0 +1,7 @@
+include_extensions:
+  - .java
+  - .kt
+
+exclude_dirs:
+  - target
+  - node_modules

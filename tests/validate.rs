@@ -146,3 +146,39 @@ fn 複数パスを指定するとファイルでソートされる() {
     assert_eq!(result[1], "sub/Sub.java:1:1: Avoid wildcard imports");
     assert_eq!(result[2], "sub/Sub.java:5:9: Use LocalDate instead");
 }
+
+// =============================================================================
+// filtered: 拡張子フィルタリングと除外ディレクトリ
+// =============================================================================
+
+#[test]
+fn 指定した拡張子のファイルのみが検証される() {
+    let dir = dummy_project_path("filtered");
+    let result = rec_lint::commands::validate::run(&[dir], SortMode::File).unwrap();
+
+    // .java と .kt は検証されるが、.py は検証されない
+    // また、target/ と node_modules/ 内のファイルも除外される
+    assert_eq!(result.len(), 2);
+    assert!(result.iter().any(|r| r.contains("Main.java")));
+    assert!(result.iter().any(|r| r.contains("Main.kt")));
+    // 除外されていることを確認
+    assert!(!result.iter().any(|r| r.contains("script.py")));
+    assert!(!result.iter().any(|r| r.contains("target")));
+    assert!(!result.iter().any(|r| r.contains("node_modules")));
+}
+
+// =============================================================================
+// extension_priority: include_extensions はルールの match より優先される
+// =============================================================================
+
+#[test]
+fn ルールでktを指定してもinclude_extensionsにないため対象外になる() {
+    let dir = dummy_project_path("extension_priority");
+    let result = rec_lint::commands::validate::run(&[dir], SortMode::File).unwrap();
+
+    // include_extensions: [.java] なので、
+    // ルールで file_ends_with: .kt を指定しても .kt ファイルは対象にならない
+    assert_eq!(result.len(), 0);
+    // .kt ファイルにTODOがあるが、include_extensions で除外されているため違反なし
+    assert!(!result.iter().any(|r| r.contains("Main.kt")));
+}

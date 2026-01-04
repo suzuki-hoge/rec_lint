@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/suzuki-hoge/rec_lint/main/schema/rec_lint_config.schema.json",
+  "title": ".rec_lint_config.yaml ドキュメント",
+  "description": "rec_lint のルート設定ファイル",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "include_extensions": {
+      "x-property-order": 0,
+      "description": "検証対象とする拡張子のリスト（未指定の場合は全ての拡張子が対象, これより下位の設定で include しても、これ以外は対象にならない）",
+      "x-doc-description": "検証対象とする拡張子のリスト<br>ドット付きで指定<br>未指定の場合は全ての拡張子が対象<br>これより下位の設定で include しても、これ以外は対象にならない",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [".java", ".kt", ".rs"]
+      ]
+    },
+    "exclude_dirs": {
+      "x-property-order": 1,
+      "description": "検証対象から除外するディレクトリ名（完全一致, .git は標準で除外）",
+      "x-doc-description": "検証対象から除外するディレクトリ名",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        ["node_modules", "build"]
+      ]
+    }
+  }
+}

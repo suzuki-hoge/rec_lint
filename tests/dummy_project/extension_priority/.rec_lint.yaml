@@ -1,0 +1,9 @@
+rule:
+  - label: Forbidden TODO in Kotlin
+    type: forbidden_texts
+    keywords: [TODO]
+    message: Do not leave TODO in Kotlin
+    match:
+      - pattern: file_ends_with
+        keywords: [.kt]
+        cond: or

@@ -1,7 +1,9 @@
 mod collector;
 pub mod parser;
+pub mod root_config;
 
 pub use collector::{collect_rules, CollectedRules};
+pub use root_config::RootConfig;
 
 use anyhow::{anyhow, Result};
 use regex::Regex;

@@ -1,0 +1,5 @@
+rule:
+  - label: Forbidden TODO
+    type: forbidden_texts
+    keywords: [TODO]
+    message: Do not leave TODO comments

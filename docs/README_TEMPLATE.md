@@ -10,31 +10,28 @@
 $ cargo install --path .
 ```
 
-ルート設定と設定ファイルを作成
+ルート設定ファイルを作成（プロジェクトルートで実行）
 
 ```
-$ rec_lint new --root
+$ rec_lint init
 ```
 
-下位ディレクトリに設定ファイルを作成
+ルールファイルを作成
 
 ```
-$ cd sub-dir
-$ rec_lint new
+$ rec_lint add
 ```
 
-もしくは
+または
 
 ```
-$ rec_lint new sub-dir
+$ rec_lint add sub-dir
 ```
 
 ## 設定ファイル
 
-- `.rec_lint_config.yaml` - ルートディレクトリに配置
-- `.rec_lint.yaml` - 各ディレクトリに配置
-
-`.rec_lint.yaml` のスキーマ定義: [docs/rec_lint.schema.md](docs/rec_lint.schema.md)
+- [.rec_lint_config.yaml](docs/rec_lint_config.schema.md) - ルートディレクトリに配置（プロジェクト全体の設定）
+- [.rec_lint.yaml](docs/rec_lint.schema.md) - 各ディレクトリに配置（ルール定義）
 
 ## 設定例
 
@@ -107,26 +104,26 @@ $ rec_lint guideline src/main/java/db
 
 ### 開発フローの中でフックして自動的にコードを改善する
 
-コミットフローや AI Agent への指示に `rec_lint validate <PATH>` を入れておけば、気付かぬうちに意図しない設計のままコードが量産されるのを回避できます
+コミットフローや AI Agent への指示に `rec_lint validate <PATH>` を入れておけば、気付かぬうちに意図しない設計のままコードが量産されるのを回避できる
 
-`rec_lint show <DIR>` は人間と AI Agent と問わず実装の指針として参考にできます
+`rec_lint show <DIR>` は人間 / AI Agent を問わず実装の指針として参考にできる
 
-`rec_lint guideline <DIR>` は人間が実装の指針にできるほか、自動検証するのが難しい内容を AI Agent にセルフレビューさせるなどの応用が可能です
+`rec_lint guideline <DIR>` は人間が実装の指針にできるほか、自動検証するのが難しい内容を AI Agent にセルフレビューさせるなどの応用が可能
 
-すべての設定において `message` を自由に設定できるため、メッセージ自体を AI Agent への次のプロンプトにすることで自動的な改善サイクルを構築できます
+すべての設定において `message` を自由に設定できるため、メッセージ自体を AI Agent への次のプロンプトにすることで自動的な改善サイクルを構築できる
 
 ### validate --sort の活用
 
-`rec_lint validate` は `--sort <rule|file>` でエラーメッセージの出力順を指定できます
+`rec_lint validate` は `--sort <rule|file>` でエラーメッセージの出力順を指定できる
 
-`--sort rule` は特定ルールごとに修正したい場合に向いています
+`--sort rule` は特定ルールごとに修正したい場合に向いている
 
 ```
 $ rec_lint validate --sort rule src/main/java
 {{exec: cargo run --quiet -- validate -s rule docs/sample/src/main/java}}
 ```
 
-`--sort file` は特定ファイルを修正したい場合に向いています
+`--sort file` は特定ファイルを修正したい場合に向いている
 
 ```
 $ rec_lint validate --sort file src/main/java
@@ -135,10 +132,18 @@ $ rec_lint validate --sort file src/main/java
 
 ### Yaml Language Server の利用
 
-`.rec_lint.yaml` の冒頭に `rec_lint.schema.json` を指定すると YAML の読み書き時にスキーマ情報と説明が得られます
+設定ファイルの冒頭にスキーマを指定すると YAML の読み書き時にスキーマ情報と説明が得られる
+
+`.rec_lint_config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.1/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.3/schema/rec_lint_config.schema.json
+```
+
+`.rec_lint.yaml`:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.3/schema/rec_lint.schema.json
 ```
 
 - Idea 系エディタ: 標準サポート
@@ -146,10 +151,6 @@ $ rec_lint validate --sort file src/main/java
 
 ### type: custom の利用
 
-プリセットの `type: forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `type: custom` を活用してください
+プリセットの `type: forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `type: custom` で rec_lint 処理フロー中から任意のコマンドを実行できる
 
-rec_lint の処理フロー中から任意のコマンドを実行できます
-
-自作スクリプトや任意の Docker コンテナを実行できます
-
-詳細は [docs/rec_lint.schema.md](docs/rec_lint.schema.md) を参照してください
+詳細は [docs/rec_lint.schema.md](docs/rec_lint.schema.md) を参照

@@ -7,26 +7,37 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
-const INPUT: &str = "schema/rec_lint.schema.json";
 const OUTPUT_DIR: &str = "docs";
+
+struct SchemaFile {
+    input: &'static str,
+    output: &'static str,
+}
+
+const SCHEMAS: &[SchemaFile] = &[
+    SchemaFile { input: "schema/rec_lint.schema.json", output: "rec_lint.schema.md" },
+    SchemaFile { input: "schema/rec_lint_config.schema.json", output: "rec_lint_config.schema.md" },
+];
 
 fn main() -> Result<()> {
     let repo_root = get_repo_root()?;
-    let input_path = repo_root.join(INPUT);
     let output_dir = repo_root.join(OUTPUT_DIR);
-
-    let json_str = fs::read_to_string(&input_path).context("Failed to read schema file")?;
-    let schema: Value = serde_json::from_str(&json_str).context("Failed to parse JSON")?;
-
-    Validator::new(&schema).context("Invalid JSON Schema")?;
-    println!("Validated: {}", input_path.display());
-
-    let md = render_schema(&schema);
-
     fs::create_dir_all(&output_dir)?;
-    let output_path = output_dir.join("rec_lint.schema.md");
-    fs::write(&output_path, &md)?;
-    println!("Generated: {}", output_path.display());
+
+    for schema_file in SCHEMAS {
+        let input_path = repo_root.join(schema_file.input);
+        let json_str = fs::read_to_string(&input_path).context("Failed to read schema file")?;
+        let schema: Value = serde_json::from_str(&json_str).context("Failed to parse JSON")?;
+
+        Validator::new(&schema).context("Invalid JSON Schema")?;
+        println!("Validated: {}", input_path.display());
+
+        let md = render_schema(&schema);
+
+        let output_path = output_dir.join(schema_file.output);
+        fs::write(&output_path, &md)?;
+        println!("Generated: {}", output_path.display());
+    }
 
     Ok(())
 }
