@@ -7,13 +7,13 @@ use common::dummy_project_path;
 // =============================================================================
 
 #[test]
-fn ルート直下のレビュー項目のみが表示される() {
+fn ルート直下のガイドライン項目のみが表示される() {
     let dir = dummy_project_path("simple");
-    let result = rec_lint::commands::review::run(&dir).unwrap();
+    let result = rec_lint::commands::guideline::run(&dir).unwrap();
 
     // ルート定義なので @ なし
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0], "review: Check logging configuration");
+    assert_eq!(result[0], "guideline: Check logging configuration");
 }
 
 // =============================================================================
@@ -21,14 +21,14 @@ fn ルート直下のレビュー項目のみが表示される() {
 // =============================================================================
 
 #[test]
-fn サブディレクトリでは親と子のレビュー項目が順に表示される() {
+fn サブディレクトリでは親と子のガイドライン項目が順に表示される() {
     let dir = dummy_project_path("nested/sub");
-    let result = rec_lint::commands::review::run(&dir).unwrap();
+    let result = rec_lint::commands::guideline::run(&dir).unwrap();
 
     // 親 → 子の順, ルート = @ なし, sub = @ sub
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "review: Review error handling");
-    assert_eq!(result[1], "review: Check for code duplication @ sub");
+    assert_eq!(result[0], "guideline: Review error handling");
+    assert_eq!(result[1], "guideline: Check for code duplication @ sub");
 }
 
 // =============================================================================
@@ -36,14 +36,14 @@ fn サブディレクトリでは親と子のレビュー項目が順に表示�
 // =============================================================================
 
 #[test]
-fn 深い階層でもレビュー項目は継承され相対パスで表示される() {
+fn 深い階層でもガイドライン項目は継承され相対パスで表示される() {
     let dir = dummy_project_path("skip_middle/level1/level2/level3");
-    let result = rec_lint::commands::review::run(&dir).unwrap();
+    let result = rec_lint::commands::guideline::run(&dir).unwrap();
 
     // 親 → 子の順
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "review: Check exception handling");
-    assert_eq!(result[1], "review: Check null safety @ level1/level2/level3");
+    assert_eq!(result[0], "guideline: Check exception handling");
+    assert_eq!(result[1], "guideline: Check null safety @ level1/level2/level3");
 }
 
 // =============================================================================
@@ -51,11 +51,11 @@ fn 深い階層でもレビュー項目は継承され相対パスで表示さ�
 // =============================================================================
 
 #[test]
-fn 深い階層でもルートのレビュー項目のみ表示される() {
+fn 深い階層でもルートのガイドライン項目のみ表示される() {
     let dir = dummy_project_path("deep_inherit/a/b/c");
-    let result = rec_lint::commands::review::run(&dir).unwrap();
+    let result = rec_lint::commands::guideline::run(&dir).unwrap();
 
     // ルート定義なので @ なし
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0], "review: Check API compatibility");
+    assert_eq!(result[0], "guideline: Check API compatibility");
 }

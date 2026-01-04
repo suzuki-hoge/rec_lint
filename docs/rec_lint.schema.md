@@ -4,12 +4,12 @@
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| deny | [rule](#rule)[] | - | 特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>review: 表示されない |
-| review | [reviewItem](#reviewitem)[] | - | レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>review: 表示される |
+| rule | [ruleItem](#ruleitem)[] | - | 特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>guideline: 表示されない |
+| guideline | [guidelineItem](#guidelineitem)[] | - | レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>guideline: 表示される |
 
-## Rule
+## RuleItem
 
-deny に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: text<br>- type: regex<br>- type: custom<br>- type: no_java_doc<br>- type: no_kotlin_doc<br>- type: no_rust_doc<br>- type: no_japanese_comment<br>- type: no_english_comment
+rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: text<br>- type: regex<br>- type: custom<br>- type: no_java_doc<br>- type: no_kotlin_doc<br>- type: no_rust_doc<br>- type: no_japanese_comment<br>- type: no_english_comment
 
 ### TextRule
 
@@ -123,13 +123,13 @@ rustdoc がないファイルを検出する
 | exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
 | exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
 
-## ReviewItem
+## GuidelineItem
 
-review に列挙するレビューガイドラインの定義
+guideline に列挙するレビューガイドラインの定義
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| message | string | o | review で表示するメッセージ |
+| message | string | o | guideline で表示するメッセージ |
 | include_exts | string[] | - | 検査する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
 | exclude_exts | string[] | - | 除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
 

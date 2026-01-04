@@ -8,13 +8,13 @@ pub fn run(dir: &Path) -> Result<Vec<String>> {
     let rules = collect_rules(dir)?;
     let mut output = Vec::new();
 
-    for (rule, source_dir) in &rules.deny {
-        output.push(format_rule("deny", rule, source_dir, &rules));
+    for (rule, source_dir) in &rules.rule {
+        output.push(format_rule("rule", rule, source_dir, &rules));
     }
 
-    for (item, source_dir) in &rules.review {
+    for (item, source_dir) in &rules.guideline {
         let message = &item.message;
-        output.push(format_with_source("review", message, source_dir, &rules));
+        output.push(format_with_source("guideline", message, source_dir, &rules));
     }
 
     Ok(output)

@@ -5,20 +5,20 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "deny": {
+    "rule": {
       "x-property-order": 0,
-      "description": "特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>review: 表示されない",
+      "description": "特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>guideline: 表示されない",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/rule"
+        "$ref": "#/definitions/ruleItem"
       }
     },
-    "review": {
+    "guideline": {
       "x-property-order": 1,
-      "description": "レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>review: 表示される",
+      "description": "レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>guideline: 表示される",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/reviewItem"
+        "$ref": "#/definitions/guidelineItem"
       }
     }
   },
@@ -76,10 +76,10 @@
         }
       }
     },
-    "rule": {
+    "ruleItem": {
       "x-doc-order": 1,
-      "title": "Rule",
-      "description": "deny に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: text<br>- type: regex<br>- type: custom<br>- type: no_java_doc<br>- type: no_kotlin_doc<br>- type: no_rust_doc<br>- type: no_japanese_comment<br>- type: no_english_comment",
+      "title": "RuleItem",
+      "description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: text<br>- type: regex<br>- type: custom<br>- type: no_java_doc<br>- type: no_kotlin_doc<br>- type: no_rust_doc<br>- type: no_japanese_comment<br>- type: no_english_comment",
       "oneOf": [
         {
           "title": "TextRule",
@@ -317,10 +317,10 @@
         }
       ]
     },
-    "reviewItem": {
+    "guidelineItem": {
       "x-doc-order": 2,
-      "title": "ReviewItem",
-      "description": "review に列挙するレビューガイドラインの定義",
+      "title": "GuidelineItem",
+      "description": "guideline に列挙するレビューガイドラインの定義",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -329,7 +329,7 @@
       "properties": {
         "message": {
           "x-property-order": 0,
-          "description": "review で表示するメッセージ",
+          "description": "guideline で表示するメッセージ",
           "type": "string"
         },
         "include_exts": {

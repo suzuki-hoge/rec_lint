@@ -1,4 +1,4 @@
-pub mod review;
+pub mod guideline;
 pub mod show;
 pub mod validate;
 
@@ -34,9 +34,8 @@ pub enum Commands {
     #[command(long_about = "Display all effective rules for the specified directory.\n\n\
 Rules are collected from rec_lint.yaml files starting from the root (with 'root: true')\n\
 down to the target directory. Output format:\n\n\
-  required: <label> [keywords] @ <source_dir>\n\
-  deny: <label> [keywords] @ <source_dir>\n\
-  review: <message> @ <source_dir>")]
+  rule: <label> [keywords] @ <source_dir>\n\
+  guideline: <message> @ <source_dir>")]
     Show {
         /// Target directory to show rules for
         #[arg(value_name = "DIR")]
@@ -44,7 +43,7 @@ down to the target directory. Output format:\n\n\
     },
 
     /// Validate files against rules
-    #[command(long_about = "Validate files against required and deny rules.\n\n\
+    #[command(long_about = "Validate files against rules.\n\n\
 For directories, all files are recursively validated.\n\
 Multiple paths can be specified.\n\n\
 Validators:\n\
@@ -61,11 +60,11 @@ Validators:\n\
         sort: SortMode,
     },
 
-    /// Show review points for a directory
-    #[command(long_about = "Display review checklist items for the specified directory.\n\n\
-Review items are informational reminders for code reviewers.")]
-    Review {
-        /// Target directory to show review points for
+    /// Show guideline points for a directory
+    #[command(long_about = "Display guideline checklist items for the specified directory.\n\n\
+Guideline items are informational reminders for code reviewers.")]
+    Guideline {
+        /// Target directory to show guideline points for
         #[arg(value_name = "DIR")]
         dir: PathBuf,
     },

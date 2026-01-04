@@ -10,7 +10,7 @@ fn main() -> Result<()> {
     let output = match cli.command {
         Commands::Show { dir } => commands::show::run(&dir)?,
         Commands::Validate { paths, sort } => commands::validate::run(&paths, sort)?,
-        Commands::Review { dir } => commands::review::run(&dir)?,
+        Commands::Guideline { dir } => commands::guideline::run(&dir)?,
     };
 
     for line in output {

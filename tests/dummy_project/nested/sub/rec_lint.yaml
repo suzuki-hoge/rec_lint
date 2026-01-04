@@ -1,4 +1,4 @@
-deny:
+rule:
   - label: no-wildcard-import
     type: regex
     keywords:
@@ -6,5 +6,5 @@ deny:
     message: Avoid wildcard imports
     include_exts: [.java]
 
-review:
+guideline:
   - message: Check for code duplication

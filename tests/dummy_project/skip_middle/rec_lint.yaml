@@ -1,4 +1,4 @@
-deny:
+rule:
   - label: no-system-exit
     type: text
     keywords:
@@ -6,5 +6,5 @@ deny:
     message: Do not use System.exit
     include_exts: [.java]
 
-review:
+guideline:
   - message: Check exception handling

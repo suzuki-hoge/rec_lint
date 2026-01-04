@@ -1,4 +1,4 @@
-deny:
+rule:
   - label: no-deprecated
     type: regex
     keywords:
@@ -6,5 +6,5 @@ deny:
     message: Remove deprecated code
     include_exts: [.java]
 
-review:
+guideline:
   - message: Check API compatibility

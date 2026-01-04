@@ -3,15 +3,15 @@ use std::path::{Path, PathBuf};
 use anyhow::{anyhow, Result};
 
 use super::parser::RawConfig;
-use super::{Config, ReviewItem, Rule};
+use super::{Config, GuidelineItem, Rule};
 
 const CONFIG_FILENAME: &str = "rec_lint.yaml";
 const ROOT_CONFIG_FILENAME: &str = "rec_lint_config.yaml";
 
 pub struct CollectedRules {
     pub root_dir: PathBuf,
-    pub deny: Vec<(Rule, PathBuf)>,
-    pub review: Vec<(ReviewItem, PathBuf)>,
+    pub rule: Vec<(Rule, PathBuf)>,
+    pub guideline: Vec<(GuidelineItem, PathBuf)>,
 }
 
 pub fn collect_rules(target_dir: &Path) -> Result<CollectedRules> {
@@ -44,13 +44,13 @@ pub fn collect_rules(target_dir: &Path) -> Result<CollectedRules> {
 
     configs.reverse();
 
-    let mut collected = CollectedRules { root_dir, deny: Vec::new(), review: Vec::new() };
+    let mut collected = CollectedRules { root_dir, rule: Vec::new(), guideline: Vec::new() };
     for (config, dir) in configs {
-        for rule in config.deny {
-            collected.deny.push((rule, dir.clone()));
+        for r in config.rule {
+            collected.rule.push((r, dir.clone()));
         }
-        for item in config.review {
-            collected.review.push((item, dir.clone()));
+        for item in config.guideline {
+            collected.guideline.push((item, dir.clone()));
         }
     }
 

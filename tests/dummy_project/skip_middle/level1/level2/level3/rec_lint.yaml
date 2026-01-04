@@ -1,4 +1,4 @@
-deny:
+rule:
   - label: no-raw-types
     type: regex
     keywords:
@@ -7,5 +7,5 @@ deny:
     message: Use generic types instead of raw types
     include_exts: [.java]
 
-review:
+guideline:
   - message: Check null safety

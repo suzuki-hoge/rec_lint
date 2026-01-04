@@ -9,7 +9,7 @@ use regex::Regex;
 use crate::filter::{ExcludeFilter, ExtFilter};
 use crate::validate::comment::custom::{BlockSyntax, CustomCommentSyntax};
 use crate::validate::doc::{JavaDocConfig, KotlinDocConfig, RustDocConfig};
-use parser::{CommentLang, RawConfig, RawReviewItem, RawRule, Visibility};
+use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, Visibility};
 
 #[derive(Clone, Debug)]
 pub enum Rule {
@@ -149,7 +149,7 @@ pub struct CommentRule {
 }
 
 #[derive(Clone, Debug)]
-pub struct ReviewItem {
+pub struct GuidelineItem {
     pub message: String,
     #[allow(dead_code)]
     pub ext_filter: ExtFilter,
@@ -157,19 +157,19 @@ pub struct ReviewItem {
 
 #[derive(Debug)]
 pub struct Config {
-    pub deny: Vec<Rule>,
-    pub review: Vec<ReviewItem>,
+    pub rule: Vec<Rule>,
+    pub guideline: Vec<GuidelineItem>,
 }
 
 impl TryFrom<RawConfig> for Config {
     type Error = anyhow::Error;
 
     fn try_from(raw: RawConfig) -> Result<Self> {
-        let deny = raw.deny.unwrap_or_default().into_iter().map(convert_rule).collect::<Result<Vec<_>>>()?;
+        let rule = raw.rule.unwrap_or_default().into_iter().map(convert_rule).collect::<Result<Vec<_>>>()?;
 
-        let review = raw.review.unwrap_or_default().into_iter().map(convert_review).collect::<Vec<_>>();
+        let guideline = raw.guideline.unwrap_or_default().into_iter().map(convert_guideline).collect::<Vec<_>>();
 
-        Ok(Config { deny, review })
+        Ok(Config { rule, guideline })
     }
 }
 
@@ -368,8 +368,8 @@ fn convert_comment_source(raw: &RawRule) -> Result<CommentSource> {
     }
 }
 
-fn convert_review(raw: RawReviewItem) -> ReviewItem {
-    ReviewItem {
+fn convert_guideline(raw: RawGuidelineItem) -> GuidelineItem {
+    GuidelineItem {
         message: raw.message,
         ext_filter: ExtFilter {
             include: raw.include_exts.unwrap_or_default(),
@@ -388,35 +388,35 @@ mod tests {
 
     #[test]
     fn test_convert_empty_config() {
-        let raw = RawConfig { deny: None, review: None };
+        let raw = RawConfig { rule: None, guideline: None };
         let config = Config::try_from(raw).unwrap();
-        assert!(config.deny.is_empty());
-        assert!(config.review.is_empty());
+        assert!(config.rule.is_empty());
+        assert!(config.guideline.is_empty());
     }
 
     #[test]
     fn test_convert_empty_vec_sections() {
-        let raw = RawConfig { deny: Some(vec![]), review: Some(vec![]) };
+        let raw = RawConfig { rule: Some(vec![]), guideline: Some(vec![]) };
         let config = Config::try_from(raw).unwrap();
-        assert!(config.deny.is_empty());
-        assert!(config.review.is_empty());
+        assert!(config.rule.is_empty());
+        assert!(config.guideline.is_empty());
     }
 
     #[test]
     fn test_convert_text_rule() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "test".to_string(),
                 type_: "text".to_string(),
                 keywords: Some(vec!["kw1".to_string(), "kw2".to_string()]),
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let config = Config::try_from(raw).unwrap();
-        assert_eq!(config.deny.len(), 1);
-        match &config.deny[0] {
+        assert_eq!(config.rule.len(), 1);
+        match &config.rule[0] {
             Rule::Text(r) => {
                 assert_eq!(r.label, "test");
                 assert_eq!(r.keywords, vec!["kw1", "kw2"]);
@@ -432,7 +432,7 @@ mod tests {
     #[test]
     fn test_convert_regex_rule() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "regex-test".to_string(),
                 type_: "regex".to_string(),
                 keywords: Some(vec!["pattern.*".to_string()]),
@@ -440,10 +440,10 @@ mod tests {
                 include_exts: Some(vec![".java".to_string()]),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let config = Config::try_from(raw).unwrap();
-        match &config.deny[0] {
+        match &config.rule[0] {
             Rule::Regex(r) => {
                 assert_eq!(r.label, "regex-test");
                 assert_eq!(r.patterns.len(), 1);
@@ -457,7 +457,7 @@ mod tests {
     #[test]
     fn test_convert_custom_rule() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "custom-test".to_string(),
                 type_: "custom".to_string(),
                 exec: Some("cmd {path}".to_string()),
@@ -465,10 +465,10 @@ mod tests {
                 exclude_exts: Some(vec![".txt".to_string()]),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let config = Config::try_from(raw).unwrap();
-        match &config.deny[0] {
+        match &config.rule[0] {
             Rule::Custom(r) => {
                 assert_eq!(r.label, "custom-test");
                 assert_eq!(r.exec, "cmd {path}");
@@ -479,24 +479,24 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_review_items() {
+    fn test_convert_guideline_items() {
         let raw = RawConfig {
-            deny: None,
-            review: Some(vec![
-                RawReviewItem { message: "review1".to_string(), include_exts: None, exclude_exts: None },
-                RawReviewItem {
-                    message: "review2".to_string(),
+            rule: None,
+            guideline: Some(vec![
+                RawGuidelineItem { message: "guideline1".to_string(), include_exts: None, exclude_exts: None },
+                RawGuidelineItem {
+                    message: "guideline2".to_string(),
                     include_exts: Some(vec![".java".to_string()]),
                     exclude_exts: Some(vec![".test.java".to_string()]),
                 },
             ]),
         };
         let config = Config::try_from(raw).unwrap();
-        assert_eq!(config.review.len(), 2);
-        assert_eq!(config.review[0].message, "review1");
-        assert!(config.review[0].ext_filter.include.is_empty());
-        assert_eq!(config.review[1].message, "review2");
-        assert_eq!(config.review[1].ext_filter.include, vec![".java"]);
+        assert_eq!(config.guideline.len(), 2);
+        assert_eq!(config.guideline[0].message, "guideline1");
+        assert!(config.guideline[0].ext_filter.include.is_empty());
+        assert_eq!(config.guideline[1].message, "guideline2");
+        assert_eq!(config.guideline[1].ext_filter.include, vec![".java"]);
     }
 
     // =========================================================================
@@ -506,13 +506,13 @@ mod tests {
     #[test]
     fn test_error_text_without_keywords() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 type_: "text".to_string(),
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
         assert!(err.to_string().contains("'text' requires 'keywords'"));
@@ -521,7 +521,7 @@ mod tests {
     #[test]
     fn test_error_text_with_exec() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 type_: "text".to_string(),
                 keywords: Some(vec!["kw".to_string()]),
@@ -529,7 +529,7 @@ mod tests {
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
         assert!(err.to_string().contains("'text' must not have 'exec'"));
@@ -538,13 +538,13 @@ mod tests {
     #[test]
     fn test_error_regex_without_keywords() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 type_: "regex".to_string(),
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
         assert!(err.to_string().contains("'regex' requires 'keywords'"));
@@ -553,7 +553,7 @@ mod tests {
     #[test]
     fn test_error_regex_with_exec() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 type_: "regex".to_string(),
                 keywords: Some(vec![".*".to_string()]),
@@ -561,7 +561,7 @@ mod tests {
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
         assert!(err.to_string().contains("'regex' must not have 'exec'"));
@@ -570,14 +570,14 @@ mod tests {
     #[test]
     fn test_error_regex_invalid_pattern() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 type_: "regex".to_string(),
                 keywords: Some(vec!["[invalid".to_string()]),
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
         assert!(err.to_string().contains("invalid regex"));
@@ -586,13 +586,13 @@ mod tests {
     #[test]
     fn test_error_custom_without_exec() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 type_: "custom".to_string(),
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
         assert!(err.to_string().contains("'custom' requires 'exec'"));
@@ -601,7 +601,7 @@ mod tests {
     #[test]
     fn test_error_custom_with_keywords() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 type_: "custom".to_string(),
                 keywords: Some(vec!["kw".to_string()]),
@@ -609,7 +609,7 @@ mod tests {
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
         assert!(err.to_string().contains("'custom' must not have 'keywords'"));
@@ -618,13 +618,13 @@ mod tests {
     #[test]
     fn test_error_unknown_type() {
         let raw = RawConfig {
-            deny: Some(vec![RawRule {
+            rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
                 type_: "unknown".to_string(),
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
-            review: None,
+            guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
         assert!(err.to_string().contains("unknown type 'unknown'"));

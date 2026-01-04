@@ -1,4 +1,4 @@
-deny:
+rule:
   - label: no-println
     type: text
     keywords:
@@ -6,5 +6,5 @@ deny:
     message: Use logger instead
     include_exts: [.java]
 
-review:
+guideline:
   - message: Check logging configuration
