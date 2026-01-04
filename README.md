@@ -28,7 +28,7 @@ cargo install --path .
 `src/main/java/.rec_lint.yaml`
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.1/schema/rec_lint.schema.json
 
 rule:
   - label: println の禁止
@@ -46,7 +46,7 @@ rule:
 `src/main/java/db/.rec_lint.yaml`
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.1/schema/rec_lint.schema.json
 
 rule:
   - label: http 処理の禁止
@@ -167,7 +167,7 @@ src/main/java/db/UserQuery.java:7:1: JavaDoc を記述すること (class UserQu
 `.rec_lint.yaml` の冒頭に `rec_lint.schema.json` を指定すると YAML の読み書き時にスキーマ情報と説明が得られます
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.1/schema/rec_lint.schema.json
 ```
 
 必要に応じて `heads/main` ではなく `heads/vx.x.x` のように利用中のバージョンに合わせて活用してください

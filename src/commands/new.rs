@@ -5,7 +5,7 @@ use anyhow::{bail, Result};
 
 const VERSION: &str = include_str!("../../.version");
 
-const TEMPLATE: &str = r#"# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/v{version}/schema/rec_lint.schema.json
+const TEMPLATE: &str = r#"# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v{version}/schema/rec_lint.schema.json
 
 rule:
 

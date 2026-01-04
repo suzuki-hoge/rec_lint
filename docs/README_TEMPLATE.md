@@ -7,7 +7,26 @@
 ## インストール
 
 ```
-cargo install --path .
+$ cargo install --path .
+```
+
+ルート設定と設定ファイルを作成
+
+```
+$ rec_lint new --root
+```
+
+下位ディレクトリに設定ファイルを作成
+
+```
+$ cd sub-dir
+$ rec_lint new
+```
+
+もしくは
+
+```
+$ rec_lint new sub-dir
 ```
 
 ## 設定ファイル
@@ -119,10 +138,8 @@ $ rec_lint validate --sort file src/main/java
 `.rec_lint.yaml` の冒頭に `rec_lint.schema.json` を指定すると YAML の読み書き時にスキーマ情報と説明が得られます
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.1/schema/rec_lint.schema.json
 ```
-
-必要に応じて `heads/main` ではなく `heads/vx.x.x` のように利用中のバージョンに合わせて活用してください
 
 - Idea 系エディタ: 標準サポート
 - VSCode: [YAML Language Support by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) を追加
