@@ -12,6 +12,7 @@ fn main() -> Result<()> {
         Commands::Validate { paths, sort } => commands::validate::run(&paths, sort)?,
         Commands::Guideline { dir } => commands::guideline::run(&dir)?,
         Commands::Version => commands::version::run()?,
+        Commands::New { dir } => commands::new::run(&dir)?,
     };
 
     for line in output {
