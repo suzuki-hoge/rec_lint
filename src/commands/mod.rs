@@ -1,6 +1,7 @@
 pub mod guideline;
 pub mod show;
 pub mod validate;
+pub mod version;
 
 use std::path::PathBuf;
 
@@ -69,4 +70,7 @@ Guideline items are informational reminders for code reviewers.")]
         #[arg(value_name = "DIR")]
         dir: PathBuf,
     },
+
+    /// Show version
+    Version,
 }
