@@ -57,7 +57,7 @@ fn render_schema(schema: &Value) -> String {
     if let Some(title) = schema.get("title").and_then(|v| v.as_str()) {
         writeln!(out, "# {}\n", title).unwrap();
     }
-    if let Some(desc) = schema.get("description").and_then(|v| v.as_str()) {
+    if let Some(desc) = get_doc_description(schema) {
         writeln!(out, "{}\n", desc).unwrap();
     }
 
@@ -98,7 +98,7 @@ fn render_definition(
 
     writeln!(out, "## {}\n", title).unwrap();
 
-    if let Some(desc) = def.get("description").and_then(|v| v.as_str()) {
+    if let Some(desc) = get_doc_description(def) {
         writeln!(out, "{}\n", desc).unwrap();
     }
 
@@ -135,7 +135,7 @@ fn render_one_of_variant(
     let title = variant.get("title").and_then(|v| v.as_str()).unwrap_or("Variant");
     writeln!(out, "### {}\n", title).unwrap();
 
-    if let Some(desc) = variant.get("description").and_then(|v| v.as_str()) {
+    if let Some(desc) = get_doc_description(variant) {
         writeln!(out, "{}\n", desc).unwrap();
     }
 
@@ -263,20 +263,21 @@ fn render_enum_table(out: &mut String, one_of: &[Value]) {
 
     for item in one_of {
         let const_val = item.get("const").and_then(|v| v.as_str()).unwrap_or("");
-        let desc = item
-            .get("description")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
+        let desc = get_doc_description(item).unwrap_or("");
         writeln!(out, "| `{}` | {} |", const_val, desc).unwrap();
     }
     writeln!(out).unwrap();
 }
 
-fn get_description_with_examples(prop: &Value) -> String {
-    let desc = prop
-        .get("description")
+/// Get description for documentation (prefers x-doc-description over description)
+fn get_doc_description(obj: &Value) -> Option<&str> {
+    obj.get("x-doc-description")
         .and_then(|v| v.as_str())
-        .unwrap_or("");
+        .or_else(|| obj.get("description").and_then(|v| v.as_str()))
+}
+
+fn get_description_with_examples(prop: &Value) -> String {
+    let desc = get_doc_description(prop).unwrap_or("");
 
     let example_str = prop
         .get("examples")

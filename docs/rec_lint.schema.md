@@ -21,7 +21,7 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 | keywords | string[] | o | validate で探す禁止キーワード |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ### RegexRule
 
@@ -33,7 +33,7 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 | keywords | string[] | o | validate で探す禁止キーワードの正規表現 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ### CustomRule
 
@@ -45,7 +45,7 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 | exec | string | o | ファイルに対して実行するコマンド<br>終了コード 0 の場合はエラーなし扱い<br>エラー時は実行コマンドの標準出力がエラーメッセージとして表示される<br>e.g. `ruby path/to/your/checker.rb {path}`<br>e.g. `docker run your:image {path}` |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ### NoJavaDocRule
 
@@ -54,10 +54,10 @@ JavaDoc がないファイルを検出する
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | type | `require_java_doc` | o |  |
-| java_doc | [javaDocConfig](#javadocconfig) | - |  |
+| java_doc | [javaDocConfig](#javadocconfig) | - | JavaDoc 検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ### NoKotlinDocRule
 
@@ -66,10 +66,10 @@ KDoc がないファイルを検出する
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | type | `require_kotlin_doc` | o |  |
-| kotlin_doc | [kotlinDocConfig](#kotlindocconfig) | - |  |
+| kotlin_doc | [kotlinDocConfig](#kotlindocconfig) | - | KDoc 検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ### NoRustDocRule
 
@@ -78,10 +78,10 @@ rustdoc がないファイルを検出する
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | type | `require_rust_doc` | o |  |
-| rust_doc | [rustDocConfig](#rustdocconfig) | - |  |
+| rust_doc | [rustDocConfig](#rustdocconfig) | - | rustdoc 検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ### NoJapaneseCommentRule
 
@@ -90,10 +90,10 @@ rustdoc がないファイルを検出する
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | type | `require_english_comment` | o |  |
-| comment | [commentConfig](#commentconfig) | o |  |
+| comment | [commentConfig](#commentconfig) | o | コメント構文設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ### NoEnglishCommentRule
 
@@ -102,10 +102,10 @@ rustdoc がないファイルを検出する
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | type | `require_japanese_comment` | o |  |
-| comment | [commentConfig](#commentconfig) | o |  |
+| comment | [commentConfig](#commentconfig) | o | コメント構文設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ## GuidelineItem
 
@@ -114,7 +114,7 @@ guideline に列挙するレビューガイドラインの定義
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | message | string | o | guideline で表示するメッセージ |
-| match | [matchItem](#matchitem)[] | - | 対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
+| match | [matchItem](#matchitem)[] | - | 対象とするファイルの条件<br>複数指定時は and で結合 |
 
 ## MatchItem
 
@@ -122,7 +122,7 @@ guideline に列挙するレビューガイドラインの定義
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| pattern | [matchPattern](#matchpattern) | o |  |
+| pattern | [matchPattern](#matchpattern) | o | マッチパターンの種類 |
 | keywords | string[] | o | マッチ対象のキーワード |
 | cond | [matchCond](#matchcond) | - | 省略時は and |
 

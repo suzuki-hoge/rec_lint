@@ -7,7 +7,8 @@
   "properties": {
     "rule": {
       "x-property-order": 0,
-      "description": "特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>guideline: 表示されない",
+      "description": "特定パターンを禁止するルール",
+      "x-doc-description": "特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>guideline: 表示されない",
       "type": "array",
       "items": {
         "$ref": "#/definitions/ruleItem"
@@ -15,7 +16,8 @@
     },
     "guideline": {
       "x-property-order": 1,
-      "description": "レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>guideline: 表示される",
+      "description": "レビューガイドライン",
+      "x-doc-description": "レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>guideline: 表示される",
       "type": "array",
       "items": {
         "$ref": "#/definitions/guidelineItem"
@@ -41,7 +43,8 @@
         },
         "match": {
           "x-property-order": 13,
-          "description": "show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合",
+          "description": "対象とするファイルの条件 (複数指定時は and で結合)",
+          "x-doc-description": "show と validation で対象とするファイルの条件<br>複数指定時は and で結合",
           "type": "array",
           "items": {
             "$ref": "#/definitions/matchItem"
@@ -52,7 +55,8 @@
     "ruleItem": {
       "x-doc-order": 1,
       "title": "RuleItem",
-      "description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment",
+      "description": "rule に列挙するルールの定義",
+      "x-doc-description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment",
       "oneOf": [
         {
           "title": "TextRule",
@@ -140,7 +144,8 @@
                 },
                 "exec": {
                   "x-property-order": 1,
-                  "description": "ファイルに対して実行するコマンド<br>終了コード 0 の場合はエラーなし扱い<br>エラー時は実行コマンドの標準出力がエラーメッセージとして表示される",
+                  "description": "ファイルに対して実行するコマンド (終了コード 0 でエラーなし)",
+                  "x-doc-description": "ファイルに対して実行するコマンド<br>終了コード 0 の場合はエラーなし扱い<br>エラー時は実行コマンドの標準出力がエラーメッセージとして表示される",
                   "type": "string",
                   "examples": [
                     "ruby path/to/your/checker.rb {path}",
@@ -172,6 +177,7 @@
                 },
                 "java_doc": {
                   "x-property-order": 1,
+                  "description": "JavaDoc 検証設定",
                   "$ref": "#/definitions/javaDocConfig"
                 }
               }
@@ -199,6 +205,7 @@
                 },
                 "kotlin_doc": {
                   "x-property-order": 1,
+                  "description": "KDoc 検証設定",
                   "$ref": "#/definitions/kotlinDocConfig"
                 }
               }
@@ -226,6 +233,7 @@
                 },
                 "rust_doc": {
                   "x-property-order": 1,
+                  "description": "rustdoc 検証設定",
                   "$ref": "#/definitions/rustDocConfig"
                 }
               }
@@ -254,6 +262,7 @@
                 },
                 "comment": {
                   "x-property-order": 1,
+                  "description": "コメント構文設定",
                   "$ref": "#/definitions/commentConfig"
                 }
               }
@@ -282,6 +291,7 @@
                 },
                 "comment": {
                   "x-property-order": 1,
+                  "description": "コメント構文設定",
                   "$ref": "#/definitions/commentConfig"
                 }
               }
@@ -307,7 +317,8 @@
         },
         "match": {
           "x-property-order": 1,
-          "description": "対象とするファイルのマッチ条件<br>複数指定時は and で結合",
+          "description": "対象とするファイルの条件 (複数指定時は and で結合)",
+          "x-doc-description": "対象とするファイルの条件<br>複数指定時は and で結合",
           "type": "array",
           "items": {
             "$ref": "#/definitions/matchItem"
@@ -328,6 +339,7 @@
       "properties": {
         "pattern": {
           "x-property-order": 0,
+          "description": "マッチパターンの種類",
           "$ref": "#/definitions/matchPattern"
         },
         "keywords": {
@@ -397,7 +409,8 @@
     "javaDocConfig": {
       "x-doc-order": 6,
       "title": "JavaDocConfig",
-      "description": "JavaDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: constructor, field, enum_constant",
+      "description": "JavaDoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "x-doc-description": "JavaDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: constructor, field, enum_constant",
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
@@ -437,7 +450,8 @@
     "kotlinDocConfig": {
       "x-doc-order": 7,
       "title": "KotlinDocConfig",
-      "description": "KDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: property, constructor, enum_entry, companion_object",
+      "description": "KDoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "x-doc-description": "KDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: property, constructor, enum_entry, companion_object",
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
@@ -502,7 +516,8 @@
     "rustDocConfig": {
       "x-doc-order": 8,
       "title": "RustDocConfig",
-      "description": "rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: const, static, struct_field, enum_variant, impl, trait_impl",
+      "description": "rustdoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "x-doc-description": "rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: const, static, struct_field, enum_variant, impl, trait_impl",
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
@@ -552,7 +567,8 @@
     "commentConfig": {
       "x-doc-order": 9,
       "title": "CommentConfig",
-      "description": "コメント構文の定義<br>lang と custom のどちらかのみ必ず指定する",
+      "description": "コメント構文の定義 (lang と custom のどちらかのみ指定)",
+      "x-doc-description": "コメント構文の定義<br>lang と custom のどちらかのみ必ず指定する",
       "type": "object",
       "additionalProperties": false,
       "properties": {
