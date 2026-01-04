@@ -95,12 +95,22 @@ fn find_line_comment(line: &str, line_num: usize, markers: &[String]) -> Option<
     let mut best_match: Option<(usize, &str)> = None;
 
     for marker in markers {
-        if let Some(pos) = line.find(marker.as_str()) {
+        let mut search_start = 0;
+        while let Some(rel_pos) = line[search_start..].find(marker.as_str()) {
+            let pos = search_start + rel_pos;
+
+            // Skip "://" patterns (e.g., http://, https://, ftp://)
+            if marker == "//" && pos > 0 && line.as_bytes().get(pos - 1) == Some(&b':') {
+                search_start = pos + marker.len();
+                continue;
+            }
+
             match best_match {
                 None => best_match = Some((pos, marker)),
                 Some((best_pos, _)) if pos < best_pos => best_match = Some((pos, marker)),
                 _ => {}
             }
+            break;
         }
     }
 
@@ -277,5 +287,60 @@ mod tests {
         let comments = extract_comments(content, &syntax);
         assert_eq!(comments.len(), 1);
         assert_eq!(comments[0].text, "real comment");
+    }
+
+    // =========================================================================
+    // URL内の :// はコメントとして検知しない
+    // =========================================================================
+
+    fn syntax_clike() -> CustomCommentSyntax {
+        CustomCommentSyntax {
+            lines: vec!["//".to_string()],
+            blocks: vec![BlockSyntax { start: "/*".to_string(), end: "*/".to_string() }],
+        }
+    }
+
+    #[test]
+    fn httpのURLはコメントとして検知されない() {
+        let content = "let url = \"http://example.com\";";
+        let comments = extract_comments(content, &syntax_clike());
+        assert!(comments.is_empty());
+    }
+
+    #[test]
+    fn httpsのURLはコメントとして検知されない() {
+        let content = "let url = \"https://example.com\";";
+        let comments = extract_comments(content, &syntax_clike());
+        assert!(comments.is_empty());
+    }
+
+    #[test]
+    fn ftpのURLはコメントとして検知されない() {
+        let content = "let url = \"ftp://files.example.com\";";
+        let comments = extract_comments(content, &syntax_clike());
+        assert!(comments.is_empty());
+    }
+
+    #[test]
+    fn URL後のコメントは正しく検知される() {
+        let content = "let url = \"http://example.com\"; // This is a comment";
+        let comments = extract_comments(content, &syntax_clike());
+        assert_eq!(comments.len(), 1);
+        assert_eq!(comments[0].text, "This is a comment");
+    }
+
+    #[test]
+    fn 複数のURLがあってもコメントとして検知されない() {
+        let content = "let urls = [\"http://a.com\", \"https://b.com\"];";
+        let comments = extract_comments(content, &syntax_clike());
+        assert!(comments.is_empty());
+    }
+
+    #[test]
+    fn URLとコメントが混在する場合も正しく処理される() {
+        let content = "// URLはhttp://example.comです";
+        let comments = extract_comments(content, &syntax_clike());
+        assert_eq!(comments.len(), 1);
+        assert_eq!(comments[0].text, "URLはhttp://example.comです");
     }
 }
