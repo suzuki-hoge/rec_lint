@@ -11,10 +11,10 @@ fn ルート直下のyamlのみが表示される() {
     let dir = dummy_project_path("simple");
     let result = rec_lint::commands::show::run(&dir).unwrap();
 
-    // rule → guideline の順, ルート定義なので @ なし
+    // rule → guideline の順, ルート定義なのでパスなし
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "rule: no-println [ System.out.println ]");
-    assert_eq!(result[1], "guideline: Check logging configuration");
+    assert_eq!(result[0], "[ rule ] no-println");
+    assert_eq!(result[1], "[ guideline ] Check logging configuration");
 }
 
 // =============================================================================
@@ -26,10 +26,10 @@ fn ルートディレクトリでは親ルールのみ表示される() {
     let dir = dummy_project_path("nested");
     let result = rec_lint::commands::show::run(&dir).unwrap();
 
-    // rule → guideline の順, ルート定義なので @ なし
+    // rule → guideline の順, ルート定義なのでパスなし
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "rule: no-legacy-date [ java.util.Date ]");
-    assert_eq!(result[1], "guideline: Review error handling");
+    assert_eq!(result[0], "[ rule ] no-legacy-date");
+    assert_eq!(result[1], "[ guideline ] Review error handling");
 }
 
 #[test]
@@ -38,12 +38,12 @@ fn サブディレクトリでは親と子のルールが順に表示される()
     let result = rec_lint::commands::show::run(&dir).unwrap();
 
     // 順序: rule → guideline, 親 → 子
-    // ルート定義 = @ なし, sub 定義 = @ sub
+    // ルート定義 = パスなし, sub 定義 = sub:
     assert_eq!(result.len(), 4);
-    assert_eq!(result[0], "rule: no-legacy-date [ java.util.Date ]");
-    assert_eq!(result[1], r"rule: no-wildcard-import [ import.*\*; ] @ sub");
-    assert_eq!(result[2], "guideline: Review error handling");
-    assert_eq!(result[3], "guideline: Check for code duplication @ sub");
+    assert_eq!(result[0], "[ rule ] no-legacy-date");
+    assert_eq!(result[1], "[ rule ] sub: no-wildcard-import");
+    assert_eq!(result[2], "[ guideline ] Review error handling");
+    assert_eq!(result[3], "[ guideline ] sub: Check for code duplication");
 }
 
 // =============================================================================
@@ -56,8 +56,8 @@ fn 中間ディレクトリにyamlがなくてもルートルールは継承さ�
     let result = rec_lint::commands::show::run(&dir).unwrap();
 
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "rule: no-system-exit [ System.exit ]");
-    assert_eq!(result[1], "guideline: Check exception handling");
+    assert_eq!(result[0], "[ rule ] no-system-exit");
+    assert_eq!(result[1], "[ guideline ] Check exception handling");
 }
 
 #[test]
@@ -65,12 +65,12 @@ fn 深い階層でもルートルールは継承され相対パスで表示さ�
     let dir = dummy_project_path("skip_middle/level1/level2/level3");
     let result = rec_lint::commands::show::run(&dir).unwrap();
 
-    // 親 (root) → 子 (level3) の順, @ は相対パス
+    // 親 (root) → 子 (level3) の順
     assert_eq!(result.len(), 4);
-    assert_eq!(result[0], "rule: no-system-exit [ System.exit ]");
-    assert_eq!(result[1], "rule: no-raw-types [ List[^<], Map[^<] ] @ level1/level2/level3");
-    assert_eq!(result[2], "guideline: Check exception handling");
-    assert_eq!(result[3], "guideline: Check null safety @ level1/level2/level3");
+    assert_eq!(result[0], "[ rule ] no-system-exit");
+    assert_eq!(result[1], "[ rule ] level1/level2/level3: no-raw-types");
+    assert_eq!(result[2], "[ guideline ] Check exception handling");
+    assert_eq!(result[3], "[ guideline ] level1/level2/level3: Check null safety");
 }
 
 #[test]
@@ -80,8 +80,8 @@ fn yamlがない中間ディレクトリではルートルールのみ表示さ�
 
     // level2 has no yaml, should only have root rules
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "rule: no-system-exit [ System.exit ]");
-    assert_eq!(result[1], "guideline: Check exception handling");
+    assert_eq!(result[0], "[ rule ] no-system-exit");
+    assert_eq!(result[1], "[ guideline ] Check exception handling");
 }
 
 // =============================================================================
@@ -93,8 +93,8 @@ fn 深い階層でもルートルールのみ継承される() {
     let dir = dummy_project_path("deep_inherit/a/b/c");
     let result = rec_lint::commands::show::run(&dir).unwrap();
 
-    // ルート定義なので @ なし
+    // ルート定義なのでパスなし
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "rule: no-deprecated [ @Deprecated ]");
-    assert_eq!(result[1], "guideline: Check API compatibility");
+    assert_eq!(result[0], "[ rule ] no-deprecated");
+    assert_eq!(result[1], "[ guideline ] Check API compatibility");
 }

@@ -11,13 +11,12 @@ pub fn run(dir: &Path) -> Result<Vec<String>> {
         .guideline
         .iter()
         .map(|(item, source_dir)| {
-            let base = format!("guideline: {}", item.message);
             if source_dir == &rules.root_dir {
-                base
+                format!("[ guideline ] {}", item.message)
             } else if let Ok(relative) = source_dir.strip_prefix(&rules.root_dir) {
-                format!("{base} @ {}", relative.display())
+                format!("[ guideline ] {}: {}", relative.display(), item.message)
             } else {
-                base
+                format!("[ guideline ] {}", item.message)
             }
         })
         .collect();

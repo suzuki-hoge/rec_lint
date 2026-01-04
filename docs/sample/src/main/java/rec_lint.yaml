@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json
+
+rule:
+  - label: println の禁止
+    type: forbidden_texts
+    keywords: [ System.out.println ]
+    message: デバッグ残りは削除し、必要な出力は Logger を使うこと
+
+  - label: public class の JavaDoc は必須
+    type: require_java_doc
+    java_doc:
+      class: public
+    message: JavaDoc を記述すること

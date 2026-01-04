@@ -11,9 +11,9 @@ fn ルート直下のガイドライン項目のみが表示される() {
     let dir = dummy_project_path("simple");
     let result = rec_lint::commands::guideline::run(&dir).unwrap();
 
-    // ルート定義なので @ なし
+    // ルート定義なのでパスなし
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0], "guideline: Check logging configuration");
+    assert_eq!(result[0], "[ guideline ] Check logging configuration");
 }
 
 // =============================================================================
@@ -25,10 +25,10 @@ fn サブディレクトリでは親と子のガイドライン項目が順に�
     let dir = dummy_project_path("nested/sub");
     let result = rec_lint::commands::guideline::run(&dir).unwrap();
 
-    // 親 → 子の順, ルート = @ なし, sub = @ sub
+    // 親 → 子の順
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "guideline: Review error handling");
-    assert_eq!(result[1], "guideline: Check for code duplication @ sub");
+    assert_eq!(result[0], "[ guideline ] Review error handling");
+    assert_eq!(result[1], "[ guideline ] sub: Check for code duplication");
 }
 
 // =============================================================================
@@ -42,8 +42,8 @@ fn 深い階層でもガイドライン項目は継承され相対パスで表�
 
     // 親 → 子の順
     assert_eq!(result.len(), 2);
-    assert_eq!(result[0], "guideline: Check exception handling");
-    assert_eq!(result[1], "guideline: Check null safety @ level1/level2/level3");
+    assert_eq!(result[0], "[ guideline ] Check exception handling");
+    assert_eq!(result[1], "[ guideline ] level1/level2/level3: Check null safety");
 }
 
 // =============================================================================
@@ -55,7 +55,7 @@ fn 深い階層でもルートのガイドライン項目のみ表示される()
     let dir = dummy_project_path("deep_inherit/a/b/c");
     let result = rec_lint::commands::guideline::run(&dir).unwrap();
 
-    // ルート定義なので @ なし
+    // ルート定義なのでパスなし
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0], "guideline: Check API compatibility");
+    assert_eq!(result[0], "[ guideline ] Check API compatibility");
 }

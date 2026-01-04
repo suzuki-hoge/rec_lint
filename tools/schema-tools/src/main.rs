@@ -4,28 +4,49 @@ use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
+use std::process::Command;
 
-const INPUT: &str = "../../schema/rec_lint.schema.json";
-const OUTPUT_DIR: &str = "../../docs";
+const INPUT: &str = "schema/rec_lint.schema.json";
+const OUTPUT_DIR: &str = "docs";
 
 fn main() -> Result<()> {
-    let json_str = fs::read_to_string(INPUT).context("Failed to read schema file")?;
+    let repo_root = get_repo_root()?;
+    let input_path = repo_root.join(INPUT);
+    let output_dir = repo_root.join(OUTPUT_DIR);
+
+    let json_str = fs::read_to_string(&input_path).context("Failed to read schema file")?;
     let schema: Value = serde_json::from_str(&json_str).context("Failed to parse JSON")?;
 
-    println!("Validating schema...");
     Validator::new(&schema).context("Invalid JSON Schema")?;
-    println!("Schema is valid");
+    println!("Validated: {}", input_path.display());
 
-    println!("Generating markdown...");
     let md = render_schema(&schema);
 
-    fs::create_dir_all(OUTPUT_DIR)?;
-    let output_path = Path::new(OUTPUT_DIR).join("rec_lint.schema.md");
+    fs::create_dir_all(&output_dir)?;
+    let output_path = output_dir.join("rec_lint.schema.md");
     fs::write(&output_path, &md)?;
     println!("Generated: {}", output_path.display());
 
     Ok(())
+}
+
+fn get_repo_root() -> Result<PathBuf> {
+    let output = Command::new("git")
+        .args(["rev-parse", "--show-toplevel"])
+        .output()
+        .context("Failed to run git rev-parse")?;
+
+    if !output.status.success() {
+        anyhow::bail!("Not in a git repository");
+    }
+
+    let root = String::from_utf8(output.stdout)
+        .context("Invalid UTF-8 in git output")?
+        .trim()
+        .to_string();
+
+    Ok(PathBuf::from(root))
 }
 
 fn render_schema(schema: &Value) -> String {

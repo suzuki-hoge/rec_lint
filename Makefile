@@ -8,4 +8,9 @@ fix:
 	@cargo nextest run
 
 doc:
-	@cd tools/schema-tools && cargo run
+	@cargo run -q --manifest-path tools/schema-tools/Cargo.toml
+	@cargo run -q --manifest-path tools/readme-generator/Cargo.toml
+
+fix-all:
+	@make fix
+	@make doc

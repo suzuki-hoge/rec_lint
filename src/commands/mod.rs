@@ -34,8 +34,9 @@ pub enum Commands {
     #[command(long_about = "Display all effective rules for the specified directory.\n\n\
 Rules are collected from rec_lint.yaml files starting from the root (with 'root: true')\n\
 down to the target directory. Output format:\n\n\
-  rule: <label> [keywords] @ <source_dir>\n\
-  guideline: <message> @ <source_dir>")]
+  [ rule ] <label>\n\
+  [ rule ] <source_dir>: <label>\n\
+  [ guideline ] <source_dir>: <message>")]
     Show {
         /// Target directory to show rules for
         #[arg(value_name = "DIR")]

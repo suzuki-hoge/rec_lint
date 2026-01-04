@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json
+
+rule:
+  - label: http 処理の禁止
+    type: forbidden_patterns
+    keywords: [ "import.*http" ]
+    message: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/java/controller に実装すること
+    match:
+      - pattern: file_ends_with
+        keywords: [ Command.java, Query.java ]
+        cond: or
+
+guideline:
+  - message: N + 1 問題が発生するクエリがないか確認すること
+    match:
+      - pattern: file_ends_with
+        keywords: [ Query.java ]
