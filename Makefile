@@ -14,3 +14,7 @@ doc:
 fix-all:
 	@make fix
 	@make doc
+
+install:
+	@cargo build --release
+	@cargo install --path .
