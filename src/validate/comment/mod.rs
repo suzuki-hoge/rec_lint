@@ -195,10 +195,8 @@ mod tests {
         //  * foo
         //  *
         //  */
-        let comments = vec![
-            Comment { line: 2, text: "* 日本語コメント".to_string() },
-            Comment { line: 3, text: "*".to_string() },
-        ];
+        let comments =
+            vec![Comment { line: 2, text: "* 日本語コメント".to_string() }, Comment { line: 3, text: "*".to_string() }];
         let violations = validate_japanese(&comments);
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].line, 2);

@@ -13,7 +13,6 @@ rec_lint guideline <DIR> は、そのディレクトリの実装ガイドライ�
 "#
     .trim()
     .split("\n")
-    .into_iter()
     .map(|line| line.to_string())
     .collect())
 }
