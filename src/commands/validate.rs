@@ -80,7 +80,7 @@ fn collect_files(paths: &[PathBuf]) -> Vec<PathBuf> {
 fn is_config_file(path: &Path) -> bool {
     path.file_name()
         .and_then(|n| n.to_str())
-        .map(|name| name == "rec_lint.yaml" || name == "rec_lint_config.yaml")
+        .map(|name| name == ".rec_lint.yaml" || name == ".rec_lint_config.yaml")
         .unwrap_or(false)
 }
 

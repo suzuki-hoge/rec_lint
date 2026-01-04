@@ -12,20 +12,20 @@ cargo install --path .
 
 ## 設定ファイル
 
-- `rec_lint_config.yaml` - ルートディレクトリに配置
-- `rec_lint.yaml` - 各ディレクトリに配置
+- `.rec_lint_config.yaml` - ルートディレクトリに配置
+- `.rec_lint.yaml` - 各ディレクトリに配置
 
-`rec_lint.yaml` のスキーマ定義: [docs/rec_lint.schema.md](docs/rec_lint.schema.md)
+`.rec_lint.yaml` のスキーマ定義: [docs/rec_lint.schema.md](docs/rec_lint.schema.md)
 
 ## 設定例
 
-`rec_lint_config.yaml`
+`.rec_lint_config.yaml`
 
 ```yaml
 # 現状は設定項目はないが、ファイルの作成は必須
 ```
 
-`src/main/java/rec_lint.yaml`
+`src/main/java/.rec_lint.yaml`
 
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json
@@ -43,7 +43,7 @@ rule:
     message: JavaDoc を記述すること
 ```
 
-`src/main/java/db/rec_lint.yaml`
+`src/main/java/db/.rec_lint.yaml`
 
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json
@@ -164,7 +164,7 @@ src/main/java/db/UserQuery.java:7:1: JavaDoc を記述すること (class UserQu
 
 ### Yaml Language Server の利用
 
-`rec_lint.yaml` の冒頭に `rec_lint.schema.json` を指定すると YAML の読み書き時にスキーマ情報と説明が得られます
+`.rec_lint.yaml` の冒頭に `rec_lint.schema.json` を指定すると YAML の読み書き時にスキーマ情報と説明が得られます
 
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/heads/main/schema/rec_lint.schema.json

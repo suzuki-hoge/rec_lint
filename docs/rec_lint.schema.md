@@ -1,4 +1,4 @@
-# rec_lint.yaml ドキュメント
+# .rec_lint.yaml ドキュメント
 
 ## トップレベル
 

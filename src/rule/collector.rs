@@ -5,8 +5,8 @@ use anyhow::{anyhow, Result};
 use super::parser::RawConfig;
 use super::{Config, GuidelineItem, Rule};
 
-const CONFIG_FILENAME: &str = "rec_lint.yaml";
-const ROOT_CONFIG_FILENAME: &str = "rec_lint_config.yaml";
+const CONFIG_FILENAME: &str = ".rec_lint.yaml";
+const ROOT_CONFIG_FILENAME: &str = ".rec_lint_config.yaml";
 
 pub struct CollectedRules {
     pub root_dir: PathBuf,

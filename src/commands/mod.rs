@@ -20,7 +20,7 @@ pub enum SortMode {
 #[command(name = "rec_lint")]
 #[command(version)]
 #[command(about = "Recursive linter with hierarchical configuration")]
-#[command(long_about = "A recursive linter that reads rec_lint.yaml files from directory hierarchy.\n\n\
+#[command(long_about = "A recursive linter that reads .rec_lint.yaml files from directory hierarchy.\n\n\
 Rules defined in parent directories are inherited by child directories.\n\
 The root configuration file must have 'root: true'.")]
 pub struct Cli {
@@ -32,7 +32,7 @@ pub struct Cli {
 pub enum Commands {
     /// Show effective rules for a directory
     #[command(long_about = "Display all effective rules for the specified directory.\n\n\
-Rules are collected from rec_lint.yaml files starting from the root (with 'root: true')\n\
+Rules are collected from .rec_lint.yaml files starting from the root (with 'root: true')\n\
 down to the target directory. Output format:\n\n\
   [ rule ] <label>\n\
   [ rule ] <source_dir>: <label>\n\
