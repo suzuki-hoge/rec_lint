@@ -146,11 +146,12 @@ $ rec_lint guideline src/main/java/db
 
 ### 開発フローの中でフックして自動的にコードを改善する
 
-コミットフローや AI Agent への指示に `rec_lint validate <PATH>` を入れておけば、気付かぬうちに意図しない設計のままコードが量産されるのを回避できる
+コミットフックや AI Agent への指示に rec_lint を組み込めば、気付かぬうちに意図しない設計のままコードが量産されるのを回避できる
 
-`rec_lint show <DIR>` は人間 / AI Agent を問わず実装の指針として参考にできる
-
-`rec_lint guideline <DIR>` は人間が実装の指針にできるほか、自動検証するのが難しい内容を AI Agent にセルフレビューさせるなどの応用が可能
+- AI Agent に `rec_lint desc` を読ませる
+- AI Agent にコード修正後は `rec_lint validate` を実行させる
+- `rec_lint show` は人間 / AI Agent を問わず実装の指針として参考にできる
+-`rec_lint guideline` は人間が実装の指針にできるほか、自動検証するのが難しい内容を AI Agent にセルフレビューさせるなどの応用が可能
 
 すべての設定において `message` を自由に設定できるため、メッセージ自体を AI Agent への次のプロンプトにすることで自動的な改善サイクルを構築できる
 

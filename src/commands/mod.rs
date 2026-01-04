@@ -1,4 +1,5 @@
 pub mod add;
+pub mod desc;
 pub mod guideline;
 pub mod init;
 pub mod show;
@@ -89,4 +90,7 @@ Guideline items are informational reminders for code reviewers.")]
         #[arg(value_name = "DIR", default_value = ".")]
         dir: PathBuf,
     },
+
+    /// Show description of rec_lint
+    Desc,
 }

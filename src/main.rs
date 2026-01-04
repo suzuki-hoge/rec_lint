@@ -14,6 +14,7 @@ fn main() -> Result<()> {
         Commands::Version => commands::version::run()?,
         Commands::Init { dir } => commands::init::run(&dir)?,
         Commands::Add { dir } => commands::add::run(&dir)?,
+        Commands::Desc => commands::desc::run()?,
     };
 
     for line in output {

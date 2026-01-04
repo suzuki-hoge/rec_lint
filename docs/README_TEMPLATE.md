@@ -77,14 +77,14 @@ $ rec_lint show src/main/java/db
 
 ```
 $ rec_lint validate src/main/java/db/UserQuery.java
-{{exec: cargo run --quiet -- validate docs/sample/src/main/java/db/UserQuery.java}}
+{{exec: cargo run --quiet -- validate docs/sample/src/main/java/db/UserQuery.java || true}}
 ```
 
 ディレクトリを指定した場合はそれ以下のすべてのファイルを検証する
 
 ```
 $ rec_lint validate src/main/java/db
-{{exec: cargo run --quiet -- validate docs/sample/src/main/java/db}}
+{{exec: cargo run --quiet -- validate docs/sample/src/main/java/db || true}}
 ```
 
 オプション:
@@ -104,11 +104,12 @@ $ rec_lint guideline src/main/java/db
 
 ### 開発フローの中でフックして自動的にコードを改善する
 
-コミットフローや AI Agent への指示に `rec_lint validate <PATH>` を入れておけば、気付かぬうちに意図しない設計のままコードが量産されるのを回避できる
+コミットフックや AI Agent への指示に rec_lint を組み込めば、気付かぬうちに意図しない設計のままコードが量産されるのを回避できる
 
-`rec_lint show <DIR>` は人間 / AI Agent を問わず実装の指針として参考にできる
-
-`rec_lint guideline <DIR>` は人間が実装の指針にできるほか、自動検証するのが難しい内容を AI Agent にセルフレビューさせるなどの応用が可能
+- AI Agent に `rec_lint desc` を読ませる
+- AI Agent にコード修正後は `rec_lint validate` を実行させる
+- `rec_lint show` は人間 / AI Agent を問わず実装の指針として参考にできる
+-`rec_lint guideline` は人間が実装の指針にできるほか、自動検証するのが難しい内容を AI Agent にセルフレビューさせるなどの応用が可能
 
 すべての設定において `message` を自由に設定できるため、メッセージ自体を AI Agent への次のプロンプトにすることで自動的な改善サイクルを構築できる
 
@@ -120,14 +121,14 @@ $ rec_lint guideline src/main/java/db
 
 ```
 $ rec_lint validate --sort rule src/main/java
-{{exec: cargo run --quiet -- validate -s rule docs/sample/src/main/java}}
+{{exec: cargo run --quiet -- validate -s rule docs/sample/src/main/java || true}}
 ```
 
 `--sort file` は特定ファイルを修正したい場合に向いている
 
 ```
 $ rec_lint validate --sort file src/main/java
-{{exec: cargo run --quiet -- validate -s file docs/sample/src/main/java}}
+{{exec: cargo run --quiet -- validate -s file docs/sample/src/main/java || true}}
 ```
 
 ### Yaml Language Server の利用
