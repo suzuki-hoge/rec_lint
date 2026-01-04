@@ -1,6 +1,6 @@
 rule:
   - label: no-deprecated
-    type: regex
+    type: forbidden_patterns
     keywords:
       - "@Deprecated"
     message: Remove deprecated code

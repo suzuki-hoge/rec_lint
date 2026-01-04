@@ -79,7 +79,7 @@
     "ruleItem": {
       "x-doc-order": 1,
       "title": "RuleItem",
-      "description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: text<br>- type: regex<br>- type: custom<br>- type: no_java_doc<br>- type: no_kotlin_doc<br>- type: no_rust_doc<br>- type: no_japanese_comment<br>- type: no_english_comment",
+      "description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment",
       "oneOf": [
         {
           "title": "TextRule",
@@ -99,7 +99,7 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "text"
+                  "const": "forbidden_texts"
                 },
                 "keywords": {
                   "x-property-order": 1,
@@ -131,7 +131,7 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "regex"
+                  "const": "forbidden_patterns"
                 },
                 "keywords": {
                   "x-property-order": 1,
@@ -195,7 +195,7 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "no_java_doc"
+                  "const": "require_java_doc"
                 },
                 "java_doc": {
                   "x-property-order": 1,
@@ -222,7 +222,7 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "no_kotlin_doc"
+                  "const": "require_kotlin_doc"
                 },
                 "kotlin_doc": {
                   "x-property-order": 1,
@@ -249,7 +249,7 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "no_rust_doc"
+                  "const": "require_rust_doc"
                 },
                 "rust_doc": {
                   "x-property-order": 1,
@@ -277,7 +277,7 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "no_japanese_comment"
+                  "const": "require_english_comment"
                 },
                 "comment": {
                   "x-property-order": 1,
@@ -305,7 +305,7 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "no_english_comment"
+                  "const": "require_japanese_comment"
                 },
                 "comment": {
                   "x-property-order": 1,

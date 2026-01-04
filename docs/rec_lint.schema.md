@@ -9,7 +9,7 @@
 
 ## RuleItem
 
-rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: text<br>- type: regex<br>- type: custom<br>- type: no_java_doc<br>- type: no_kotlin_doc<br>- type: no_rust_doc<br>- type: no_japanese_comment<br>- type: no_english_comment
+rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment
 
 ### TextRule
 
@@ -17,7 +17,7 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `text` | o |  |
+| type | `forbidden_texts` | o |  |
 | keywords | string[] | o | validate で探す禁止キーワード |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
@@ -31,7 +31,7 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `regex` | o |  |
+| type | `forbidden_patterns` | o |  |
 | keywords | string[] | o | validate で探す禁止キーワードの正規表現 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
@@ -59,7 +59,7 @@ JavaDoc がないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `no_java_doc` | o |  |
+| type | `require_java_doc` | o |  |
 | java_doc | [javaDocConfig](#javadocconfig) | - |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
@@ -73,7 +73,7 @@ KDoc がないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `no_kotlin_doc` | o |  |
+| type | `require_kotlin_doc` | o |  |
 | kotlin_doc | [kotlinDocConfig](#kotlindocconfig) | - |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
@@ -87,7 +87,7 @@ rustdoc がないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `no_rust_doc` | o |  |
+| type | `require_rust_doc` | o |  |
 | rust_doc | [rustDocConfig](#rustdocconfig) | - |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
@@ -101,7 +101,7 @@ rustdoc がないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `no_japanese_comment` | o |  |
+| type | `require_english_comment` | o |  |
 | comment | [commentConfig](#commentconfig) | o |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
@@ -115,7 +115,7 @@ rustdoc がないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `no_english_comment` | o |  |
+| type | `require_japanese_comment` | o |  |
 | comment | [commentConfig](#commentconfig) | o |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |

@@ -182,19 +182,19 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
     let exclude_filter = ExcludeFilter::new(raw.exclude_files.clone().unwrap_or_default());
 
     match raw.type_.as_str() {
-        "text" => {
+        "forbidden_texts" => {
             let keywords =
-                raw.keywords.ok_or_else(|| anyhow!("Rule '{}': type 'text' requires 'keywords'", raw.label))?;
+                raw.keywords.ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_texts' requires 'keywords'", raw.label))?;
             if raw.exec.is_some() {
-                return Err(anyhow!("Rule '{}': type 'text' must not have 'exec'", raw.label));
+                return Err(anyhow!("Rule '{}': type 'forbidden_texts' must not have 'exec'", raw.label));
             }
             Ok(Rule::Text(TextRule { label: raw.label, keywords, message: raw.message, ext_filter, exclude_filter }))
         }
-        "regex" => {
+        "forbidden_patterns" => {
             let keywords =
-                raw.keywords.ok_or_else(|| anyhow!("Rule '{}': type 'regex' requires 'keywords'", raw.label))?;
+                raw.keywords.ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_patterns' requires 'keywords'", raw.label))?;
             if raw.exec.is_some() {
-                return Err(anyhow!("Rule '{}': type 'regex' must not have 'exec'", raw.label));
+                return Err(anyhow!("Rule '{}': type 'forbidden_patterns' must not have 'exec'", raw.label));
             }
             let patterns = keywords
                 .iter()
@@ -216,10 +216,10 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             }
             Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, ext_filter, exclude_filter }))
         }
-        "no_java_doc" => {
+        "require_java_doc" => {
             let raw_config = raw
                 .java_doc
-                .ok_or_else(|| anyhow!("Rule '{}': type 'no_java_doc' requires 'java_doc' config", raw.label))?;
+                .ok_or_else(|| anyhow!("Rule '{}': type 'require_java_doc' requires 'java_doc' config", raw.label))?;
             if raw_config.class.is_none()
                 && raw_config.interface.is_none()
                 && raw_config.enum_.is_none()
@@ -248,10 +248,10 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 exclude_filter,
             }))
         }
-        "no_kotlin_doc" => {
+        "require_kotlin_doc" => {
             let raw_config = raw
                 .kotlin_doc
-                .ok_or_else(|| anyhow!("Rule '{}': type 'no_kotlin_doc' requires 'kotlin_doc' config", raw.label))?;
+                .ok_or_else(|| anyhow!("Rule '{}': type 'require_kotlin_doc' requires 'kotlin_doc' config", raw.label))?;
             if raw_config.class.is_none()
                 && raw_config.interface.is_none()
                 && raw_config.object.is_none()
@@ -287,10 +287,10 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 exclude_filter,
             }))
         }
-        "no_rust_doc" => {
+        "require_rust_doc" => {
             let raw_config = raw
                 .rust_doc
-                .ok_or_else(|| anyhow!("Rule '{}': type 'no_rust_doc' requires 'rust_doc' config", raw.label))?;
+                .ok_or_else(|| anyhow!("Rule '{}': type 'require_rust_doc' requires 'rust_doc' config", raw.label))?;
             if raw_config.struct_.is_none()
                 && raw_config.enum_.is_none()
                 && raw_config.trait_.is_none()
@@ -320,7 +320,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 exclude_filter,
             }))
         }
-        "no_japanese_comment" => {
+        "require_english_comment" => {
             let source = convert_comment_source(&raw)?;
             Ok(Rule::JapaneseComment(CommentRule {
                 label: raw.label,
@@ -330,7 +330,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 exclude_filter,
             }))
         }
-        "no_english_comment" => {
+        "require_japanese_comment" => {
             let source = convert_comment_source(&raw)?;
             Ok(Rule::EnglishComment(CommentRule {
                 label: raw.label,
@@ -407,7 +407,7 @@ mod tests {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "test".to_string(),
-                type_: "text".to_string(),
+                type_: "forbidden_texts".to_string(),
                 keywords: Some(vec!["kw1".to_string(), "kw2".to_string()]),
                 message: "msg".to_string(),
                 ..Default::default()
@@ -434,7 +434,7 @@ mod tests {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "regex-test".to_string(),
-                type_: "regex".to_string(),
+                type_: "forbidden_patterns".to_string(),
                 keywords: Some(vec!["pattern.*".to_string()]),
                 message: "msg".to_string(),
                 include_exts: Some(vec![".java".to_string()]),
@@ -508,14 +508,14 @@ mod tests {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
-                type_: "text".to_string(),
+                type_: "forbidden_texts".to_string(),
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
             guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
-        assert!(err.to_string().contains("'text' requires 'keywords'"));
+        assert!(err.to_string().contains("'forbidden_texts' requires 'keywords'"));
     }
 
     #[test]
@@ -523,7 +523,7 @@ mod tests {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
-                type_: "text".to_string(),
+                type_: "forbidden_texts".to_string(),
                 keywords: Some(vec!["kw".to_string()]),
                 exec: Some("cmd".to_string()),
                 message: "msg".to_string(),
@@ -532,7 +532,7 @@ mod tests {
             guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
-        assert!(err.to_string().contains("'text' must not have 'exec'"));
+        assert!(err.to_string().contains("'forbidden_texts' must not have 'exec'"));
     }
 
     #[test]
@@ -540,14 +540,14 @@ mod tests {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
-                type_: "regex".to_string(),
+                type_: "forbidden_patterns".to_string(),
                 message: "msg".to_string(),
                 ..Default::default()
             }]),
             guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
-        assert!(err.to_string().contains("'regex' requires 'keywords'"));
+        assert!(err.to_string().contains("'forbidden_patterns' requires 'keywords'"));
     }
 
     #[test]
@@ -555,7 +555,7 @@ mod tests {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
-                type_: "regex".to_string(),
+                type_: "forbidden_patterns".to_string(),
                 keywords: Some(vec![".*".to_string()]),
                 exec: Some("cmd".to_string()),
                 message: "msg".to_string(),
@@ -564,7 +564,7 @@ mod tests {
             guideline: None,
         };
         let err = Config::try_from(raw).unwrap_err();
-        assert!(err.to_string().contains("'regex' must not have 'exec'"));
+        assert!(err.to_string().contains("'forbidden_patterns' must not have 'exec'"));
     }
 
     #[test]
@@ -572,7 +572,7 @@ mod tests {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
-                type_: "regex".to_string(),
+                type_: "forbidden_patterns".to_string(),
                 keywords: Some(vec!["[invalid".to_string()]),
                 message: "msg".to_string(),
                 ..Default::default()

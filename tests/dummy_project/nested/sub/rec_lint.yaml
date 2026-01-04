@@ -1,6 +1,6 @@
 rule:
   - label: no-wildcard-import
-    type: regex
+    type: forbidden_patterns
     keywords:
       - "import.*\\*;"
     message: Avoid wildcard imports

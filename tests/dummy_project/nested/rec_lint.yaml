@@ -1,6 +1,6 @@
 rule:
   - label: no-legacy-date
-    type: text
+    type: forbidden_texts
     keywords:
       - java.util.Date
     message: Use LocalDate instead

@@ -1,6 +1,6 @@
 rule:
   - label: no-raw-types
-    type: regex
+    type: forbidden_patterns
     keywords:
       - "List[^<]"
       - "Map[^<]"

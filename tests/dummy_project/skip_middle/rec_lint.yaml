@@ -1,6 +1,6 @@
 rule:
   - label: no-system-exit
-    type: text
+    type: forbidden_texts
     keywords:
       - System.exit
     message: Do not use System.exit

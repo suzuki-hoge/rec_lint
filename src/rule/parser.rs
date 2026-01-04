@@ -194,7 +194,7 @@ guideline: []
         let yaml = r#"
 rule:
   - label: test-rule
-    type: text
+    type: forbidden_texts
     keywords:
       - keyword1
       - keyword2
@@ -205,7 +205,7 @@ rule:
         assert_eq!(rules.len(), 1);
         let rule = &rules[0];
         assert_eq!(rule.label, "test-rule");
-        assert_eq!(rule.type_, "text");
+        assert_eq!(rule.type_, "forbidden_texts");
         assert_eq!(rule.keywords.as_ref().unwrap().len(), 2);
         assert!(rule.exec.is_none());
         assert_eq!(rule.message, "Test message");
@@ -219,14 +219,14 @@ rule:
         let yaml = r#"
 rule:
   - label: regex-rule
-    type: regex
+    type: forbidden_patterns
     keywords:
       - "pattern.*"
     message: Regex message
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        assert_eq!(rule.type_, "regex");
+        assert_eq!(rule.type_, "forbidden_patterns");
         assert!(rule.keywords.is_some());
         assert!(rule.exec.is_none());
     }
@@ -252,7 +252,7 @@ rule:
         let yaml = r#"
 rule:
   - label: ext-rule
-    type: text
+    type: forbidden_texts
     keywords: [test]
     message: Message
     include_exts: [.java, .kt]
@@ -269,7 +269,7 @@ rule:
         let yaml = r#"
 rule:
   - label: exclude-test
-    type: text
+    type: forbidden_texts
     keywords: [test]
     message: Message
     exclude_files:
@@ -308,7 +308,7 @@ guideline:
         let yaml = r#"
 rule:
   - label: rule1
-    type: text
+    type: forbidden_texts
     keywords: [kw]
     message: msg
 guideline:
@@ -328,7 +328,7 @@ guideline:
         let yaml = r#"
 rule:
   - label: java-doc
-    type: no_java_doc
+    type: require_java_doc
     message: Missing JavaDoc
     java_doc:
       class: public
@@ -340,7 +340,7 @@ rule:
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        assert_eq!(rule.type_, "no_java_doc");
+        assert_eq!(rule.type_, "require_java_doc");
         let doc = rule.java_doc.as_ref().unwrap();
         assert_eq!(doc.class, Some(Visibility::Public));
         assert_eq!(doc.interface, Some(Visibility::Public));
@@ -355,7 +355,7 @@ rule:
         let yaml = r#"
 rule:
   - label: java-doc
-    type: no_java_doc
+    type: require_java_doc
     message: Missing JavaDoc
     java_doc:
       class: all
@@ -372,7 +372,7 @@ rule:
         let yaml = r#"
 rule:
   - label: kotlin-doc
-    type: no_kotlin_doc
+    type: require_kotlin_doc
     message: Missing KDoc
     kotlin_doc:
       class: public
@@ -389,7 +389,7 @@ rule:
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        assert_eq!(rule.type_, "no_kotlin_doc");
+        assert_eq!(rule.type_, "require_kotlin_doc");
         let doc = rule.kotlin_doc.as_ref().unwrap();
         assert_eq!(doc.class, Some(Visibility::Public));
         assert_eq!(doc.interface, Some(Visibility::Public));
@@ -409,7 +409,7 @@ rule:
         let yaml = r#"
 rule:
   - label: rust-doc
-    type: no_rust_doc
+    type: require_rust_doc
     message: Missing RustDoc
     rust_doc:
       struct: public
@@ -423,7 +423,7 @@ rule:
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        assert_eq!(rule.type_, "no_rust_doc");
+        assert_eq!(rule.type_, "require_rust_doc");
         let doc = rule.rust_doc.as_ref().unwrap();
         assert_eq!(doc.struct_, Some(Visibility::Public));
         assert_eq!(doc.enum_, Some(Visibility::Public));
@@ -444,14 +444,14 @@ rule:
         let yaml = r#"
 rule:
   - label: no-jp-comment
-    type: no_japanese_comment
+    type: require_english_comment
     message: Japanese comment found
     comment:
       lang: java
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        assert_eq!(rule.type_, "no_japanese_comment");
+        assert_eq!(rule.type_, "require_english_comment");
         let comment = rule.comment.as_ref().unwrap();
         assert_eq!(comment.lang, Some(CommentLang::Java));
         assert!(comment.custom.is_none());
@@ -462,7 +462,7 @@ rule:
         let yaml = r#"
 rule:
   - label: no-jp-comment
-    type: no_japanese_comment
+    type: require_english_comment
     message: Japanese comment found
     comment:
       lang: kotlin
@@ -478,7 +478,7 @@ rule:
         let yaml = r#"
 rule:
   - label: no-jp-comment
-    type: no_japanese_comment
+    type: require_english_comment
     message: Japanese comment found
     comment:
       lang: rust
@@ -494,7 +494,7 @@ rule:
         let yaml = r#"
 rule:
   - label: no-jp-comment
-    type: no_japanese_comment
+    type: require_english_comment
     message: Japanese comment found
     comment:
       custom:
@@ -520,7 +520,7 @@ rule:
         let yaml = r##"
 rule:
   - label: no-jp-comment
-    type: no_japanese_comment
+    type: require_english_comment
     message: Japanese comment found
     comment:
       custom:
@@ -544,7 +544,7 @@ rule:
         let yaml = r#"
 rule:
   - label: no-jp-comment
-    type: no_japanese_comment
+    type: require_english_comment
     message: Japanese comment found
     comment:
       custom:
@@ -567,14 +567,14 @@ rule:
         let yaml = r#"
 rule:
   - label: no-en-comment
-    type: no_english_comment
+    type: require_japanese_comment
     message: English comment found
     comment:
       lang: java
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        assert_eq!(rule.type_, "no_english_comment");
+        assert_eq!(rule.type_, "require_japanese_comment");
         let comment = rule.comment.as_ref().unwrap();
         assert_eq!(comment.lang, Some(CommentLang::Java));
     }
