@@ -39,39 +39,12 @@
           "description": "validation で違反しているときに表示するメッセージ",
           "type": "string"
         },
-        "include_exts": {
+        "match": {
           "x-property-order": 13,
-          "description": "show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる",
+          "description": "show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合",
           "type": "array",
           "items": {
-            "type": "string"
-          },
-          "examples": [
-            [
-              "ts",
-              "tsx"
-            ]
-          ]
-        },
-        "exclude_exts": {
-          "x-property-order": 14,
-          "description": "show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "examples": [
-            [
-              "css"
-            ]
-          ]
-        },
-        "exclude_files": {
-          "x-property-order": 15,
-          "description": "show と validation で除外するファイルのフィルタ",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/excludeFilter"
+            "$ref": "#/definitions/matchItem"
           }
         }
       }
@@ -332,74 +305,97 @@
           "description": "guideline で表示するメッセージ",
           "type": "string"
         },
-        "include_exts": {
+        "match": {
           "x-property-order": 1,
-          "description": "検査する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる",
+          "description": "対象とするファイルのマッチ条件<br>複数指定時は and で結合",
           "type": "array",
           "items": {
-            "type": "string"
-          },
-          "examples": [
-            [
-              "ts",
-              "tsx"
-            ]
-          ]
-        },
-        "exclude_exts": {
-          "x-property-order": 2,
-          "description": "除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "examples": [
-            [
-              "css"
-            ]
-          ]
+            "$ref": "#/definitions/matchItem"
+          }
         }
       }
     },
-    "excludeFilter": {
+    "matchItem": {
       "x-doc-order": 3,
-      "title": "ExcludeFilter",
-      "description": "ファイル除外フィルタの定義",
+      "title": "MatchItem",
+      "description": "ファイルマッチ条件の定義",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "filter",
-        "keyword"
+        "pattern",
+        "keywords"
       ],
       "properties": {
-        "filter": {
+        "pattern": {
           "x-property-order": 0,
-          "description": "フィルタの種類",
-          "type": "string",
-          "oneOf": [
-            {
-              "const": "file_starts_with",
-              "description": "ファイル名が指定文字列で始まる"
-            },
-            {
-              "const": "file_ends_with",
-              "description": "ファイル名が指定文字列で終わる"
-            },
-            {
-              "const": "path_contains",
-              "description": "パスに指定文字列が含まれる"
-            }
-          ]
+          "$ref": "#/definitions/matchPattern"
         },
-        "keyword": {
+        "keywords": {
           "x-property-order": 1,
-          "description": "キーワード",
-          "type": "string"
+          "description": "マッチ対象のキーワード",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cond": {
+          "x-property-order": 2,
+          "description": "省略時は and",
+          "$ref": "#/definitions/matchCond"
         }
       }
     },
-    "javaDocConfig": {
+    "matchPattern": {
       "x-doc-order": 4,
+      "title": "MatchPattern",
+      "description": "マッチパターンの種類",
+      "type": "string",
+      "oneOf": [
+        {
+          "const": "file_starts_with",
+          "description": "ファイル名が指定文字列で始まる"
+        },
+        {
+          "const": "file_ends_with",
+          "description": "ファイル名が指定文字列で終わる"
+        },
+        {
+          "const": "path_contains",
+          "description": "パスに指定文字列が含まれる"
+        },
+        {
+          "const": "file_not_starts_with",
+          "description": "ファイル名が指定文字列で始まらない"
+        },
+        {
+          "const": "file_not_ends_with",
+          "description": "ファイル名が指定文字列で終わらない"
+        },
+        {
+          "const": "path_not_contains",
+          "description": "パスに指定文字列が含まれない"
+        }
+      ]
+    },
+    "matchCond": {
+      "x-doc-order": 5,
+      "title": "MatchCond",
+      "description": "keywords の結合条件",
+      "type": "string",
+      "default": "and",
+      "oneOf": [
+        {
+          "const": "and",
+          "description": "すべての keyword に一致"
+        },
+        {
+          "const": "or",
+          "description": "いずれかの keyword に一致"
+        }
+      ]
+    },
+    "javaDocConfig": {
+      "x-doc-order": 6,
       "title": "JavaDocConfig",
       "description": "JavaDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: constructor, field, enum_constant",
       "type": "object",
@@ -439,7 +435,7 @@
       }
     },
     "kotlinDocConfig": {
-      "x-doc-order": 5,
+      "x-doc-order": 7,
       "title": "KotlinDocConfig",
       "description": "KDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: property, constructor, enum_entry, companion_object",
       "type": "object",
@@ -504,7 +500,7 @@
       }
     },
     "rustDocConfig": {
-      "x-doc-order": 6,
+      "x-doc-order": 8,
       "title": "RustDocConfig",
       "description": "rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: const, static, struct_field, enum_variant, impl, trait_impl",
       "type": "object",
@@ -554,7 +550,7 @@
       }
     },
     "commentConfig": {
-      "x-doc-order": 7,
+      "x-doc-order": 9,
       "title": "CommentConfig",
       "description": "コメント構文の定義<br>lang と custom のどちらかのみ必ず指定する",
       "type": "object",
@@ -587,7 +583,7 @@
       }
     },
     "visibility": {
-      "x-doc-order": 8,
+      "x-doc-order": 10,
       "title": "Visibility",
       "description": "Doc コメントを強制する対象の可視性",
       "type": "string",
@@ -605,7 +601,7 @@
       ]
     },
     "customComment": {
-      "x-doc-order": 9,
+      "x-doc-order": 11,
       "title": "CustomComment",
       "description": "コメント構文の定義",
       "type": "object",
@@ -636,7 +632,7 @@
       }
     },
     "blockComment": {
-      "x-doc-order": 10,
+      "x-doc-order": 12,
       "title": "BlockComment",
       "description": "ブロックコメント構文の定義",
       "type": "object",

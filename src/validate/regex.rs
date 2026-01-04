@@ -17,7 +17,7 @@ pub fn validate(content: &str, rule: &RegexRule) -> Vec<Violation> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::filter::{ExcludeFilter, ExtFilter};
+    use crate::matcher::Matcher;
     use regex::Regex;
 
     fn make_rule(patterns: Vec<&str>) -> RegexRule {
@@ -27,8 +27,7 @@ mod tests {
             patterns: compiled,
             keywords: patterns.into_iter().map(String::from).collect(),
             message: "test message".to_string(),
-            ext_filter: ExtFilter::default(),
-            exclude_filter: ExcludeFilter::default(),
+            matcher: Matcher::default(),
         }
     }
 

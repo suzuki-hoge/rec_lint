@@ -5,7 +5,10 @@ rule:
       - "List[^<]"
       - "Map[^<]"
     message: Use generic types instead of raw types
-    include_exts: [.java]
+    match:
+      - pattern: file_ends_with
+        keywords: [.java]
+        cond: or
 
 guideline:
   - message: Check null safety

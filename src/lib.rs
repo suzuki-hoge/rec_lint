@@ -1,4 +1,4 @@
 pub mod commands;
-pub mod filter;
+pub mod matcher;
 pub mod rule;
 pub mod validate;

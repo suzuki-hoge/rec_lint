@@ -4,7 +4,10 @@ rule:
     keywords:
       - java.util.Date
     message: Use LocalDate instead
-    include_exts: [.java]
+    match:
+      - pattern: file_ends_with
+        keywords: [.java]
+        cond: or
 
 guideline:
   - message: Review error handling

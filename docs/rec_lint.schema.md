@@ -21,9 +21,7 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 | keywords | string[] | o | validate で探す禁止キーワード |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| include_exts | string[] | - | show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
-| exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
 ### RegexRule
 
@@ -35,9 +33,7 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 | keywords | string[] | o | validate で探す禁止キーワードの正規表現 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| include_exts | string[] | - | show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
-| exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
 ### CustomRule
 
@@ -49,9 +45,7 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 | exec | string | o | ファイルに対して実行するコマンド<br>終了コード 0 の場合はエラーなし扱い<br>エラー時は実行コマンドの標準出力がエラーメッセージとして表示される<br>e.g. `ruby path/to/your/checker.rb {path}`<br>e.g. `docker run your:image {path}` |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| include_exts | string[] | - | show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
-| exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
 ### NoJavaDocRule
 
@@ -63,9 +57,7 @@ JavaDoc がないファイルを検出する
 | java_doc | [javaDocConfig](#javadocconfig) | - |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| include_exts | string[] | - | show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
-| exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
 ### NoKotlinDocRule
 
@@ -77,9 +69,7 @@ KDoc がないファイルを検出する
 | kotlin_doc | [kotlinDocConfig](#kotlindocconfig) | - |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| include_exts | string[] | - | show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
-| exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
 ### NoRustDocRule
 
@@ -91,9 +81,7 @@ rustdoc がないファイルを検出する
 | rust_doc | [rustDocConfig](#rustdocconfig) | - |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| include_exts | string[] | - | show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
-| exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
 ### NoJapaneseCommentRule
 
@@ -105,9 +93,7 @@ rustdoc がないファイルを検出する
 | comment | [commentConfig](#commentconfig) | o |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| include_exts | string[] | - | show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
-| exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
 ### NoEnglishCommentRule
 
@@ -119,9 +105,7 @@ rustdoc がないファイルを検出する
 | comment | [commentConfig](#commentconfig) | o |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
-| include_exts | string[] | - | show と validation で対象に拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | show と validation で除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
-| exclude_files | [excludeFilter](#excludefilter)[] | - | show と validation で除外するファイルのフィルタ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
 ## GuidelineItem
 
@@ -130,17 +114,39 @@ guideline に列挙するレビューガイドラインの定義
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | message | string | o | guideline で表示するメッセージ |
-| include_exts | string[] | - | 検査する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `ts`<br>e.g. `tsx` |
-| exclude_exts | string[] | - | 除外する拡張子<br>include_exts と exclude_exts がどちらも未指定の場合は全拡張子が対象になる<br>e.g. `css` |
+| match | [matchItem](#matchitem)[] | - | 対象とするファイルのマッチ条件<br>複数指定時は and で結合 |
 
-## ExcludeFilter
+## MatchItem
 
-ファイル除外フィルタの定義
+ファイルマッチ条件の定義
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| filter | `file_starts_with` \|<br>`file_ends_with` \|<br>`path_contains` | o | フィルタの種類 |
-| keyword | string | o | キーワード |
+| pattern | [matchPattern](#matchpattern) | o |  |
+| keywords | string[] | o | マッチ対象のキーワード |
+| cond | [matchCond](#matchcond) | - | 省略時は and |
+
+## MatchPattern
+
+マッチパターンの種類
+
+| 値 | 説明 |
+|----|------|
+| `file_starts_with` | ファイル名が指定文字列で始まる |
+| `file_ends_with` | ファイル名が指定文字列で終わる |
+| `path_contains` | パスに指定文字列が含まれる |
+| `file_not_starts_with` | ファイル名が指定文字列で始まらない |
+| `file_not_ends_with` | ファイル名が指定文字列で終わらない |
+| `path_not_contains` | パスに指定文字列が含まれない |
+
+## MatchCond
+
+keywords の結合条件
+
+| 値 | 説明 |
+|----|------|
+| `and` | すべての keyword に一致 |
+| `or` | いずれかの keyword に一致 |
 
 ## JavaDocConfig
 

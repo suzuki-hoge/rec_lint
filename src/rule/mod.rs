@@ -6,7 +6,7 @@ pub use collector::{collect_rules, CollectedRules};
 use anyhow::{anyhow, Result};
 use regex::Regex;
 
-use crate::filter::{ExcludeFilter, ExtFilter};
+use crate::matcher::Matcher;
 use crate::validate::comment::custom::{BlockSyntax, CustomCommentSyntax};
 use crate::validate::doc::{JavaDocConfig, KotlinDocConfig, RustDocConfig};
 use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, Visibility};
@@ -37,29 +37,16 @@ impl Rule {
         }
     }
 
-    pub fn ext_filter(&self) -> &ExtFilter {
+    pub fn matcher(&self) -> &Matcher {
         match self {
-            Rule::Text(r) => &r.ext_filter,
-            Rule::Regex(r) => &r.ext_filter,
-            Rule::Custom(r) => &r.ext_filter,
-            Rule::JavaDoc(r) => &r.ext_filter,
-            Rule::KotlinDoc(r) => &r.ext_filter,
-            Rule::RustDoc(r) => &r.ext_filter,
-            Rule::JapaneseComment(r) => &r.ext_filter,
-            Rule::EnglishComment(r) => &r.ext_filter,
-        }
-    }
-
-    pub fn exclude_filter(&self) -> &ExcludeFilter {
-        match self {
-            Rule::Text(r) => &r.exclude_filter,
-            Rule::Regex(r) => &r.exclude_filter,
-            Rule::Custom(r) => &r.exclude_filter,
-            Rule::JavaDoc(r) => &r.exclude_filter,
-            Rule::KotlinDoc(r) => &r.exclude_filter,
-            Rule::RustDoc(r) => &r.exclude_filter,
-            Rule::JapaneseComment(r) => &r.exclude_filter,
-            Rule::EnglishComment(r) => &r.exclude_filter,
+            Rule::Text(r) => &r.matcher,
+            Rule::Regex(r) => &r.matcher,
+            Rule::Custom(r) => &r.matcher,
+            Rule::JavaDoc(r) => &r.matcher,
+            Rule::KotlinDoc(r) => &r.matcher,
+            Rule::RustDoc(r) => &r.matcher,
+            Rule::JapaneseComment(r) => &r.matcher,
+            Rule::EnglishComment(r) => &r.matcher,
         }
     }
 
@@ -82,8 +69,7 @@ pub struct TextRule {
     pub label: String,
     pub keywords: Vec<String>,
     pub message: String,
-    pub ext_filter: ExtFilter,
-    pub exclude_filter: ExcludeFilter,
+    pub matcher: Matcher,
 }
 
 #[derive(Clone, Debug)]
@@ -92,8 +78,7 @@ pub struct RegexRule {
     pub patterns: Vec<Regex>,
     pub keywords: Vec<String>,
     pub message: String,
-    pub ext_filter: ExtFilter,
-    pub exclude_filter: ExcludeFilter,
+    pub matcher: Matcher,
 }
 
 #[derive(Clone, Debug)]
@@ -101,8 +86,7 @@ pub struct CustomRule {
     pub label: String,
     pub exec: String,
     pub message: String,
-    pub ext_filter: ExtFilter,
-    pub exclude_filter: ExcludeFilter,
+    pub matcher: Matcher,
 }
 
 #[derive(Clone, Debug)]
@@ -110,8 +94,7 @@ pub struct JavaDocRule {
     pub label: String,
     pub config: JavaDocConfig,
     pub message: String,
-    pub ext_filter: ExtFilter,
-    pub exclude_filter: ExcludeFilter,
+    pub matcher: Matcher,
 }
 
 #[derive(Clone, Debug)]
@@ -119,8 +102,7 @@ pub struct KotlinDocRule {
     pub label: String,
     pub config: KotlinDocConfig,
     pub message: String,
-    pub ext_filter: ExtFilter,
-    pub exclude_filter: ExcludeFilter,
+    pub matcher: Matcher,
 }
 
 #[derive(Clone, Debug)]
@@ -128,8 +110,7 @@ pub struct RustDocRule {
     pub label: String,
     pub config: RustDocConfig,
     pub message: String,
-    pub ext_filter: ExtFilter,
-    pub exclude_filter: ExcludeFilter,
+    pub matcher: Matcher,
 }
 
 /// Comment source for comment validation
@@ -144,15 +125,14 @@ pub struct CommentRule {
     pub label: String,
     pub source: CommentSource,
     pub message: String,
-    pub ext_filter: ExtFilter,
-    pub exclude_filter: ExcludeFilter,
+    pub matcher: Matcher,
 }
 
 #[derive(Clone, Debug)]
 pub struct GuidelineItem {
     pub message: String,
     #[allow(dead_code)]
-    pub ext_filter: ExtFilter,
+    pub matcher: Matcher,
 }
 
 #[derive(Debug)]
@@ -174,25 +154,22 @@ impl TryFrom<RawConfig> for Config {
 }
 
 fn convert_rule(raw: RawRule) -> Result<Rule> {
-    let ext_filter = ExtFilter {
-        include: raw.include_exts.clone().unwrap_or_default(),
-        exclude: raw.exclude_exts.clone().unwrap_or_default(),
-    };
-
-    let exclude_filter = ExcludeFilter::new(raw.exclude_files.clone().unwrap_or_default());
+    let matcher = Matcher::new(raw.match_.clone());
 
     match raw.type_.as_str() {
         "forbidden_texts" => {
-            let keywords =
-                raw.keywords.ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_texts' requires 'keywords'", raw.label))?;
+            let keywords = raw
+                .keywords
+                .ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_texts' requires 'keywords'", raw.label))?;
             if raw.exec.is_some() {
                 return Err(anyhow!("Rule '{}': type 'forbidden_texts' must not have 'exec'", raw.label));
             }
-            Ok(Rule::Text(TextRule { label: raw.label, keywords, message: raw.message, ext_filter, exclude_filter }))
+            Ok(Rule::Text(TextRule { label: raw.label, keywords, message: raw.message, matcher }))
         }
         "forbidden_patterns" => {
-            let keywords =
-                raw.keywords.ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_patterns' requires 'keywords'", raw.label))?;
+            let keywords = raw
+                .keywords
+                .ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_patterns' requires 'keywords'", raw.label))?;
             if raw.exec.is_some() {
                 return Err(anyhow!("Rule '{}': type 'forbidden_patterns' must not have 'exec'", raw.label));
             }
@@ -200,21 +177,14 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 .iter()
                 .map(|k| Regex::new(k).map_err(|e| anyhow!("Rule '{}': invalid regex '{}': {}", raw.label, k, e)))
                 .collect::<Result<Vec<_>>>()?;
-            Ok(Rule::Regex(RegexRule {
-                label: raw.label,
-                patterns,
-                keywords,
-                message: raw.message,
-                ext_filter,
-                exclude_filter,
-            }))
+            Ok(Rule::Regex(RegexRule { label: raw.label, patterns, keywords, message: raw.message, matcher }))
         }
         "custom" => {
             let exec = raw.exec.ok_or_else(|| anyhow!("Rule '{}': type 'custom' requires 'exec'", raw.label))?;
             if raw.keywords.is_some() {
                 return Err(anyhow!("Rule '{}': type 'custom' must not have 'keywords'", raw.label));
             }
-            Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, ext_filter, exclude_filter }))
+            Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, matcher }))
         }
         "require_java_doc" => {
             let raw_config = raw
@@ -240,18 +210,12 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 annotation: raw_config.annotation.map(convert_visibility),
                 method: raw_config.method.map(convert_visibility),
             };
-            Ok(Rule::JavaDoc(JavaDocRule {
-                label: raw.label,
-                config,
-                message: raw.message,
-                ext_filter,
-                exclude_filter,
-            }))
+            Ok(Rule::JavaDoc(JavaDocRule { label: raw.label, config, message: raw.message, matcher }))
         }
         "require_kotlin_doc" => {
-            let raw_config = raw
-                .kotlin_doc
-                .ok_or_else(|| anyhow!("Rule '{}': type 'require_kotlin_doc' requires 'kotlin_doc' config", raw.label))?;
+            let raw_config = raw.kotlin_doc.ok_or_else(|| {
+                anyhow!("Rule '{}': type 'require_kotlin_doc' requires 'kotlin_doc' config", raw.label)
+            })?;
             if raw_config.class.is_none()
                 && raw_config.interface.is_none()
                 && raw_config.object.is_none()
@@ -279,13 +243,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 typealias: raw_config.typealias.map(convert_visibility),
                 function: raw_config.function.map(convert_visibility),
             };
-            Ok(Rule::KotlinDoc(KotlinDocRule {
-                label: raw.label,
-                config,
-                message: raw.message,
-                ext_filter,
-                exclude_filter,
-            }))
+            Ok(Rule::KotlinDoc(KotlinDocRule { label: raw.label, config, message: raw.message, matcher }))
         }
         "require_rust_doc" => {
             let raw_config = raw
@@ -312,33 +270,15 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 macro_rules: raw_config.macro_rules.map(convert_visibility),
                 mod_: raw_config.mod_.map(convert_visibility),
             };
-            Ok(Rule::RustDoc(RustDocRule {
-                label: raw.label,
-                config,
-                message: raw.message,
-                ext_filter,
-                exclude_filter,
-            }))
+            Ok(Rule::RustDoc(RustDocRule { label: raw.label, config, message: raw.message, matcher }))
         }
         "require_english_comment" => {
             let source = convert_comment_source(&raw)?;
-            Ok(Rule::JapaneseComment(CommentRule {
-                label: raw.label,
-                source,
-                message: raw.message,
-                ext_filter,
-                exclude_filter,
-            }))
+            Ok(Rule::JapaneseComment(CommentRule { label: raw.label, source, message: raw.message, matcher }))
         }
         "require_japanese_comment" => {
             let source = convert_comment_source(&raw)?;
-            Ok(Rule::EnglishComment(CommentRule {
-                label: raw.label,
-                source,
-                message: raw.message,
-                ext_filter,
-                exclude_filter,
-            }))
+            Ok(Rule::EnglishComment(CommentRule { label: raw.label, source, message: raw.message, matcher }))
         }
         other => Err(anyhow!("Rule '{}': unknown type '{}'", raw.label, other)),
     }
@@ -369,13 +309,7 @@ fn convert_comment_source(raw: &RawRule) -> Result<CommentSource> {
 }
 
 fn convert_guideline(raw: RawGuidelineItem) -> GuidelineItem {
-    GuidelineItem {
-        message: raw.message,
-        ext_filter: ExtFilter {
-            include: raw.include_exts.unwrap_or_default(),
-            exclude: raw.exclude_exts.unwrap_or_default(),
-        },
-    }
+    GuidelineItem { message: raw.message, matcher: Matcher::new(raw.match_.clone()) }
 }
 
 #[cfg(test)]
@@ -421,9 +355,7 @@ mod tests {
                 assert_eq!(r.label, "test");
                 assert_eq!(r.keywords, vec!["kw1", "kw2"]);
                 assert_eq!(r.message, "msg");
-                assert!(r.ext_filter.include.is_empty());
-                assert!(r.ext_filter.exclude.is_empty());
-                assert!(r.exclude_filter.filters.is_empty());
+                assert!(r.matcher.items.is_empty());
             }
             _ => panic!("Expected Text rule"),
         }
@@ -431,13 +363,18 @@ mod tests {
 
     #[test]
     fn test_convert_regex_rule() {
+        use crate::rule::parser::{MatchCond, MatchPattern, RawMatchItem};
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "regex-test".to_string(),
                 type_: "forbidden_patterns".to_string(),
                 keywords: Some(vec!["pattern.*".to_string()]),
                 message: "msg".to_string(),
-                include_exts: Some(vec![".java".to_string()]),
+                match_: vec![RawMatchItem {
+                    pattern: MatchPattern::FileEndsWith,
+                    keywords: vec![".java".to_string()],
+                    cond: MatchCond::Or,
+                }],
                 ..Default::default()
             }]),
             guideline: None,
@@ -448,7 +385,7 @@ mod tests {
                 assert_eq!(r.label, "regex-test");
                 assert_eq!(r.patterns.len(), 1);
                 assert_eq!(r.keywords, vec!["pattern.*"]);
-                assert_eq!(r.ext_filter.include, vec![".java"]);
+                assert_eq!(r.matcher.items.len(), 1);
             }
             _ => panic!("Expected Regex rule"),
         }
@@ -456,13 +393,18 @@ mod tests {
 
     #[test]
     fn test_convert_custom_rule() {
+        use crate::rule::parser::{MatchCond, MatchPattern, RawMatchItem};
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "custom-test".to_string(),
                 type_: "custom".to_string(),
                 exec: Some("cmd {path}".to_string()),
                 message: "msg".to_string(),
-                exclude_exts: Some(vec![".txt".to_string()]),
+                match_: vec![RawMatchItem {
+                    pattern: MatchPattern::FileNotEndsWith,
+                    keywords: vec![".txt".to_string()],
+                    cond: MatchCond::And,
+                }],
                 ..Default::default()
             }]),
             guideline: None,
@@ -472,7 +414,7 @@ mod tests {
             Rule::Custom(r) => {
                 assert_eq!(r.label, "custom-test");
                 assert_eq!(r.exec, "cmd {path}");
-                assert_eq!(r.ext_filter.exclude, vec![".txt"]);
+                assert_eq!(r.matcher.items.len(), 1);
             }
             _ => panic!("Expected Custom rule"),
         }
@@ -480,23 +422,34 @@ mod tests {
 
     #[test]
     fn test_convert_guideline_items() {
+        use crate::rule::parser::{MatchCond, MatchPattern, RawMatchItem};
         let raw = RawConfig {
             rule: None,
             guideline: Some(vec![
-                RawGuidelineItem { message: "guideline1".to_string(), include_exts: None, exclude_exts: None },
+                RawGuidelineItem { message: "guideline1".to_string(), match_: vec![] },
                 RawGuidelineItem {
                     message: "guideline2".to_string(),
-                    include_exts: Some(vec![".java".to_string()]),
-                    exclude_exts: Some(vec![".test.java".to_string()]),
+                    match_: vec![
+                        RawMatchItem {
+                            pattern: MatchPattern::FileEndsWith,
+                            keywords: vec![".java".to_string()],
+                            cond: MatchCond::Or,
+                        },
+                        RawMatchItem {
+                            pattern: MatchPattern::FileNotEndsWith,
+                            keywords: vec![".test.java".to_string()],
+                            cond: MatchCond::And,
+                        },
+                    ],
                 },
             ]),
         };
         let config = Config::try_from(raw).unwrap();
         assert_eq!(config.guideline.len(), 2);
         assert_eq!(config.guideline[0].message, "guideline1");
-        assert!(config.guideline[0].ext_filter.include.is_empty());
+        assert!(config.guideline[0].matcher.items.is_empty());
         assert_eq!(config.guideline[1].message, "guideline2");
-        assert_eq!(config.guideline[1].ext_filter.include, vec![".java"]);
+        assert_eq!(config.guideline[1].matcher.items.len(), 2);
     }
 
     // =========================================================================
@@ -640,8 +593,7 @@ mod tests {
             label: "text-label".to_string(),
             keywords: vec![],
             message: "".to_string(),
-            ext_filter: ExtFilter::default(),
-            exclude_filter: ExcludeFilter::default(),
+            matcher: Matcher::default(),
         });
         assert_eq!(text_rule.label(), "text-label");
 
@@ -649,8 +601,7 @@ mod tests {
             label: "custom-label".to_string(),
             exec: "".to_string(),
             message: "".to_string(),
-            ext_filter: ExtFilter::default(),
-            exclude_filter: ExcludeFilter::default(),
+            matcher: Matcher::default(),
         });
         assert_eq!(custom_rule.label(), "custom-label");
     }
@@ -661,8 +612,7 @@ mod tests {
             label: "".to_string(),
             keywords: vec!["a".to_string(), "b".to_string()],
             message: "".to_string(),
-            ext_filter: ExtFilter::default(),
-            exclude_filter: ExcludeFilter::default(),
+            matcher: Matcher::default(),
         });
         assert_eq!(text_rule.keywords(), Some(&["a".to_string(), "b".to_string()][..]));
 
@@ -670,8 +620,7 @@ mod tests {
             label: "".to_string(),
             exec: "".to_string(),
             message: "".to_string(),
-            ext_filter: ExtFilter::default(),
-            exclude_filter: ExcludeFilter::default(),
+            matcher: Matcher::default(),
         });
         assert!(custom_rule.keywords().is_none());
     }

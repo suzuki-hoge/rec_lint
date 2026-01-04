@@ -4,23 +4,40 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use serde::Deserialize;
 
-/// Filter type for exclude_files
+/// Match pattern type
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
-pub enum ExcludeFilterType {
-    /// Check if filename starts with keyword
+pub enum MatchPattern {
+    /// Match if filename starts with keyword
     FileStartsWith,
-    /// Check if filename ends with keyword
+    /// Match if filename ends with keyword
     FileEndsWith,
-    /// Check if path contains keyword
+    /// Match if path contains keyword
     PathContains,
+    /// Match if filename does NOT start with keyword
+    FileNotStartsWith,
+    /// Match if filename does NOT end with keyword
+    FileNotEndsWith,
+    /// Match if path does NOT contain keyword
+    PathNotContains,
 }
 
-/// Single exclude filter entry
+/// Match condition for keywords
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum MatchCond {
+    #[default]
+    And,
+    Or,
+}
+
+/// Single match item entry
 #[derive(Clone, Debug, Deserialize)]
-pub struct RawExcludeFilter {
-    pub filter: ExcludeFilterType,
-    pub keyword: String,
+pub struct RawMatchItem {
+    pub pattern: MatchPattern,
+    pub keywords: Vec<String>,
+    #[serde(default)]
+    pub cond: MatchCond,
 }
 
 // =============================================================================
@@ -133,9 +150,8 @@ pub struct RawRule {
     pub exec: Option<String>,
     #[serde(default)]
     pub message: String,
-    pub include_exts: Option<Vec<String>>,
-    pub exclude_exts: Option<Vec<String>>,
-    pub exclude_files: Option<Vec<RawExcludeFilter>>,
+    #[serde(default, rename = "match")]
+    pub match_: Vec<RawMatchItem>,
     // Doc validator configs
     pub java_doc: Option<RawJavaDocConfig>,
     pub kotlin_doc: Option<RawKotlinDocConfig>,
@@ -147,8 +163,8 @@ pub struct RawRule {
 #[derive(Deserialize)]
 pub struct RawGuidelineItem {
     pub message: String,
-    pub include_exts: Option<Vec<String>>,
-    pub exclude_exts: Option<Vec<String>>,
+    #[serde(default, rename = "match")]
+    pub match_: Vec<RawMatchItem>,
 }
 
 impl RawConfig {
@@ -209,9 +225,7 @@ rule:
         assert_eq!(rule.keywords.as_ref().unwrap().len(), 2);
         assert!(rule.exec.is_none());
         assert_eq!(rule.message, "Test message");
-        assert!(rule.include_exts.is_none());
-        assert!(rule.exclude_exts.is_none());
-        assert!(rule.exclude_files.is_none());
+        assert!(rule.match_.is_empty());
     }
 
     #[test]
@@ -248,42 +262,62 @@ rule:
     }
 
     #[test]
-    fn test_parse_rule_with_exts() {
+    fn test_parse_rule_with_match() {
         let yaml = r#"
 rule:
-  - label: ext-rule
+  - label: match-rule
     type: forbidden_texts
     keywords: [test]
     message: Message
-    include_exts: [.java, .kt]
-    exclude_exts: [.test.java]
+    match:
+      - pattern: file_ends_with
+        keywords: [.java, .kt]
+        cond: or
+      - pattern: file_not_ends_with
+        keywords: [.test.java]
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        assert_eq!(rule.include_exts.as_ref().unwrap(), &vec![".java", ".kt"]);
-        assert_eq!(rule.exclude_exts.as_ref().unwrap(), &vec![".test.java"]);
+        assert_eq!(rule.match_.len(), 2);
+        assert_eq!(rule.match_[0].pattern, MatchPattern::FileEndsWith);
+        assert_eq!(rule.match_[0].keywords, vec![".java", ".kt"]);
+        assert_eq!(rule.match_[0].cond, MatchCond::Or);
+        assert_eq!(rule.match_[1].pattern, MatchPattern::FileNotEndsWith);
+        assert_eq!(rule.match_[1].keywords, vec![".test.java"]);
+        assert_eq!(rule.match_[1].cond, MatchCond::And); // default
     }
 
     #[test]
-    fn test_parse_rule_with_exclude_files() {
+    fn test_parse_rule_with_all_match_patterns() {
         let yaml = r#"
 rule:
-  - label: exclude-test
+  - label: all-patterns
     type: forbidden_texts
     keywords: [test]
     message: Message
-    exclude_files:
-      - filter: file_starts_with
-        keyword: Test
-      - filter: path_contains
-        keyword: /generated/
+    match:
+      - pattern: file_starts_with
+        keywords: [Test]
+      - pattern: file_ends_with
+        keywords: [.java]
+      - pattern: path_contains
+        keywords: [/src/]
+      - pattern: file_not_starts_with
+        keywords: [_]
+      - pattern: file_not_ends_with
+        keywords: [.bak]
+      - pattern: path_not_contains
+        keywords: [/generated/]
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        let exclude_files = rule.exclude_files.as_ref().unwrap();
-        assert_eq!(exclude_files.len(), 2);
-        assert_eq!(exclude_files[0].keyword, "Test");
-        assert_eq!(exclude_files[1].keyword, "/generated/");
+        assert_eq!(rule.match_.len(), 6);
+        assert_eq!(rule.match_[0].pattern, MatchPattern::FileStartsWith);
+        assert_eq!(rule.match_[1].pattern, MatchPattern::FileEndsWith);
+        assert_eq!(rule.match_[2].pattern, MatchPattern::PathContains);
+        assert_eq!(rule.match_[3].pattern, MatchPattern::FileNotStartsWith);
+        assert_eq!(rule.match_[4].pattern, MatchPattern::FileNotEndsWith);
+        assert_eq!(rule.match_[5].pattern, MatchPattern::PathNotContains);
     }
 
     #[test]
@@ -292,15 +326,17 @@ rule:
 guideline:
   - message: Guideline point 1
   - message: Guideline point 2
-    include_exts: [.java]
+    match:
+      - pattern: file_ends_with
+        keywords: [.java]
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let guidelines = config.guideline.unwrap();
         assert_eq!(guidelines.len(), 2);
         assert_eq!(guidelines[0].message, "Guideline point 1");
-        assert!(guidelines[0].include_exts.is_none());
+        assert!(guidelines[0].match_.is_empty());
         assert_eq!(guidelines[1].message, "Guideline point 2");
-        assert!(guidelines[1].include_exts.is_some());
+        assert_eq!(guidelines[1].match_.len(), 1);
     }
 
     #[test]

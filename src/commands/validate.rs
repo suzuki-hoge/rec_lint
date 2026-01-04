@@ -102,16 +102,12 @@ fn cache_rules(files: &[PathBuf]) -> CachedRules {
 
 fn validate_file(file: &Path, rules: &CollectedRules) -> Result<Vec<FileViolation>> {
     let file = file.canonicalize()?;
-    let filename = file.file_name().and_then(|n| n.to_str()).unwrap_or("");
     let content = fs::read_to_string(&file)?;
     let mut violations = Vec::new();
     let root_dir = &rules.root_dir;
 
     for (rule, _source) in &rules.rule {
-        if !rule.ext_filter().matches(filename) {
-            continue;
-        }
-        if rule.exclude_filter().should_exclude(&file) {
+        if !rule.matcher().matches(&file) {
             continue;
         }
         if let Some(v) = validate_rule(&file, root_dir, rule, &content)? {

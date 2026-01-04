@@ -4,7 +4,10 @@ rule:
     keywords:
       - System.exit
     message: Do not use System.exit
-    include_exts: [.java]
+    match:
+      - pattern: file_ends_with
+        keywords: [.java]
+        cond: or
 
 guideline:
   - message: Check exception handling

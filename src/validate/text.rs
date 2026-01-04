@@ -17,15 +17,14 @@ pub fn validate(content: &str, rule: &TextRule) -> Vec<Violation> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::filter::{ExcludeFilter, ExtFilter};
+    use crate::matcher::Matcher;
 
     fn make_rule(keywords: Vec<&str>) -> TextRule {
         TextRule {
             label: "test".to_string(),
             keywords: keywords.into_iter().map(String::from).collect(),
             message: "test message".to_string(),
-            ext_filter: ExtFilter::default(),
-            exclude_filter: ExcludeFilter::default(),
+            matcher: Matcher::default(),
         }
     }
 
