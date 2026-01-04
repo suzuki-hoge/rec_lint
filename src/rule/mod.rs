@@ -313,15 +313,16 @@ fn convert_guideline(raw: RawGuidelineItem) -> GuidelineItem {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
 
     // =========================================================================
-    // Config TryFrom tests - success cases
+    // 設定変換の正常系
     // =========================================================================
 
     #[test]
-    fn test_convert_empty_config() {
+    fn 空の設定を変換すると空のConfigが生成される() {
         let raw = RawConfig { rule: None, guideline: None };
         let config = Config::try_from(raw).unwrap();
         assert!(config.rule.is_empty());
@@ -329,7 +330,7 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_empty_vec_sections() {
+    fn 空のベクタセクションを変換すると空のConfigが生成される() {
         let raw = RawConfig { rule: Some(vec![]), guideline: Some(vec![]) };
         let config = Config::try_from(raw).unwrap();
         assert!(config.rule.is_empty());
@@ -337,7 +338,7 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_text_rule() {
+    fn テキストルールが正しく変換される() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "test".to_string(),
@@ -362,7 +363,7 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_regex_rule() {
+    fn 正規表現ルールがマッチ条件と共に変換される() {
         use crate::rule::parser::{MatchCond, MatchPattern, RawMatchItem};
         let raw = RawConfig {
             rule: Some(vec![RawRule {
@@ -392,7 +393,7 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_custom_rule() {
+    fn カスタムルールがexecコマンドと共に変換される() {
         use crate::rule::parser::{MatchCond, MatchPattern, RawMatchItem};
         let raw = RawConfig {
             rule: Some(vec![RawRule {
@@ -421,7 +422,7 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_guideline_items() {
+    fn ガイドライン項目がマッチ条件と共に変換される() {
         use crate::rule::parser::{MatchCond, MatchPattern, RawMatchItem};
         let raw = RawConfig {
             rule: None,
@@ -453,11 +454,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Config TryFrom tests - error cases
+    // 設定変換のエラー系
     // =========================================================================
 
     #[test]
-    fn test_error_text_without_keywords() {
+    fn テキストルールにキーワードがないとエラーになる() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
@@ -472,7 +473,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_text_with_exec() {
+    fn テキストルールにexecがあるとエラーになる() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
@@ -489,7 +490,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_regex_without_keywords() {
+    fn 正規表現ルールにキーワードがないとエラーになる() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
@@ -504,7 +505,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_regex_with_exec() {
+    fn 正規表現ルールにexecがあるとエラーになる() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
@@ -521,7 +522,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_regex_invalid_pattern() {
+    fn 不正な正規表現パターンはエラーになる() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
@@ -537,7 +538,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_custom_without_exec() {
+    fn カスタムルールにexecがないとエラーになる() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
@@ -552,7 +553,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_custom_with_keywords() {
+    fn カスタムルールにキーワードがあるとエラーになる() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
@@ -569,7 +570,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_unknown_type() {
+    fn 未知のルールタイプはエラーになる() {
         let raw = RawConfig {
             rule: Some(vec![RawRule {
                 label: "bad-rule".to_string(),
@@ -584,11 +585,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Rule accessor tests
+    // ルールアクセサ
     // =========================================================================
 
     #[test]
-    fn test_rule_label() {
+    fn ルールからラベルを取得できる() {
         let text_rule = Rule::Text(TextRule {
             label: "text-label".to_string(),
             keywords: vec![],
@@ -607,7 +608,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rule_keywords() {
+    fn ルールからキーワードを取得できる() {
         let text_rule = Rule::Text(TextRule {
             label: "".to_string(),
             keywords: vec!["a".to_string(), "b".to_string()],

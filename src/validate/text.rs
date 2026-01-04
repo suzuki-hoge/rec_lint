@@ -15,6 +15,7 @@ pub fn validate(content: &str, rule: &TextRule) -> Vec<Violation> {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
     use crate::matcher::Matcher;
@@ -29,11 +30,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Basic matching tests
+    // 基本的なマッチング
     // =========================================================================
 
     #[test]
-    fn test_no_match_returns_empty() {
+    fn マッチしない場合は空の結果を返す() {
         let rule = make_rule(vec!["println"]);
         let content = "let x = 42;";
         let violations = validate(content, &rule);
@@ -41,7 +42,7 @@ mod tests {
     }
 
     #[test]
-    fn test_single_keyword_match() {
+    fn キーワードがマッチすると違反が検出される() {
         let rule = make_rule(vec!["println"]);
         let content = "println!(\"hello\");";
         let violations = validate(content, &rule);
@@ -52,7 +53,7 @@ mod tests {
     }
 
     #[test]
-    fn test_keyword_in_middle_of_line() {
+    fn 行中のキーワードも検出される() {
         let rule = make_rule(vec!["ng-word"]);
         let content = "// This is a ng-word item";
         let violations = validate(content, &rule);
@@ -61,7 +62,7 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_content() {
+    fn 空のコンテンツは違反なし() {
         let rule = make_rule(vec!["println"]);
         let content = "";
         let violations = validate(content, &rule);
@@ -69,11 +70,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Multiple keywords tests
+    // 複数キーワード
     // =========================================================================
 
     #[test]
-    fn test_multiple_keywords_first_match_wins() {
+    fn 複数キーワードでは先に定義されたものが優先される() {
         let rule = make_rule(vec!["alpha", "beta"]);
         let content = "beta alpha gamma";
         let violations = validate(content, &rule);
@@ -84,7 +85,7 @@ mod tests {
     }
 
     #[test]
-    fn test_second_keyword_matches_when_first_absent() {
+    fn 最初のキーワードが無ければ次のキーワードでマッチする() {
         let rule = make_rule(vec!["alpha", "beta"]);
         let content = "beta gamma";
         let violations = validate(content, &rule);
@@ -93,7 +94,7 @@ mod tests {
     }
 
     #[test]
-    fn test_only_first_keyword_per_line() {
+    fn 各行で最初にマッチしたキーワードのみ報告される() {
         // Even if multiple keywords match, only first match per line is reported (break)
         let rule = make_rule(vec!["a", "b"]);
         let content = "a b c";
@@ -103,11 +104,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Multiple lines tests
+    // 複数行
     // =========================================================================
 
     #[test]
-    fn test_multiple_lines_with_violations() {
+    fn 複数行の違反を検出できる() {
         let rule = make_rule(vec!["bad"]);
         let content = "good line\nbad line 1\ngood again\nbad line 2";
         let violations = validate(content, &rule);
@@ -119,7 +120,7 @@ mod tests {
     }
 
     #[test]
-    fn test_line_numbers_are_1_based() {
+    fn 行番号は1から始まる() {
         let rule = make_rule(vec!["target"]);
         let content = "line1\nline2\ntarget here";
         let violations = validate(content, &rule);
@@ -128,11 +129,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Edge cases
+    // エッジケース
     // =========================================================================
 
     #[test]
-    fn test_keyword_at_end_of_line() {
+    fn 行末のキーワードも検出される() {
         let rule = make_rule(vec!["end"]);
         let content = "this is the end";
         let violations = validate(content, &rule);
@@ -141,7 +142,7 @@ mod tests {
     }
 
     #[test]
-    fn test_case_sensitive_matching() {
+    fn 大文字小文字を区別する() {
         let rule = make_rule(vec!["NGWORD"]);
         let content = "ngword item";
         let violations = validate(content, &rule);
@@ -149,7 +150,7 @@ mod tests {
     }
 
     #[test]
-    fn test_substring_match() {
+    fn 部分文字列もマッチする() {
         let rule = make_rule(vec!["print"]);
         let content = "println!()";
         let violations = validate(content, &rule);
@@ -158,7 +159,7 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_keywords() {
+    fn キーワードが空の場合は違反なし() {
         let rule = make_rule(vec![]);
         let content = "any content";
         let violations = validate(content, &rule);
@@ -166,7 +167,7 @@ mod tests {
     }
 
     #[test]
-    fn test_found_contains_full_line() {
+    fn 検出結果には行全体が含まれる() {
         let rule = make_rule(vec!["x"]);
         let content = "let x = 42;";
         let violations = validate(content, &rule);

@@ -313,15 +313,16 @@ fn check_mod(line: &str, line_num: usize, has_rustdoc: bool, config: &RustDocCon
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
 
     // =========================================================================
-    // Struct tests
+    // struct
     // =========================================================================
 
     #[test]
-    fn test_struct_without_rustdoc() {
+    fn RustDocがないpub_structは違反になる() {
         let content = "pub struct MyStruct {}";
         let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -331,7 +332,7 @@ mod tests {
     }
 
     #[test]
-    fn test_struct_with_rustdoc() {
+    fn RustDocがあるstructは違反にならない() {
         let content = "/// Doc\npub struct MyStruct {}";
         let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -339,7 +340,7 @@ mod tests {
     }
 
     #[test]
-    fn test_struct_public_only_skips_private() {
+    fn public指定時は非pub_structをスキップする() {
         let content = "struct MyStruct {}";
         let config = RustDocConfig { struct_: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -347,7 +348,7 @@ mod tests {
     }
 
     #[test]
-    fn test_struct_disabled() {
+    fn struct検査が無効の場合は違反にならない() {
         let content = "pub struct MyStruct {}";
         let config = RustDocConfig { struct_: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -355,7 +356,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generic_struct() {
+    fn ジェネリックstructの名前を正しく抽出できる() {
         let content = "pub struct Container<T> {}";
         let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -364,11 +365,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Enum tests
+    // enum
     // =========================================================================
 
     #[test]
-    fn test_enum_without_rustdoc() {
+    fn RustDocがないpub_enumは違反になる() {
         let content = "pub enum MyEnum { A, B }";
         let config = RustDocConfig { enum_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -378,7 +379,7 @@ mod tests {
     }
 
     #[test]
-    fn test_enum_with_rustdoc() {
+    fn RustDocがあるenumは違反にならない() {
         let content = "/// Doc\npub enum MyEnum { A }";
         let config = RustDocConfig { enum_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -386,7 +387,7 @@ mod tests {
     }
 
     #[test]
-    fn test_enum_public_only_skips_private() {
+    fn public指定時は非pub_enumをスキップする() {
         let content = "enum MyEnum { A }";
         let config = RustDocConfig { enum_: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -394,11 +395,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Trait tests
+    // trait
     // =========================================================================
 
     #[test]
-    fn test_trait_without_rustdoc() {
+    fn RustDocがないpub_traitは違反になる() {
         let content = "pub trait MyTrait {}";
         let config = RustDocConfig { trait_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -408,7 +409,7 @@ mod tests {
     }
 
     #[test]
-    fn test_trait_with_rustdoc() {
+    fn RustDocがあるtraitは違反にならない() {
         let content = "/// Doc\npub trait MyTrait {}";
         let config = RustDocConfig { trait_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -416,7 +417,7 @@ mod tests {
     }
 
     #[test]
-    fn test_trait_public_only_skips_private() {
+    fn public指定時は非pub_traitをスキップする() {
         let content = "trait MyTrait {}";
         let config = RustDocConfig { trait_: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -424,11 +425,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Type alias tests
+    // 型エイリアス
     // =========================================================================
 
     #[test]
-    fn test_type_alias_without_rustdoc() {
+    fn RustDocがないpub_type_aliasは違反になる() {
         let content = "pub type MyType = String;";
         let config = RustDocConfig { type_alias: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -438,7 +439,7 @@ mod tests {
     }
 
     #[test]
-    fn test_type_alias_with_rustdoc() {
+    fn RustDocがある型エイリアスは違反にならない() {
         let content = "/// Doc\npub type MyType = String;";
         let config = RustDocConfig { type_alias: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -446,7 +447,7 @@ mod tests {
     }
 
     #[test]
-    fn test_type_alias_public_only_skips_private() {
+    fn public指定時は非pub型エイリアスをスキップする() {
         let content = "type MyType = String;";
         let config = RustDocConfig { type_alias: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -454,11 +455,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Union tests
+    // union
     // =========================================================================
 
     #[test]
-    fn test_union_without_rustdoc() {
+    fn RustDocがないpub_unionは違反になる() {
         let content = "pub union MyUnion { a: i32, b: f32 }";
         let config = RustDocConfig { union: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -468,7 +469,7 @@ mod tests {
     }
 
     #[test]
-    fn test_union_with_rustdoc() {
+    fn RustDocがあるunionは違反にならない() {
         let content = "/// Doc\npub union MyUnion { a: i32 }";
         let config = RustDocConfig { union: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -476,11 +477,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Function tests
+    // 関数
     // =========================================================================
 
     #[test]
-    fn test_fn_without_rustdoc() {
+    fn RustDocがないpub_fnは違反になる() {
         let content = "pub fn do_something() {}";
         let config = RustDocConfig { fn_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -490,7 +491,7 @@ mod tests {
     }
 
     #[test]
-    fn test_fn_with_rustdoc() {
+    fn RustDocがある関数は違反にならない() {
         let content = "/// Doc\npub fn do_something() {}";
         let config = RustDocConfig { fn_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -498,7 +499,7 @@ mod tests {
     }
 
     #[test]
-    fn test_fn_public_only_skips_private() {
+    fn public指定時は非pub関数をスキップする() {
         let content = "fn do_something() {}";
         let config = RustDocConfig { fn_: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -506,7 +507,7 @@ mod tests {
     }
 
     #[test]
-    fn test_fn_disabled() {
+    fn 関数検査が無効の場合は違反にならない() {
         let content = "pub fn do_something() {}";
         let config = RustDocConfig { fn_: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -514,11 +515,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Macro rules tests
+    // macro_rules
     // =========================================================================
 
     #[test]
-    fn test_macro_rules_without_rustdoc() {
+    fn RustDocがないmacro_rulesは違反になる() {
         let content = "macro_rules! my_macro { () => {} }";
         let config = RustDocConfig { macro_rules: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -528,7 +529,7 @@ mod tests {
     }
 
     #[test]
-    fn test_macro_rules_with_rustdoc() {
+    fn RustDocがあるmacro_rulesは違反にならない() {
         let content = "/// Doc\nmacro_rules! my_macro { () => {} }";
         let config = RustDocConfig { macro_rules: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -536,7 +537,7 @@ mod tests {
     }
 
     #[test]
-    fn test_macro_rules_disabled() {
+    fn macro_rules検査が無効の場合は違反にならない() {
         let content = "macro_rules! my_macro { () => {} }";
         let config = RustDocConfig { macro_rules: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -544,11 +545,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Module tests
+    // モジュール
     // =========================================================================
 
     #[test]
-    fn test_mod_without_rustdoc() {
+    fn RustDocがないpubモジュールは違反になる() {
         let content = "pub mod mymodule;";
         let config = RustDocConfig { mod_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -558,7 +559,7 @@ mod tests {
     }
 
     #[test]
-    fn test_mod_with_rustdoc() {
+    fn RustDocがあるモジュールは違反にならない() {
         let content = "/// Doc\npub mod mymodule;";
         let config = RustDocConfig { mod_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -566,7 +567,7 @@ mod tests {
     }
 
     #[test]
-    fn test_mod_public_only_skips_private() {
+    fn public指定時は非pubモジュールをスキップする() {
         let content = "mod mymodule;";
         let config = RustDocConfig { mod_: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -574,7 +575,7 @@ mod tests {
     }
 
     #[test]
-    fn test_mod_skips_tests() {
+    fn testsモジュールは検査対象外() {
         let content = "mod tests {}";
         let config = RustDocConfig { mod_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -582,7 +583,7 @@ mod tests {
     }
 
     #[test]
-    fn test_mod_inline_without_rustdoc() {
+    fn インラインモジュールも検査対象() {
         let content = "pub mod mymodule {}";
         let config = RustDocConfig { mod_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -591,11 +592,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Edge cases
+    // エッジケース
     // =========================================================================
 
     #[test]
-    fn test_attribute_before_struct() {
+    fn アトリビュート付きstructのRustDocを認識する() {
         let content = "/// Doc\n#[derive(Debug)]\npub struct MyStruct {}";
         let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -603,7 +604,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiline_rustdoc() {
+    fn 複数行RustDocを認識する() {
         let content = "/// First line\n/// Second line\npub struct MyStruct {}";
         let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -611,7 +612,7 @@ mod tests {
     }
 
     #[test]
-    fn test_block_doc_comment() {
+    fn ブロックドキュメントコメントを認識する() {
         let content = "/** Block doc */\npub struct MyStruct {}";
         let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -619,7 +620,7 @@ mod tests {
     }
 
     #[test]
-    fn test_regular_comment_not_rustdoc() {
+    fn 通常のコメントはRustDocとして認識されない() {
         let content = "// Not rustdoc\npub struct MyStruct {}";
         let config = RustDocConfig { struct_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -627,7 +628,7 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_config_no_violations() {
+    fn 空の設定では違反が検出されない() {
         let content = "pub struct MyStruct {}\npub fn foo() {}";
         let config = RustDocConfig::default();
         let violations = validate(content, &config);
@@ -635,7 +636,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiple_elements() {
+    fn 複数の要素を同時に検査できる() {
         let content = "pub struct A {}\npub enum B {}\npub trait C {}";
         let config = RustDocConfig {
             struct_: Some(Visibility::All),

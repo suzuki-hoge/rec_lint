@@ -51,6 +51,7 @@ impl Matcher {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
 
@@ -59,11 +60,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Empty matcher tests
+    // 空のマッチャー
     // =========================================================================
 
     #[test]
-    fn test_empty_matcher_matches_all() {
+    fn 空のマッチャーは全てのファイルにマッチする() {
         let matcher = Matcher::default();
         assert!(matcher.matches(Path::new("src/Main.java")));
         assert!(matcher.matches(Path::new("test/Test.java")));
@@ -71,11 +72,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Positive pattern tests (file_starts_with, file_ends_with, path_contains)
+    // 肯定パターン (file_starts_with, file_ends_with, path_contains)
     // =========================================================================
 
     #[test]
-    fn test_file_starts_with() {
+    fn ファイル名が指定文字列で始まる場合にマッチする() {
         let matcher = Matcher::new(vec![make_item(MatchPattern::FileStartsWith, vec!["Test"], MatchCond::And)]);
         assert!(matcher.matches(Path::new("src/TestMain.java")));
         assert!(matcher.matches(Path::new("TestFile.java")));
@@ -84,7 +85,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_ends_with() {
+    fn ファイル名が指定文字列で終わる場合にマッチする() {
         let matcher = Matcher::new(vec![make_item(MatchPattern::FileEndsWith, vec![".java"], MatchCond::And)]);
         assert!(matcher.matches(Path::new("src/Main.java")));
         assert!(matcher.matches(Path::new("Test.java")));
@@ -93,7 +94,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_ends_with_or_condition() {
+    fn 複数の拡張子のいずれかで終わる場合にマッチする() {
         let matcher = Matcher::new(vec![make_item(MatchPattern::FileEndsWith, vec![".java", ".kt"], MatchCond::Or)]);
         assert!(matcher.matches(Path::new("src/Main.java")));
         assert!(matcher.matches(Path::new("src/Main.kt")));
@@ -101,7 +102,7 @@ mod tests {
     }
 
     #[test]
-    fn test_path_contains() {
+    fn パスに指定文字列が含まれる場合にマッチする() {
         let matcher = Matcher::new(vec![make_item(MatchPattern::PathContains, vec!["/src/"], MatchCond::And)]);
         assert!(matcher.matches(Path::new("project/src/Main.java")));
         assert!(matcher.matches(Path::new("/src/Test.java")));
@@ -109,11 +110,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Negative pattern tests (file_not_*, path_not_*)
+    // 否定パターン (file_not_*, path_not_*)
     // =========================================================================
 
     #[test]
-    fn test_file_not_starts_with() {
+    fn ファイル名が指定文字列で始まらない場合にマッチする() {
         let matcher = Matcher::new(vec![make_item(MatchPattern::FileNotStartsWith, vec!["Test"], MatchCond::And)]);
         assert!(matcher.matches(Path::new("src/Main.java")));
         assert!(matcher.matches(Path::new("src/MyTest.java")));
@@ -122,7 +123,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_not_ends_with() {
+    fn ファイル名が指定文字列で終わらない場合にマッチする() {
         let matcher = Matcher::new(vec![make_item(MatchPattern::FileNotEndsWith, vec![".test.java"], MatchCond::And)]);
         assert!(matcher.matches(Path::new("src/Main.java")));
         assert!(matcher.matches(Path::new("src/Test.java")));
@@ -130,7 +131,7 @@ mod tests {
     }
 
     #[test]
-    fn test_path_not_contains() {
+    fn パスに指定文字列が含まれない場合にマッチする() {
         let matcher = Matcher::new(vec![make_item(MatchPattern::PathNotContains, vec!["/test/"], MatchCond::And)]);
         assert!(matcher.matches(Path::new("src/Main.java")));
         assert!(matcher.matches(Path::new("test.java"))); // filename, not path
@@ -138,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn test_path_not_contains_or_condition() {
+    fn パス除外のOR条件では両方含む場合のみ除外される() {
         // NOT contains /test/ OR NOT contains /generated/
         // This means: file is excluded only if it contains BOTH /test/ AND /generated/
         let matcher =
@@ -157,7 +158,7 @@ mod tests {
     }
 
     #[test]
-    fn test_path_not_contains_and_condition() {
+    fn パス除外のAND条件ではどちらか含む場合に除外される() {
         // NOT contains /test/ AND NOT contains /generated/
         // File passes only if it contains neither
         let matcher =
@@ -171,11 +172,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Multiple items (AND logic between items)
+    // 複数条件の組み合わせ
     // =========================================================================
 
     #[test]
-    fn test_multiple_items_and_logic() {
+    fn 複数の条件項目はAND論理で評価される() {
         let matcher = Matcher::new(vec![
             make_item(MatchPattern::FileEndsWith, vec![".java"], MatchCond::And),
             make_item(MatchPattern::PathNotContains, vec!["/test/"], MatchCond::And),
@@ -187,7 +188,7 @@ mod tests {
     }
 
     #[test]
-    fn test_complex_matcher() {
+    fn 複雑な条件の組み合わせで正しくフィルタリングされる() {
         // Match: (.java OR .kt) AND NOT in /test/ AND NOT in /generated/
         let matcher = Matcher::new(vec![
             make_item(MatchPattern::FileEndsWith, vec![".java", ".kt"], MatchCond::Or),
@@ -201,18 +202,18 @@ mod tests {
     }
 
     // =========================================================================
-    // Edge cases
+    // エッジケース
     // =========================================================================
 
     #[test]
-    fn test_empty_keywords_and_condition() {
+    fn キーワードが空のAND条件は常にマッチする() {
         // Empty keywords with AND -> all() returns true for empty iterator
         let matcher = Matcher::new(vec![make_item(MatchPattern::FileEndsWith, vec![], MatchCond::And)]);
         assert!(matcher.matches(Path::new("anything.txt")));
     }
 
     #[test]
-    fn test_empty_keywords_or_condition() {
+    fn キーワードが空のOR条件は常にマッチしない() {
         // Empty keywords with OR -> any() returns false for empty iterator
         let matcher = Matcher::new(vec![make_item(MatchPattern::FileEndsWith, vec![], MatchCond::Or)]);
         assert!(!matcher.matches(Path::new("anything.txt")));

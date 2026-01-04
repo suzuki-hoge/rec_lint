@@ -128,6 +128,7 @@ fn find_block_start<'a>(line: &str, blocks: &'a [BlockSyntax]) -> Option<(&'a Bl
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
 
@@ -153,11 +154,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Line comment tests
+    // 行コメント
     // =========================================================================
 
     #[test]
-    fn test_hash_line_comment() {
+    fn ハッシュ記号の行コメントを抽出できる() {
         let content = "# This is a comment";
         let comments = extract_comments(content, &syntax_python());
         assert_eq!(comments.len(), 1);
@@ -165,7 +166,7 @@ mod tests {
     }
 
     #[test]
-    fn test_hash_line_comment_after_code() {
+    fn コード行末の行コメントを抽出できる() {
         let content = "x = 1 # inline comment";
         let comments = extract_comments(content, &syntax_python());
         assert_eq!(comments.len(), 1);
@@ -173,14 +174,14 @@ mod tests {
     }
 
     #[test]
-    fn test_multiple_hash_comments() {
+    fn 複数の行コメントを抽出できる() {
         let content = "# first\n# second";
         let comments = extract_comments(content, &syntax_python());
         assert_eq!(comments.len(), 2);
     }
 
     #[test]
-    fn test_hash_comment_japanese() {
+    fn 日本語の行コメントを抽出できる() {
         let content = "# これは日本語のコメント";
         let comments = extract_comments(content, &syntax_python());
         assert_eq!(comments.len(), 1);
@@ -188,11 +189,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Block comment tests
+    // ブロックコメント
     // =========================================================================
 
     #[test]
-    fn test_html_block_comment() {
+    fn HTMLのブロックコメントを抽出できる() {
         let content = "<!-- HTML comment -->";
         let comments = extract_comments(content, &syntax_html());
         assert_eq!(comments.len(), 1);
@@ -200,7 +201,7 @@ mod tests {
     }
 
     #[test]
-    fn test_html_multiline_comment() {
+    fn 複数行のブロックコメントを抽出できる() {
         let content = "<!--\n  Multi-line\n  comment\n-->";
         let comments = extract_comments(content, &syntax_html());
         assert_eq!(comments.len(), 2);
@@ -211,7 +212,7 @@ mod tests {
     }
 
     #[test]
-    fn test_python_docstring() {
+    fn Pythonのdocstringを抽出できる() {
         let content = "\"\"\"Python docstring\"\"\"";
         let comments = extract_comments(content, &syntax_python());
         assert_eq!(comments.len(), 1);
@@ -219,24 +220,24 @@ mod tests {
     }
 
     // =========================================================================
-    // Edge cases
+    // エッジケース
     // =========================================================================
 
     #[test]
-    fn test_empty_content() {
+    fn 空のコンテンツからはコメントが抽出されない() {
         let comments = extract_comments("", &syntax_python());
         assert!(comments.is_empty());
     }
 
     #[test]
-    fn test_no_comments() {
+    fn コメントがない場合は空のリストを返す() {
         let content = "x = 1\ny = 2";
         let comments = extract_comments(content, &syntax_python());
         assert!(comments.is_empty());
     }
 
     #[test]
-    fn test_shell_heredoc_style() {
+    fn シェルのヒアドキュメント形式のコメントを抽出できる() {
         let content = ": '\nBlock comment\ntext\n'";
         let comments = extract_comments(content, &syntax_shell());
         assert_eq!(comments.len(), 2);
@@ -247,11 +248,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Multiple patterns tests
+    // 複数パターン
     // =========================================================================
 
     #[test]
-    fn test_jsx_multiple_blocks() {
+    fn 複数のブロックコメント構文を同時に処理できる() {
         let syntax = CustomCommentSyntax {
             lines: vec!["//".to_string()],
             blocks: vec![
@@ -267,7 +268,7 @@ mod tests {
     }
 
     #[test]
-    fn test_no_line_markers() {
+    fn 行コメント構文が未定義でもブロックコメントを抽出できる() {
         let syntax = CustomCommentSyntax {
             lines: vec![],
             blocks: vec![BlockSyntax { start: "<!--".to_string(), end: "-->".to_string() }],

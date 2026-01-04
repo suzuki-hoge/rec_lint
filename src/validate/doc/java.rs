@@ -279,15 +279,16 @@ fn extract_identifier(s: &str) -> String {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
 
     // =========================================================================
-    // Class tests
+    // クラス
     // =========================================================================
 
     #[test]
-    fn test_class_without_javadoc() {
+    fn JavaDocがないpublicクラスは違反になる() {
         let content = "public class MyClass {}";
         let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -297,7 +298,7 @@ mod tests {
     }
 
     #[test]
-    fn test_class_with_javadoc() {
+    fn JavaDocがあるクラスは違反にならない() {
         let content = "/** Doc */\npublic class MyClass {}";
         let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -305,7 +306,7 @@ mod tests {
     }
 
     #[test]
-    fn test_class_public_only_skips_private() {
+    fn public指定時は非publicクラスをスキップする() {
         let content = "class MyClass {}";
         let config = JavaDocConfig { class: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -313,7 +314,7 @@ mod tests {
     }
 
     #[test]
-    fn test_class_disabled() {
+    fn クラス検査が無効の場合は違反にならない() {
         let content = "public class MyClass {}";
         let config = JavaDocConfig { class: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -321,11 +322,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Interface tests
+    // インターフェース
     // =========================================================================
 
     #[test]
-    fn test_interface_without_javadoc() {
+    fn JavaDocがないpublicインターフェースは違反になる() {
         let content = "public interface MyInterface {}";
         let config = JavaDocConfig { interface: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -335,7 +336,7 @@ mod tests {
     }
 
     #[test]
-    fn test_interface_with_javadoc() {
+    fn JavaDocがあるインターフェースは違反にならない() {
         let content = "/** Doc */\npublic interface MyInterface {}";
         let config = JavaDocConfig { interface: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -343,7 +344,7 @@ mod tests {
     }
 
     #[test]
-    fn test_interface_public_only_skips_private() {
+    fn public指定時は非publicインターフェースをスキップする() {
         let content = "interface MyInterface {}";
         let config = JavaDocConfig { interface: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -351,7 +352,7 @@ mod tests {
     }
 
     #[test]
-    fn test_interface_disabled() {
+    fn インターフェース検査が無効の場合は違反にならない() {
         let content = "public interface MyInterface {}";
         let config = JavaDocConfig { interface: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -359,11 +360,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Enum tests
+    // enum
     // =========================================================================
 
     #[test]
-    fn test_enum_without_javadoc() {
+    fn JavaDocがないpublic_enumは違反になる() {
         let content = "public enum MyEnum { A, B }";
         let config = JavaDocConfig { enum_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -373,7 +374,7 @@ mod tests {
     }
 
     #[test]
-    fn test_enum_with_javadoc() {
+    fn JavaDocがあるenumは違反にならない() {
         let content = "/** Doc */\npublic enum MyEnum { A }";
         let config = JavaDocConfig { enum_: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -381,7 +382,7 @@ mod tests {
     }
 
     #[test]
-    fn test_enum_public_only_skips_private() {
+    fn public指定時は非public_enumをスキップする() {
         let content = "enum MyEnum { A }";
         let config = JavaDocConfig { enum_: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -389,7 +390,7 @@ mod tests {
     }
 
     #[test]
-    fn test_enum_disabled() {
+    fn enum検査が無効の場合は違反にならない() {
         let content = "public enum MyEnum { A }";
         let config = JavaDocConfig { enum_: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -397,11 +398,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Record tests
+    // record
     // =========================================================================
 
     #[test]
-    fn test_record_without_javadoc() {
+    fn JavaDocがないpublic_recordは違反になる() {
         let content = "public record MyRecord(String name) {}";
         let config = JavaDocConfig { record: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -411,7 +412,7 @@ mod tests {
     }
 
     #[test]
-    fn test_record_with_javadoc() {
+    fn JavaDocがあるrecordは違反にならない() {
         let content = "/** Doc */\npublic record MyRecord(String name) {}";
         let config = JavaDocConfig { record: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -419,7 +420,7 @@ mod tests {
     }
 
     #[test]
-    fn test_record_public_only_skips_private() {
+    fn public指定時は非public_recordをスキップする() {
         let content = "record MyRecord(String name) {}";
         let config = JavaDocConfig { record: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -427,7 +428,7 @@ mod tests {
     }
 
     #[test]
-    fn test_record_disabled() {
+    fn record検査が無効の場合は違反にならない() {
         let content = "public record MyRecord(String name) {}";
         let config = JavaDocConfig { record: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -435,11 +436,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Annotation tests
+    // アノテーション型
     // =========================================================================
 
     #[test]
-    fn test_annotation_without_javadoc() {
+    fn JavaDocがないpublicアノテーション型は違反になる() {
         let content = "public @interface MyAnnotation {}";
         let config = JavaDocConfig { annotation: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -449,7 +450,7 @@ mod tests {
     }
 
     #[test]
-    fn test_annotation_with_javadoc() {
+    fn JavaDocがあるアノテーション型は違反にならない() {
         let content = "/** Doc */\npublic @interface MyAnnotation {}";
         let config = JavaDocConfig { annotation: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -457,7 +458,7 @@ mod tests {
     }
 
     #[test]
-    fn test_annotation_public_only_skips_private() {
+    fn public指定時は非publicアノテーション型をスキップする() {
         let content = "@interface MyAnnotation {}";
         let config = JavaDocConfig { annotation: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -465,7 +466,7 @@ mod tests {
     }
 
     #[test]
-    fn test_annotation_disabled() {
+    fn アノテーション型検査が無効の場合は違反にならない() {
         let content = "public @interface MyAnnotation {}";
         let config = JavaDocConfig { annotation: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -473,11 +474,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Method tests
+    // メソッド
     // =========================================================================
 
     #[test]
-    fn test_method_without_javadoc() {
+    fn JavaDocがないpublicメソッドは違反になる() {
         let content = "public void doSomething() {}";
         let config = JavaDocConfig { method: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -487,7 +488,7 @@ mod tests {
     }
 
     #[test]
-    fn test_method_with_javadoc() {
+    fn JavaDocがあるメソッドは違反にならない() {
         let content = "/** Doc */\npublic void doSomething() {}";
         let config = JavaDocConfig { method: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -495,7 +496,7 @@ mod tests {
     }
 
     #[test]
-    fn test_method_public_only_skips_private() {
+    fn public指定時は非publicメソッドをスキップする() {
         let content = "void doSomething() {}";
         let config = JavaDocConfig { method: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -503,7 +504,7 @@ mod tests {
     }
 
     #[test]
-    fn test_method_disabled() {
+    fn メソッド検査が無効の場合は違反にならない() {
         let content = "public void doSomething() {}";
         let config = JavaDocConfig { method: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -511,7 +512,7 @@ mod tests {
     }
 
     #[test]
-    fn test_method_skips_constructor() {
+    fn コンストラクタはメソッドとして検出されない() {
         let content = "public MyClass() {}";
         let config = JavaDocConfig { method: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -519,11 +520,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Edge cases
+    // エッジケース
     // =========================================================================
 
     #[test]
-    fn test_annotation_before_class() {
+    fn アノテーション付きクラスのJavaDocを認識する() {
         let content = "/** Doc */\n@Component\npublic class MyClass {}";
         let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -531,7 +532,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiline_javadoc() {
+    fn 複数行JavaDocを認識する() {
         let content = "/**\n * Multi-line\n */\npublic class MyClass {}";
         let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -539,7 +540,7 @@ mod tests {
     }
 
     #[test]
-    fn test_regular_comment_not_javadoc() {
+    fn 通常のブロックコメントはJavaDocとして認識されない() {
         let content = "/* Not JavaDoc */\npublic class MyClass {}";
         let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -547,7 +548,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiline_regular_comment_not_javadoc() {
+    fn 複数行の通常コメントはJavaDocとして認識されない() {
         let content = "/*\n * Not JavaDoc\n */\npublic class MyClass {}";
         let config = JavaDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -555,7 +556,7 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_config_no_violations() {
+    fn 空の設定では違反が検出されない() {
         let content = "public class MyClass {}\npublic void foo() {}";
         let config = JavaDocConfig::default();
         let violations = validate(content, &config);
@@ -563,7 +564,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiple_elements() {
+    fn 複数の要素を同時に検査できる() {
         let content = "public class A {}\npublic interface B {}\npublic enum C {}";
         let config = JavaDocConfig {
             class: Some(Visibility::All),

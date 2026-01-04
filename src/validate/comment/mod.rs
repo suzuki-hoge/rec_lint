@@ -61,59 +61,60 @@ pub fn validate_non_japanese(comments: &[Comment]) -> Vec<CommentViolation> {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
 
     // =========================================================================
-    // contains_japanese tests
+    // 日本語判定
     // =========================================================================
 
     #[test]
-    fn test_contains_japanese_hiragana() {
+    fn ひらがなを含むテキストは日本語と判定される() {
         assert!(contains_japanese("これはテストです"));
     }
 
     #[test]
-    fn test_contains_japanese_katakana() {
+    fn カタカナを含むテキストは日本語と判定される() {
         assert!(contains_japanese("テスト"));
     }
 
     #[test]
-    fn test_contains_japanese_kanji() {
+    fn 漢字を含むテキストは日本語と判定される() {
         assert!(contains_japanese("日本語"));
     }
 
     #[test]
-    fn test_contains_japanese_mixed() {
+    fn 英語と日本語の混在テキストは日本語と判定される() {
         assert!(contains_japanese("This is テスト"));
     }
 
     #[test]
-    fn test_contains_japanese_ascii_only() {
+    fn ASCII文字のみのテキストは日本語と判定されない() {
         assert!(!contains_japanese("This is a test"));
     }
 
     #[test]
-    fn test_contains_japanese_empty() {
+    fn 空文字列は日本語と判定されない() {
         assert!(!contains_japanese(""));
     }
 
     #[test]
-    fn test_contains_japanese_numbers() {
+    fn 数字のみのテキストは日本語と判定されない() {
         assert!(!contains_japanese("12345"));
     }
 
     #[test]
-    fn test_contains_japanese_halfwidth_katakana() {
+    fn 半角カタカナを含むテキストは日本語と判定される() {
         assert!(contains_japanese("ｱｲｳｴｵ"));
     }
 
     // =========================================================================
-    // validate_japanese tests
+    // 日本語コメント検出
     // =========================================================================
 
     #[test]
-    fn test_validate_japanese_finds_japanese() {
+    fn 日本語を含むコメントが違反として検出される() {
         let comments = vec![
             Comment { line: 1, text: "これは日本語".to_string() },
             Comment { line: 2, text: "This is English".to_string() },
@@ -126,7 +127,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_japanese_no_japanese() {
+    fn 日本語がない場合は違反なし() {
         let comments = vec![
             Comment { line: 1, text: "English only".to_string() },
             Comment { line: 2, text: "More English".to_string() },
@@ -136,11 +137,11 @@ mod tests {
     }
 
     // =========================================================================
-    // validate_non_japanese tests
+    // 非日本語コメント検出
     // =========================================================================
 
     #[test]
-    fn test_validate_non_japanese_finds_english() {
+    fn 英語のみのコメントが違反として検出される() {
         let comments = vec![
             Comment { line: 1, text: "これは日本語".to_string() },
             Comment { line: 2, text: "This is English".to_string() },
@@ -152,7 +153,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_non_japanese_all_japanese() {
+    fn 全て日本語の場合は違反なし() {
         let comments =
             vec![Comment { line: 1, text: "日本語のみ".to_string() }, Comment { line: 2, text: "テスト".to_string() }];
         let violations = validate_non_japanese(&comments);
@@ -160,7 +161,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_non_japanese_skips_empty() {
+    fn 空白のみのコメントは違反として検出されない() {
         let comments = vec![Comment { line: 1, text: "   ".to_string() }, Comment { line: 2, text: "".to_string() }];
         let violations = validate_non_japanese(&comments);
         assert!(violations.is_empty());

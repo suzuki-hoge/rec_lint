@@ -183,11 +183,12 @@ impl RawConfig {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_empty_yaml() {
+    fn 空のYAMLをパースすると空の設定が生成される() {
         let yaml = "";
         let config = RawConfig::parse(yaml).unwrap();
         assert!(config.rule.is_none());
@@ -195,7 +196,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_empty_sections() {
+    fn 空のセクションをパースすると空のベクタが生成される() {
         let yaml = r#"
 rule: []
 guideline: []
@@ -206,7 +207,7 @@ guideline: []
     }
 
     #[test]
-    fn test_parse_text_rule() {
+    fn テキストルールのYAMLをパースできる() {
         let yaml = r#"
 rule:
   - label: test-rule
@@ -229,7 +230,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_regex_rule() {
+    fn 正規表現ルールのYAMLをパースできる() {
         let yaml = r#"
 rule:
   - label: regex-rule
@@ -246,7 +247,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_custom_rule() {
+    fn カスタムルールのYAMLをパースできる() {
         let yaml = r#"
 rule:
   - label: custom-rule
@@ -262,7 +263,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_rule_with_match() {
+    fn マッチ条件付きルールをパースできる() {
         let yaml = r#"
 rule:
   - label: match-rule
@@ -288,7 +289,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_rule_with_all_match_patterns() {
+    fn 全種類のマッチパターンをパースできる() {
         let yaml = r#"
 rule:
   - label: all-patterns
@@ -321,7 +322,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_guideline_item() {
+    fn ガイドライン項目をパースできる() {
         let yaml = r#"
 guideline:
   - message: Guideline point 1
@@ -340,7 +341,7 @@ guideline:
     }
 
     #[test]
-    fn test_parse_mixed_sections() {
+    fn ルールとガイドラインの混合セクションをパースできる() {
         let yaml = r#"
 rule:
   - label: rule1
@@ -356,11 +357,11 @@ guideline:
     }
 
     // =========================================================================
-    // Doc validator tests
+    // ドキュメント検証設定
     // =========================================================================
 
     #[test]
-    fn test_parse_no_java_doc_all_options() {
+    fn JavaDoc設定の全オプションをパースできる() {
         let yaml = r#"
 rule:
   - label: java-doc
@@ -387,7 +388,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_java_doc_partial_options() {
+    fn JavaDoc設定の一部オプションのみパースできる() {
         let yaml = r#"
 rule:
   - label: java-doc
@@ -404,7 +405,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_kotlin_doc() {
+    fn KotlinDoc設定をパースできる() {
         let yaml = r#"
 rule:
   - label: kotlin-doc
@@ -441,7 +442,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_rust_doc() {
+    fn RustDoc設定をパースできる() {
         let yaml = r#"
 rule:
   - label: rust-doc
@@ -472,11 +473,11 @@ rule:
     }
 
     // =========================================================================
-    // Comment validator tests
+    // コメント検証設定
     // =========================================================================
 
     #[test]
-    fn test_parse_no_japanese_comment_with_lang() {
+    fn Java言語指定のコメント設定をパースできる() {
         let yaml = r#"
 rule:
   - label: no-jp-comment
@@ -494,7 +495,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_japanese_comment_with_lang_kotlin() {
+    fn Kotlin言語指定のコメント設定をパースできる() {
         let yaml = r#"
 rule:
   - label: no-jp-comment
@@ -510,7 +511,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_japanese_comment_with_lang_rust() {
+    fn Rust言語指定のコメント設定をパースできる() {
         let yaml = r#"
 rule:
   - label: no-jp-comment
@@ -526,7 +527,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_japanese_comment_with_custom() {
+    fn カスタムコメント構文をパースできる() {
         let yaml = r#"
 rule:
   - label: no-jp-comment
@@ -552,7 +553,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_japanese_comment_custom_python() {
+    fn Python形式のカスタムコメント構文をパースできる() {
         let yaml = r##"
 rule:
   - label: no-jp-comment
@@ -576,7 +577,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_japanese_comment_custom_html() {
+    fn HTML形式のカスタムコメント構文をパースできる() {
         let yaml = r#"
 rule:
   - label: no-jp-comment
@@ -599,7 +600,7 @@ rule:
     }
 
     #[test]
-    fn test_parse_no_english_comment() {
+    fn 英語コメント禁止ルールをパースできる() {
         let yaml = r#"
 rule:
   - label: no-en-comment

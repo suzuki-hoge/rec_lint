@@ -386,15 +386,16 @@ fn extract_class_name(line: &str, keyword: &str) -> String {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
 
     // =========================================================================
-    // Class tests
+    // クラス
     // =========================================================================
 
     #[test]
-    fn test_class_without_kdoc() {
+    fn KDocがないクラスは違反になる() {
         let content = "class MyClass {}";
         let config = KotlinDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -404,7 +405,7 @@ mod tests {
     }
 
     #[test]
-    fn test_class_with_kdoc() {
+    fn KDocがあるクラスは違反にならない() {
         let content = "/** Doc */\nclass MyClass {}";
         let config = KotlinDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -412,7 +413,7 @@ mod tests {
     }
 
     #[test]
-    fn test_class_public_only_skips_private() {
+    fn public指定時はprivateクラスをスキップする() {
         let content = "private class MyClass {}";
         let config = KotlinDocConfig { class: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -420,7 +421,7 @@ mod tests {
     }
 
     #[test]
-    fn test_class_disabled() {
+    fn クラス検査が無効の場合は違反にならない() {
         let content = "class MyClass {}";
         let config = KotlinDocConfig { class: None, ..Default::default() };
         let violations = validate(content, &config);
@@ -428,11 +429,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Interface tests
+    // インターフェース
     // =========================================================================
 
     #[test]
-    fn test_interface_without_kdoc() {
+    fn KDocがないインターフェースは違反になる() {
         let content = "interface MyInterface {}";
         let config = KotlinDocConfig { interface: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -442,7 +443,7 @@ mod tests {
     }
 
     #[test]
-    fn test_interface_with_kdoc() {
+    fn KDocがあるインターフェースは違反にならない() {
         let content = "/** Doc */\ninterface MyInterface {}";
         let config = KotlinDocConfig { interface: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -450,7 +451,7 @@ mod tests {
     }
 
     #[test]
-    fn test_interface_public_only_skips_private() {
+    fn public指定時はprivateインターフェースをスキップする() {
         let content = "private interface MyInterface {}";
         let config = KotlinDocConfig { interface: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -458,11 +459,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Object tests
+    // オブジェクト
     // =========================================================================
 
     #[test]
-    fn test_object_without_kdoc() {
+    fn KDocがないobjectは違反になる() {
         let content = "object Singleton {}";
         let config = KotlinDocConfig { object: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -472,7 +473,7 @@ mod tests {
     }
 
     #[test]
-    fn test_object_with_kdoc() {
+    fn KDocがあるobjectは違反にならない() {
         let content = "/** Doc */\nobject Singleton {}";
         let config = KotlinDocConfig { object: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -480,11 +481,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Enum class tests
+    // enum class
     // =========================================================================
 
     #[test]
-    fn test_enum_class_without_kdoc() {
+    fn KDocがないenum_classは違反になる() {
         let content = "enum class Status { A, B }";
         let config = KotlinDocConfig { enum_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -494,7 +495,7 @@ mod tests {
     }
 
     #[test]
-    fn test_enum_class_with_kdoc() {
+    fn KDocがあるenum_classは違反にならない() {
         let content = "/** Doc */\nenum class Status { A }";
         let config = KotlinDocConfig { enum_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -502,11 +503,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Sealed class tests
+    // sealed class
     // =========================================================================
 
     #[test]
-    fn test_sealed_class_without_kdoc() {
+    fn KDocがないsealed_classは違反になる() {
         let content = "sealed class Result";
         let config = KotlinDocConfig { sealed_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -516,7 +517,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sealed_class_with_kdoc() {
+    fn KDocがあるsealed_classは違反にならない() {
         let content = "/** Doc */\nsealed class Result";
         let config = KotlinDocConfig { sealed_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -524,11 +525,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Sealed interface tests
+    // sealed interface
     // =========================================================================
 
     #[test]
-    fn test_sealed_interface_without_kdoc() {
+    fn KDocがないsealed_interfaceは違反になる() {
         let content = "sealed interface State";
         let config = KotlinDocConfig { sealed_interface: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -538,7 +539,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sealed_interface_with_kdoc() {
+    fn KDocがあるsealed_interfaceは違反にならない() {
         let content = "/** Doc */\nsealed interface State";
         let config = KotlinDocConfig { sealed_interface: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -546,11 +547,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Data class tests
+    // data class
     // =========================================================================
 
     #[test]
-    fn test_data_class_without_kdoc() {
+    fn KDocがないdata_classは違反になる() {
         let content = "data class User(val name: String)";
         let config = KotlinDocConfig { data_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -560,7 +561,7 @@ mod tests {
     }
 
     #[test]
-    fn test_data_class_with_kdoc() {
+    fn KDocがあるdata_classは違反にならない() {
         let content = "/** Doc */\ndata class User(val name: String)";
         let config = KotlinDocConfig { data_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -568,11 +569,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Value class tests
+    // value class
     // =========================================================================
 
     #[test]
-    fn test_value_class_without_kdoc() {
+    fn KDocがないvalue_classは違反になる() {
         let content = "value class Password(val value: String)";
         let config = KotlinDocConfig { value_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -582,7 +583,7 @@ mod tests {
     }
 
     #[test]
-    fn test_value_class_with_kdoc() {
+    fn KDocがあるvalue_classは違反にならない() {
         let content = "/** Doc */\nvalue class Password(val value: String)";
         let config = KotlinDocConfig { value_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -590,11 +591,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Annotation class tests
+    // annotation class
     // =========================================================================
 
     #[test]
-    fn test_annotation_class_without_kdoc() {
+    fn KDocがないannotation_classは違反になる() {
         let content = "annotation class MyAnnotation";
         let config = KotlinDocConfig { annotation_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -604,7 +605,7 @@ mod tests {
     }
 
     #[test]
-    fn test_annotation_class_with_kdoc() {
+    fn KDocがあるannotation_classは違反にならない() {
         let content = "/** Doc */\nannotation class MyAnnotation";
         let config = KotlinDocConfig { annotation_class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -612,11 +613,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Typealias tests
+    // typealias
     // =========================================================================
 
     #[test]
-    fn test_typealias_without_kdoc() {
+    fn KDocがないtypealiasは違反になる() {
         let content = "typealias StringList = List<String>";
         let config = KotlinDocConfig { typealias: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -626,7 +627,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typealias_with_kdoc() {
+    fn KDocがあるtypealiasは違反にならない() {
         let content = "/** Doc */\ntypealias StringList = List<String>";
         let config = KotlinDocConfig { typealias: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -634,7 +635,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typealias_public_only_skips_private() {
+    fn public指定時はprivate_typealiasをスキップする() {
         let content = "private typealias StringList = List<String>";
         let config = KotlinDocConfig { typealias: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -642,11 +643,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Function tests
+    // 関数
     // =========================================================================
 
     #[test]
-    fn test_function_without_kdoc() {
+    fn KDocがない関数は違反になる() {
         let content = "fun doSomething() {}";
         let config = KotlinDocConfig { function: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -656,7 +657,7 @@ mod tests {
     }
 
     #[test]
-    fn test_function_with_kdoc() {
+    fn KDocがある関数は違反にならない() {
         let content = "/** Doc */\nfun doSomething() {}";
         let config = KotlinDocConfig { function: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -664,7 +665,7 @@ mod tests {
     }
 
     #[test]
-    fn test_function_public_only_skips_private() {
+    fn public指定時はprivate関数をスキップする() {
         let content = "private fun doSomething() {}";
         let config = KotlinDocConfig { function: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);
@@ -672,7 +673,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generic_function() {
+    fn ジェネリック関数の名前を正しく抽出できる() {
         let content = "fun <T> process(item: T) {}";
         let config = KotlinDocConfig { function: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -681,11 +682,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Edge cases
+    // エッジケース
     // =========================================================================
 
     #[test]
-    fn test_annotation_before_class() {
+    fn アノテーション付きクラスのKDocを認識する() {
         let content = "/** Doc */\n@Serializable\nclass MyClass {}";
         let config = KotlinDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -693,7 +694,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiline_kdoc() {
+    fn 複数行KDocを認識する() {
         let content = "/**\n * Multi-line\n */\nclass MyClass {}";
         let config = KotlinDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -701,7 +702,7 @@ mod tests {
     }
 
     #[test]
-    fn test_regular_comment_not_kdoc() {
+    fn 通常のブロックコメントはKDocとして認識されない() {
         let content = "/* Not KDoc */\nclass MyClass {}";
         let config = KotlinDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -709,7 +710,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiline_regular_comment_not_kdoc() {
+    fn 複数行の通常コメントはKDocとして認識されない() {
         let content = "/*\n * Not KDoc\n */\nclass MyClass {}";
         let config = KotlinDocConfig { class: Some(Visibility::All), ..Default::default() };
         let violations = validate(content, &config);
@@ -717,7 +718,7 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_config_no_violations() {
+    fn 空の設定では違反が検出されない() {
         let content = "class MyClass {}\nfun foo() {}";
         let config = KotlinDocConfig::default();
         let violations = validate(content, &config);
@@ -725,7 +726,7 @@ mod tests {
     }
 
     #[test]
-    fn test_internal_class_skipped_with_public_config() {
+    fn public指定時はinternalクラスをスキップする() {
         let content = "internal class MyClass {}";
         let config = KotlinDocConfig { class: Some(Visibility::Public), ..Default::default() };
         let violations = validate(content, &config);

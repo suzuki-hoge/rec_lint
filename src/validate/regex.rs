@@ -15,6 +15,7 @@ pub fn validate(content: &str, rule: &RegexRule) -> Vec<Violation> {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use super::*;
     use crate::matcher::Matcher;
@@ -32,11 +33,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Basic matching tests
+    // 基本的なマッチング
     // =========================================================================
 
     #[test]
-    fn test_no_match_returns_empty() {
+    fn マッチしない場合は空の結果を返す() {
         let rule = make_rule(vec![r"println"]);
         let content = "let x = 42;";
         let violations = validate(content, &rule);
@@ -44,7 +45,7 @@ mod tests {
     }
 
     #[test]
-    fn test_literal_pattern_match() {
+    fn リテラルパターンがマッチする() {
         let rule = make_rule(vec![r"println"]);
         let content = "println!(\"hello\");";
         let violations = validate(content, &rule);
@@ -54,7 +55,7 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_content() {
+    fn 空のコンテンツは違反なし() {
         let rule = make_rule(vec![r".*"]);
         let content = "";
         let violations = validate(content, &rule);
@@ -62,11 +63,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Regex-specific tests
+    // 正規表現固有の機能
     // =========================================================================
 
     #[test]
-    fn test_wildcard_pattern() {
+    fn ワイルドカードパターンがマッチする() {
         let rule = make_rule(vec![r"ng-word.*"]);
         let content = "// ng-word: fix this later";
         let violations = validate(content, &rule);
@@ -75,7 +76,7 @@ mod tests {
     }
 
     #[test]
-    fn test_character_class() {
+    fn 文字クラスがマッチする() {
         let rule = make_rule(vec![r"[0-9]+"]);
         let content = "let x = 42;";
         let violations = validate(content, &rule);
@@ -84,7 +85,7 @@ mod tests {
     }
 
     #[test]
-    fn test_word_boundary() {
+    fn 単語境界で完全一致する() {
         let rule = make_rule(vec![r"\bvar\b"]);
         let content = "var x = 1;";
         let violations = validate(content, &rule);
@@ -93,7 +94,7 @@ mod tests {
     }
 
     #[test]
-    fn test_word_boundary_no_match_in_middle() {
+    fn 単語境界は部分一致しない() {
         let rule = make_rule(vec![r"\bvar\b"]);
         let content = "variable x = 1;";
         let violations = validate(content, &rule);
@@ -101,7 +102,7 @@ mod tests {
     }
 
     #[test]
-    fn test_start_anchor() {
+    fn 行頭アンカーがマッチする() {
         let rule = make_rule(vec![r"^import"]);
         let content = "import java.util.*;";
         let violations = validate(content, &rule);
@@ -110,7 +111,7 @@ mod tests {
     }
 
     #[test]
-    fn test_start_anchor_no_match_in_middle() {
+    fn 行頭アンカーは行中ではマッチしない() {
         let rule = make_rule(vec![r"^import"]);
         let content = "// import java.util.*;";
         let violations = validate(content, &rule);
@@ -118,7 +119,7 @@ mod tests {
     }
 
     #[test]
-    fn test_optional_pattern() {
+    fn オプショナルパターンが両方にマッチする() {
         let rule = make_rule(vec![r"colou?r"]);
         let content1 = "color is red";
         let content2 = "colour is blue";
@@ -127,7 +128,7 @@ mod tests {
     }
 
     #[test]
-    fn test_alternation() {
+    fn 選択パターンがいずれかにマッチする() {
         let rule = make_rule(vec![r"foo|bar"]);
         let content = "baz bar qux";
         let violations = validate(content, &rule);
@@ -136,11 +137,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Multiple patterns tests
+    // 複数パターン
     // =========================================================================
 
     #[test]
-    fn test_multiple_patterns_first_match_wins() {
+    fn 複数パターンでは先に定義されたパターンが優先される() {
         let rule = make_rule(vec![r"alpha", r"beta"]);
         let content = "beta alpha";
         let violations = validate(content, &rule);
@@ -150,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn test_second_pattern_matches_when_first_absent() {
+    fn 最初のパターンが無ければ次のパターンでマッチする() {
         let rule = make_rule(vec![r"alpha", r"beta"]);
         let content = "beta gamma";
         let violations = validate(content, &rule);
@@ -159,11 +160,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Multiple lines tests
+    // 複数行
     // =========================================================================
 
     #[test]
-    fn test_multiple_lines_with_violations() {
+    fn 複数行の違反を検出できる() {
         let rule = make_rule(vec![r"error"]);
         let content = "ok line\nerror line 1\nok again\nerror line 2";
         let violations = validate(content, &rule);
@@ -173,7 +174,7 @@ mod tests {
     }
 
     #[test]
-    fn test_line_numbers_are_1_based() {
+    fn 行番号は1から始まる() {
         let rule = make_rule(vec![r"target"]);
         let content = "line1\nline2\ntarget here";
         let violations = validate(content, &rule);
@@ -181,11 +182,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Column position tests (match.start() based)
+    // カラム位置
     // =========================================================================
 
     #[test]
-    fn test_col_at_regex_match_start() {
+    fn カラム位置は正規表現マッチの開始位置() {
         let rule = make_rule(vec![r"[A-Z]+"]);
         let content = "abc XYZ def";
         let violations = validate(content, &rule);
@@ -193,7 +194,7 @@ mod tests {
     }
 
     #[test]
-    fn test_col_with_greedy_match() {
+    fn 貪欲マッチでもカラム位置は正しい() {
         let rule = make_rule(vec![r"a+"]);
         let content = "bbaaa";
         let violations = validate(content, &rule);
@@ -201,11 +202,11 @@ mod tests {
     }
 
     // =========================================================================
-    // Edge cases
+    // エッジケース
     // =========================================================================
 
     #[test]
-    fn test_empty_patterns() {
+    fn パターンが空の場合は違反なし() {
         let rule = make_rule(vec![]);
         let content = "any content";
         let violations = validate(content, &rule);
@@ -213,7 +214,7 @@ mod tests {
     }
 
     #[test]
-    fn test_dot_matches_any_char() {
+    fn ドットは任意の1文字にマッチする() {
         let rule = make_rule(vec![r"a.c"]);
         let content = "abc axc a c";
         let violations = validate(content, &rule);
@@ -222,7 +223,7 @@ mod tests {
     }
 
     #[test]
-    fn test_found_contains_full_line() {
+    fn 検出結果には行全体が含まれる() {
         let rule = make_rule(vec![r"\d+"]);
         let content = "value = 123;";
         let violations = validate(content, &rule);
@@ -230,7 +231,7 @@ mod tests {
     }
 
     #[test]
-    fn test_case_sensitive_by_default() {
+    fn デフォルトでは大文字小文字を区別する() {
         let rule = make_rule(vec![r"NGWORD"]);
         let content = "ngword item";
         let violations = validate(content, &rule);
@@ -238,7 +239,7 @@ mod tests {
     }
 
     #[test]
-    fn test_case_insensitive_flag() {
+    fn 大文字小文字を無視するフラグが使える() {
         let rule = make_rule(vec![r"(?i)NGWORD"]);
         let content = "ngword item";
         let violations = validate(content, &rule);
