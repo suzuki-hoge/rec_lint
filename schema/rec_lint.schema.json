@@ -26,7 +26,7 @@
   },
   "definitions": {
     "ruleBase": {
-      "x-doc-order": 11,
+      "x-doc-order": 14,
       "title": "RuleBase",
       "description": "ルールの共通フィールド",
       "type": "object",
@@ -56,7 +56,7 @@
       "x-doc-order": 1,
       "title": "RuleItem",
       "description": "rule に列挙するルールの定義",
-      "x-doc-description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment",
+      "x-doc-description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment<br>- type: require_japanese_junit_test<br>- type: require_japanese_kotest_test<br>- type: require_japanese_rust_test",
       "oneOf": [
         {
           "title": "TextRule",
@@ -293,6 +293,75 @@
                   "x-property-order": 1,
                   "description": "コメント構文設定",
                   "$ref": "#/definitions/commentConfig"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "JapaneseJUnitTestRule",
+          "description": "JUnit テスト名が日本語でないファイルを検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "require_japanese_junit_test"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "JapaneseKotestTestRule",
+          "description": "Kotest テスト名が日本語でないファイルを検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "require_japanese_kotest_test"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "JapaneseRustTestRule",
+          "description": "Rust テスト名が日本語でないファイルを検出する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "require_japanese_rust_test"
                 }
               }
             }
@@ -598,8 +667,59 @@
         }
       }
     },
-    "visibility": {
+    "japaneseJUnitTestRule": {
       "x-doc-order": 10,
+      "title": "JapaneseJUnitTestRule",
+      "description": "JUnit テスト名が日本語でないファイルを検出する",
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "message"
+      ],
+      "properties": {
+        "type": {
+          "x-property-order": 0,
+          "const": "require_japanese_junit_test"
+        }
+      }
+    },
+    "japaneseKotestTestRule": {
+      "x-doc-order": 11,
+      "title": "JapaneseKotestTestRule",
+      "description": "Kotest テスト名が日本語でないファイルを検出する",
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "message"
+      ],
+      "properties": {
+        "type": {
+          "x-property-order": 0,
+          "const": "require_japanese_kotest_test"
+        }
+      }
+    },
+    "japaneseRustTestRule": {
+      "x-doc-order": 12,
+      "title": "JapaneseRustTestRule",
+      "description": "Rust テスト名が日本語でないファイルを検出する",
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "message"
+      ],
+      "properties": {
+        "type": {
+          "x-property-order": 0,
+          "const": "require_japanese_rust_test"
+        }
+      }
+    },
+    "visibility": {
+      "x-doc-order": 13,
       "title": "Visibility",
       "description": "Doc コメントを強制する対象の可視性",
       "type": "string",
@@ -617,7 +737,7 @@
       ]
     },
     "customComment": {
-      "x-doc-order": 11,
+      "x-doc-order": 15,
       "title": "CustomComment",
       "description": "コメント構文の定義",
       "type": "object",
@@ -648,7 +768,7 @@
       }
     },
     "blockComment": {
-      "x-doc-order": 12,
+      "x-doc-order": 16,
       "title": "BlockComment",
       "description": "ブロックコメント構文の定義",
       "type": "object",

@@ -9,7 +9,7 @@
 
 ## RuleItem
 
-rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment
+rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment<br>- type: require_japanese_junit_test<br>- type: require_japanese_kotest_test<br>- type: require_japanese_rust_test
 
 ### TextRule
 
@@ -103,6 +103,39 @@ rustdoc がないファイルを検出する
 |-----------|-----|:---:|------|
 | type | `require_japanese_comment` | o |  |
 | comment | [commentConfig](#commentconfig) | o | コメント構文設定 |
+| label | string | o | show で表示するラベル |
+| message | string | o | validation で違反しているときに表示するメッセージ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
+
+### JapaneseJUnitTestRule
+
+JUnit テスト名が日本語でないファイルを検出する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_japanese_junit_test` | o |  |
+| label | string | o | show で表示するラベル |
+| message | string | o | validation で違反しているときに表示するメッセージ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
+
+### JapaneseKotestTestRule
+
+Kotest テスト名が日本語でないファイルを検出する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_japanese_kotest_test` | o |  |
+| label | string | o | show で表示するラベル |
+| message | string | o | validation で違反しているときに表示するメッセージ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
+
+### JapaneseRustTestRule
+
+Rust テスト名が日本語でないファイルを検出する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_japanese_rust_test` | o |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
@@ -202,6 +235,30 @@ rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サ�
 |-----------|-----|:---:|------|
 | lang | `java` \|<br>`kotlin` \|<br>`rust` | - | コメント構文のプリセットが提供されている言語 |
 | custom | [customComment](#customcomment) | - | プリセットが提供されていない場合の指定 |
+
+## JapaneseJUnitTestRule
+
+JUnit テスト名が日本語でないファイルを検出する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_japanese_junit_test` | o |  |
+
+## JapaneseKotestTestRule
+
+Kotest テスト名が日本語でないファイルを検出する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_japanese_kotest_test` | o |  |
+
+## JapaneseRustTestRule
+
+Rust テスト名が日本語でないファイルを検出する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_japanese_rust_test` | o |  |
 
 ## Visibility
 
