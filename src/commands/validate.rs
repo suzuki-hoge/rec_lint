@@ -198,8 +198,8 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
                 }));
             }
         }
-        Rule::JavaDoc(rule) => {
-            let violations = doc::java::validate(content, &rule.config);
+        Rule::PhpDoc(rule) => {
+            let violations = doc::php::validate(content, &rule.config);
             if !violations.is_empty() {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),
@@ -255,8 +255,8 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
                 }));
             }
         }
-        Rule::JUnitTest(rule) => {
-            let violations = test::junit::validate(content);
+        Rule::PhpUnitTest(rule) => {
+            let violations = test::phpunit::validate(content);
             if !violations.is_empty() {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),

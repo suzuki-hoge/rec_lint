@@ -1,5 +1,5 @@
-pub mod java;
 pub mod kotlin;
+pub mod php;
 pub mod rust;
 
 use crate::rule::parser::Visibility;
@@ -15,13 +15,12 @@ pub struct DocViolation {
 /// Kind of item missing documentation
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DocKind {
-    // Java types
+    // PHP types
     Class,
     Interface,
+    Trait,
     Enum,
-    Record,
-    Annotation,
-    Method,
+    Function,
     // Kotlin types (additional)
     Object,
     EnumClass,
@@ -31,10 +30,8 @@ pub enum DocKind {
     ValueClass,
     AnnotationClass,
     Typealias,
-    Function,
     // Rust types (additional)
     Struct,
-    Trait,
     TypeAlias,
     Union,
     Fn,
@@ -47,10 +44,9 @@ impl std::fmt::Display for DocKind {
         match self {
             DocKind::Class => write!(f, "class"),
             DocKind::Interface => write!(f, "interface"),
+            DocKind::Trait => write!(f, "trait"),
             DocKind::Enum => write!(f, "enum"),
-            DocKind::Record => write!(f, "record"),
-            DocKind::Annotation => write!(f, "annotation"),
-            DocKind::Method => write!(f, "method"),
+            DocKind::Function => write!(f, "function"),
             DocKind::Object => write!(f, "object"),
             DocKind::EnumClass => write!(f, "enum class"),
             DocKind::SealedClass => write!(f, "sealed class"),
@@ -59,9 +55,7 @@ impl std::fmt::Display for DocKind {
             DocKind::ValueClass => write!(f, "value class"),
             DocKind::AnnotationClass => write!(f, "annotation class"),
             DocKind::Typealias => write!(f, "typealias"),
-            DocKind::Function => write!(f, "function"),
             DocKind::Struct => write!(f, "struct"),
-            DocKind::Trait => write!(f, "trait"),
             DocKind::TypeAlias => write!(f, "type"),
             DocKind::Union => write!(f, "union"),
             DocKind::Fn => write!(f, "fn"),
@@ -71,15 +65,14 @@ impl std::fmt::Display for DocKind {
     }
 }
 
-/// Config for Java doc checks
+/// Config for PHP doc checks
 #[derive(Debug, Clone, Default)]
-pub struct JavaDocConfig {
+pub struct PhpDocConfig {
     pub class: Option<Visibility>,
     pub interface: Option<Visibility>,
+    pub trait_: Option<Visibility>,
     pub enum_: Option<Visibility>,
-    pub record: Option<Visibility>,
-    pub annotation: Option<Visibility>,
-    pub method: Option<Visibility>,
+    pub function: Option<Visibility>,
 }
 
 /// Config for Kotlin doc checks

@@ -41,10 +41,10 @@ $ rec_lint add sub-dir
 # yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.3/schema/rec_lint_config.schema.json
 
 include_extensions:
-  - .java
+  - .php
 
 exclude_dirs:
-  - build
+  - vendor
 ```
 
 `src/main/java/.rec_lint.yaml`
@@ -53,16 +53,16 @@ exclude_dirs:
 # yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.3/schema/rec_lint.schema.json
 
 rule:
-  - label: println の禁止
+  - label: var_dump の禁止
     type: forbidden_texts
-    keywords: [ System.out.println ]
+    keywords: [ var_dump ]
     message: デバッグ残りは削除し、必要な出力は Logger を使うこと
 
-  - label: public class の JavaDoc は必須
-    type: require_java_doc
-    java_doc:
+  - label: public class の PHPDoc は必須
+    type: require_php_doc
+    php_doc:
       class: public
-    message: JavaDoc を記述すること
+    message: PHPDoc を記述すること
 ```
 
 `src/main/java/db/.rec_lint.yaml`
@@ -73,18 +73,18 @@ rule:
 rule:
   - label: http 処理の禁止
     type: forbidden_patterns
-    keywords: [ "import.*http" ]
-    message: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/java/controller に実装すること
+    keywords: [ "use.*Http" ]
+    message: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること
     match:
       - pattern: file_ends_with
-        keywords: [ Command.java, Query.java ]
+        keywords: [ Command.php, Query.php ]
         cond: or
 
 guideline:
   - message: N + 1 問題が発生するクエリがないか確認すること
     match:
       - pattern: file_ends_with
-        keywords: [ Query.java ]
+        keywords: [ Query.php ]
 ```
 
 ## サブコマンド
@@ -95,18 +95,18 @@ guideline:
 
 ```
 $ rec_lint show src/main/java
-[ rule ] src/main/java: println の禁止
-[ rule ] src/main/java: public class の JavaDoc は必須
+[ rule ] src: var_dump の禁止
+[ rule ] src: public class の PHPDoc は必須
 ```
 
 下位ディレクトリは上位ディレクトリの設定を継承する
 
 ```
 $ rec_lint show src/main/java/db
-[ rule ] src/main/java: println の禁止
-[ rule ] src/main/java: public class の JavaDoc は必須
-[ rule ] src/main/java/db: http 処理の禁止
-[ guideline ] src/main/java/db: N + 1 問題が発生するクエリがないか確認すること
+[ rule ] src: var_dump の禁止
+[ rule ] src: public class の PHPDoc は必須
+[ rule ] src/db: http 処理の禁止
+[ guideline ] src/db: N + 1 問題が発生するクエリがないか確認すること
 ```
 
 ### validate
@@ -115,18 +115,17 @@ $ rec_lint show src/main/java/db
 
 ```
 $ rec_lint validate src/main/java/db/UserQuery.java
-JavaDoc を記述すること (class UserQuery): src/main/java/db/UserQuery.java:7:1
+
 ```
 
 ディレクトリを指定した場合はそれ以下のすべてのファイルを検証する
 
 ```
 $ rec_lint validate src/main/java/db
-DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/java/controller に実装すること: src/main/java/db/PlanQuery.java:4:1
-DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/java/controller に実装すること: src/main/java/db/UserCommand.java:4:1
-JavaDoc を記述すること (class UserQuery): src/main/java/db/UserQuery.java:7:1
-デバッグ残りは削除し、必要な出力は Logger を使うこと: src/main/java/db/PlanQuery.java:11:9
-デバッグ残りは削除し、必要な出力は Logger を使うこと: src/main/java/db/UserCommand.java:11:9
+DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること: src/db/PlanQuery.php:6:1
+DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること: src/db/UserCommand.php:6:1
+デバッグ残りは削除し、必要な出力は Logger を使うこと: src/db/PlanQuery.php:15:9
+デバッグ残りは削除し、必要な出力は Logger を使うこと: src/db/UserCommand.php:15:9
 ```
 
 オプション:
@@ -139,7 +138,7 @@ JavaDoc を記述すること (class UserQuery): src/main/java/db/UserQuery.java
 
 ```
 $ rec_lint guideline src/main/java/db
-[ guideline ] src/main/java/db: N + 1 問題が発生するクエリがないか確認すること
+[ guideline ] src/db: N + 1 問題が発生するクエリがないか確認すること
 ```
 
 ## 活用ノウハウ
@@ -163,26 +162,22 @@ $ rec_lint guideline src/main/java/db
 
 ```
 $ rec_lint validate --sort rule src/main/java
-DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/java/controller に実装すること: src/main/java/db/PlanQuery.java:4:1
-DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/java/controller に実装すること: src/main/java/db/UserCommand.java:4:1
-JavaDoc を記述すること (class Authenticator): src/main/java/Authenticator.java:5:1
-JavaDoc を記述すること (class UserQuery): src/main/java/db/UserQuery.java:7:1
-デバッグ残りは削除し、必要な出力は Logger を使うこと: src/main/java/PlanService.java:10:9
-デバッグ残りは削除し、必要な出力は Logger を使うこと: src/main/java/db/PlanQuery.java:11:9
-デバッグ残りは削除し、必要な出力は Logger を使うこと: src/main/java/db/UserCommand.java:11:9
+DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること: src/db/PlanQuery.php:6:1
+DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること: src/db/UserCommand.php:6:1
+デバッグ残りは削除し、必要な出力は Logger を使うこと: src/PlanService.php:11:9
+デバッグ残りは削除し、必要な出力は Logger を使うこと: src/db/PlanQuery.php:15:9
+デバッグ残りは削除し、必要な出力は Logger を使うこと: src/db/UserCommand.php:15:9
 ```
 
 `--sort file` は特定ファイルを修正したい場合に向いている
 
 ```
 $ rec_lint validate --sort file src/main/java
-src/main/java/Authenticator.java:5:1: JavaDoc を記述すること (class Authenticator)
-src/main/java/PlanService.java:10:9: デバッグ残りは削除し、必要な出力は Logger を使うこと
-src/main/java/db/PlanQuery.java:4:1: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/java/controller に実装すること
-src/main/java/db/PlanQuery.java:11:9: デバッグ残りは削除し、必要な出力は Logger を使うこと
-src/main/java/db/UserCommand.java:4:1: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/java/controller に実装すること
-src/main/java/db/UserCommand.java:11:9: デバッグ残りは削除し、必要な出力は Logger を使うこと
-src/main/java/db/UserQuery.java:7:1: JavaDoc を記述すること (class UserQuery)
+src/PlanService.php:11:9: デバッグ残りは削除し、必要な出力は Logger を使うこと
+src/db/PlanQuery.php:6:1: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること
+src/db/PlanQuery.php:15:9: デバッグ残りは削除し、必要な出力は Logger を使うこと
+src/db/UserCommand.php:6:1: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること
+src/db/UserCommand.php:15:9: デバッグ残りは削除し、必要な出力は Logger を使うこと
 ```
 
 ### Yaml Language Server の利用

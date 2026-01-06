@@ -1,5 +1,5 @@
-pub mod junit;
 pub mod kotest;
+pub mod phpunit;
 pub mod rust;
 
 use super::comment::contains_japanese;

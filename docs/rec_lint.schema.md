@@ -9,7 +9,7 @@
 
 ## RuleItem
 
-rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_java_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment<br>- type: require_japanese_junit_test<br>- type: require_japanese_kotest_test<br>- type: require_japanese_rust_test
+rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_php_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment<br>- type: require_japanese_phpunit_test<br>- type: require_japanese_kotest_test<br>- type: require_japanese_rust_test
 
 ### TextRule
 
@@ -47,14 +47,14 @@ rule に列挙するルールの定義<br>type ごとに異なる構造を持つ
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
-### NoJavaDocRule
+### NoPhpDocRule
 
-JavaDoc がないファイルを検出する
+PHPDoc がないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_java_doc` | o |  |
-| java_doc | [javaDocConfig](#javadocconfig) | - | JavaDoc 検証設定 |
+| type | `require_php_doc` | o |  |
+| php_doc | [phpDocConfig](#phpdocconfig) | - | PHPDoc 検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
@@ -107,13 +107,13 @@ rustdoc がないファイルを検出する
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
-### JapaneseJUnitTestRule
+### JapanesePhpUnitTestRule
 
-JUnit テスト名が日本語でないファイルを検出する
+PHPUnit テスト名が日本語でないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_japanese_junit_test` | o |  |
+| type | `require_japanese_phpunit_test` | o |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
@@ -181,18 +181,17 @@ keywords の結合条件
 | `and` | すべての keyword に一致 |
 | `or` | いずれかの keyword に一致 |
 
-## JavaDocConfig
+## PhpDocConfig
 
-JavaDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: constructor, field, enum_constant
+PHPDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: file, property, constant, define, include/require
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| class | [visibility](#visibility) | - | class 宣言に JavaDoc がないことを認めない |
-| interface | [visibility](#visibility) | - | interface 宣言に JavaDoc がないことを認めない |
-| enum | [visibility](#visibility) | - | enum 宣言に JavaDoc がないことを認めない |
-| record | [visibility](#visibility) | - | record 宣言に JavaDoc がないことを認めない |
-| annotation | [visibility](#visibility) | - | @interface 宣言に JavaDoc がないことを認めない |
-| method | [visibility](#visibility) | - | メソッド宣言に JavaDoc がないことを認めない |
+| class | [visibility](#visibility) | - | class 宣言に PHPDoc がないことを認めない |
+| interface | [visibility](#visibility) | - | interface 宣言に PHPDoc がないことを認めない |
+| trait | [visibility](#visibility) | - | trait 宣言に PHPDoc がないことを認めない |
+| enum | [visibility](#visibility) | - | enum 宣言に PHPDoc がないことを認めない (PHP 8.1+) |
+| function | [visibility](#visibility) | - | 関数/メソッド宣言に PHPDoc がないことを認めない |
 
 ## KotlinDocConfig
 
@@ -236,13 +235,13 @@ rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サ�
 | lang | `java` \|<br>`kotlin` \|<br>`rust` | - | コメント構文のプリセットが提供されている言語 |
 | custom | [customComment](#customcomment) | - | プリセットが提供されていない場合の指定 |
 
-## JapaneseJUnitTestRule
+## JapanesePhpUnitTestRule
 
-JUnit テスト名が日本語でないファイルを検出する
+PHPUnit テスト名が日本語でないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_japanese_junit_test` | o |  |
+| type | `require_japanese_phpunit_test` | o |  |
 
 ## JapaneseKotestTestRule
 

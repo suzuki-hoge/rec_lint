@@ -44,13 +44,13 @@ $ rec_lint add sub-dir
 `src/main/java/.rec_lint.yaml`
 
 ```yaml
-{{exec: cat docs/sample/src/main/java/.rec_lint.yaml}}
+{{exec: cat docs/sample/src/.rec_lint.yaml}}
 ```
 
 `src/main/java/db/.rec_lint.yaml`
 
 ```yaml
-{{exec: cat docs/sample/src/main/java/db/.rec_lint.yaml}}
+{{exec: cat docs/sample/src/db/.rec_lint.yaml}}
 ```
 
 ## サブコマンド
@@ -61,14 +61,14 @@ $ rec_lint add sub-dir
 
 ```
 $ rec_lint show src/main/java
-{{exec: cargo run --quiet -- show docs/sample/src/main/java}}
+{{exec: cargo run --quiet -- show docs/sample/src}}
 ```
 
 下位ディレクトリは上位ディレクトリの設定を継承する
 
 ```
 $ rec_lint show src/main/java/db
-{{exec: cargo run --quiet -- show docs/sample/src/main/java/db}}
+{{exec: cargo run --quiet -- show docs/sample/src/db}}
 ```
 
 ### validate
@@ -77,14 +77,14 @@ $ rec_lint show src/main/java/db
 
 ```
 $ rec_lint validate src/main/java/db/UserQuery.java
-{{exec: cargo run --quiet -- validate docs/sample/src/main/java/db/UserQuery.java || true}}
+{{exec: cargo run --quiet -- validate docs/sample/src/db/UserQuery.java || true}}
 ```
 
 ディレクトリを指定した場合はそれ以下のすべてのファイルを検証する
 
 ```
 $ rec_lint validate src/main/java/db
-{{exec: cargo run --quiet -- validate docs/sample/src/main/java/db || true}}
+{{exec: cargo run --quiet -- validate docs/sample/src/db || true}}
 ```
 
 オプション:
@@ -97,7 +97,7 @@ $ rec_lint validate src/main/java/db
 
 ```
 $ rec_lint guideline src/main/java/db
-{{exec: cargo run --quiet -- guideline docs/sample/src/main/java/db}}
+{{exec: cargo run --quiet -- guideline docs/sample/src/db}}
 ```
 
 ## 活用ノウハウ
@@ -121,14 +121,14 @@ $ rec_lint guideline src/main/java/db
 
 ```
 $ rec_lint validate --sort rule src/main/java
-{{exec: cargo run --quiet -- validate -s rule docs/sample/src/main/java || true}}
+{{exec: cargo run --quiet -- validate -s rule docs/sample/src || true}}
 ```
 
 `--sort file` は特定ファイルを修正したい場合に向いている
 
 ```
 $ rec_lint validate --sort file src/main/java
-{{exec: cargo run --quiet -- validate -s file docs/sample/src/main/java || true}}
+{{exec: cargo run --quiet -- validate -s file docs/sample/src || true}}
 ```
 
 ### Yaml Language Server の利用

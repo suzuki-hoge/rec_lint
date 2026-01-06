@@ -10,7 +10,7 @@ use regex::Regex;
 
 use crate::matcher::Matcher;
 use crate::validate::comment::custom::{BlockSyntax, CustomCommentSyntax};
-use crate::validate::doc::{JavaDocConfig, KotlinDocConfig, RustDocConfig};
+use crate::validate::doc::{KotlinDocConfig, PhpDocConfig, RustDocConfig};
 use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, Visibility};
 
 #[derive(Clone, Debug)]
@@ -18,12 +18,12 @@ pub enum Rule {
     Text(TextRule),
     Regex(RegexRule),
     Custom(CustomRule),
-    JavaDoc(JavaDocRule),
+    PhpDoc(PhpDocRule),
     KotlinDoc(KotlinDocRule),
     RustDoc(RustDocRule),
     JapaneseComment(CommentRule),
     EnglishComment(CommentRule),
-    JUnitTest(TestRule),
+    PhpUnitTest(TestRule),
     KotestTest(TestRule),
     RustTest(TestRule),
 }
@@ -34,12 +34,12 @@ impl Rule {
             Rule::Text(r) => &r.label,
             Rule::Regex(r) => &r.label,
             Rule::Custom(r) => &r.label,
-            Rule::JavaDoc(r) => &r.label,
+            Rule::PhpDoc(r) => &r.label,
             Rule::KotlinDoc(r) => &r.label,
             Rule::RustDoc(r) => &r.label,
             Rule::JapaneseComment(r) => &r.label,
             Rule::EnglishComment(r) => &r.label,
-            Rule::JUnitTest(r) => &r.label,
+            Rule::PhpUnitTest(r) => &r.label,
             Rule::KotestTest(r) => &r.label,
             Rule::RustTest(r) => &r.label,
         }
@@ -50,12 +50,12 @@ impl Rule {
             Rule::Text(r) => &r.matcher,
             Rule::Regex(r) => &r.matcher,
             Rule::Custom(r) => &r.matcher,
-            Rule::JavaDoc(r) => &r.matcher,
+            Rule::PhpDoc(r) => &r.matcher,
             Rule::KotlinDoc(r) => &r.matcher,
             Rule::RustDoc(r) => &r.matcher,
             Rule::JapaneseComment(r) => &r.matcher,
             Rule::EnglishComment(r) => &r.matcher,
-            Rule::JUnitTest(r) => &r.matcher,
+            Rule::PhpUnitTest(r) => &r.matcher,
             Rule::KotestTest(r) => &r.matcher,
             Rule::RustTest(r) => &r.matcher,
         }
@@ -66,12 +66,12 @@ impl Rule {
             Rule::Text(r) => Some(&r.keywords),
             Rule::Regex(r) => Some(&r.keywords),
             Rule::Custom(_) => None,
-            Rule::JavaDoc(_) => None,
+            Rule::PhpDoc(_) => None,
             Rule::KotlinDoc(_) => None,
             Rule::RustDoc(_) => None,
             Rule::JapaneseComment(_) => None,
             Rule::EnglishComment(_) => None,
-            Rule::JUnitTest(_) => None,
+            Rule::PhpUnitTest(_) => None,
             Rule::KotestTest(_) => None,
             Rule::RustTest(_) => None,
         }
@@ -104,9 +104,9 @@ pub struct CustomRule {
 }
 
 #[derive(Clone, Debug)]
-pub struct JavaDocRule {
+pub struct PhpDocRule {
     pub label: String,
-    pub config: JavaDocConfig,
+    pub config: PhpDocConfig,
     pub message: String,
     pub matcher: Matcher,
 }
@@ -207,31 +207,29 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             }
             Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, matcher }))
         }
-        "require_java_doc" => {
+        "require_php_doc" => {
             let raw_config = raw
-                .java_doc
-                .ok_or_else(|| anyhow!("Rule '{}': type 'require_java_doc' requires 'java_doc' config", raw.label))?;
+                .php_doc
+                .ok_or_else(|| anyhow!("Rule '{}': type 'require_php_doc' requires 'php_doc' config", raw.label))?;
             if raw_config.class.is_none()
                 && raw_config.interface.is_none()
+                && raw_config.trait_.is_none()
                 && raw_config.enum_.is_none()
-                && raw_config.record.is_none()
-                && raw_config.annotation.is_none()
-                && raw_config.method.is_none()
+                && raw_config.function.is_none()
             {
                 return Err(anyhow!(
-                    "Rule '{}': 'java_doc' config requires at least one element (class, interface, enum, record, annotation, method)",
+                    "Rule '{}': 'php_doc' config requires at least one element (class, interface, trait, enum, function)",
                     raw.label
                 ));
             }
-            let config = JavaDocConfig {
+            let config = PhpDocConfig {
                 class: raw_config.class.map(convert_visibility),
                 interface: raw_config.interface.map(convert_visibility),
+                trait_: raw_config.trait_.map(convert_visibility),
                 enum_: raw_config.enum_.map(convert_visibility),
-                record: raw_config.record.map(convert_visibility),
-                annotation: raw_config.annotation.map(convert_visibility),
-                method: raw_config.method.map(convert_visibility),
+                function: raw_config.function.map(convert_visibility),
             };
-            Ok(Rule::JavaDoc(JavaDocRule { label: raw.label, config, message: raw.message, matcher }))
+            Ok(Rule::PhpDoc(PhpDocRule { label: raw.label, config, message: raw.message, matcher }))
         }
         "require_kotlin_doc" => {
             let raw_config = raw.kotlin_doc.ok_or_else(|| {
@@ -301,8 +299,8 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             let source = convert_comment_source(&raw)?;
             Ok(Rule::EnglishComment(CommentRule { label: raw.label, source, message: raw.message, matcher }))
         }
-        "require_japanese_junit_test" => {
-            Ok(Rule::JUnitTest(TestRule { label: raw.label, message: raw.message, matcher }))
+        "require_japanese_phpunit_test" => {
+            Ok(Rule::PhpUnitTest(TestRule { label: raw.label, message: raw.message, matcher }))
         }
         "require_japanese_kotest_test" => {
             Ok(Rule::KotestTest(TestRule { label: raw.label, message: raw.message, matcher }))

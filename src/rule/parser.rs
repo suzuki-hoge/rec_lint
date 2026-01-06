@@ -52,16 +52,16 @@ pub enum Visibility {
     All,
 }
 
-/// Config for no_java_doc validator
+/// Config for require_php_doc validator
 #[derive(Clone, Debug, Deserialize, Default)]
-pub struct RawJavaDocConfig {
+pub struct RawPhpDocConfig {
     pub class: Option<Visibility>,
     pub interface: Option<Visibility>,
+    #[serde(rename = "trait")]
+    pub trait_: Option<Visibility>,
     #[serde(rename = "enum")]
     pub enum_: Option<Visibility>,
-    pub record: Option<Visibility>,
-    pub annotation: Option<Visibility>,
-    pub method: Option<Visibility>,
+    pub function: Option<Visibility>,
 }
 
 /// Config for no_kotlin_doc validator
@@ -153,7 +153,7 @@ pub struct RawRule {
     #[serde(default, rename = "match")]
     pub match_: Vec<RawMatchItem>,
     // Doc validator configs
-    pub java_doc: Option<RawJavaDocConfig>,
+    pub php_doc: Option<RawPhpDocConfig>,
     pub kotlin_doc: Option<RawKotlinDocConfig>,
     pub rust_doc: Option<RawRustDocConfig>,
     // Comment validator configs
@@ -361,47 +361,45 @@ guideline:
     // =========================================================================
 
     #[test]
-    fn JavaDoc設定の全オプションをパースできる() {
+    fn PhpDoc設定の全オプションをパースできる() {
         let yaml = r#"
 rule:
-  - label: java-doc
-    type: require_java_doc
-    message: Missing JavaDoc
-    java_doc:
+  - label: php-doc
+    type: require_php_doc
+    message: Missing PHPDoc
+    php_doc:
       class: public
       interface: public
-      enum: all
-      record: public
-      annotation: public
-      method: public
+      trait: all
+      enum: public
+      function: public
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        assert_eq!(rule.type_, "require_java_doc");
-        let doc = rule.java_doc.as_ref().unwrap();
+        assert_eq!(rule.type_, "require_php_doc");
+        let doc = rule.php_doc.as_ref().unwrap();
         assert_eq!(doc.class, Some(Visibility::Public));
         assert_eq!(doc.interface, Some(Visibility::Public));
-        assert_eq!(doc.enum_, Some(Visibility::All));
-        assert_eq!(doc.record, Some(Visibility::Public));
-        assert_eq!(doc.annotation, Some(Visibility::Public));
-        assert_eq!(doc.method, Some(Visibility::Public));
+        assert_eq!(doc.trait_, Some(Visibility::All));
+        assert_eq!(doc.enum_, Some(Visibility::Public));
+        assert_eq!(doc.function, Some(Visibility::Public));
     }
 
     #[test]
-    fn JavaDoc設定の一部オプションのみパースできる() {
+    fn PhpDoc設定の一部オプションのみパースできる() {
         let yaml = r#"
 rule:
-  - label: java-doc
-    type: require_java_doc
-    message: Missing JavaDoc
-    java_doc:
+  - label: php-doc
+    type: require_php_doc
+    message: Missing PHPDoc
+    php_doc:
       class: all
 "#;
         let config = RawConfig::parse(yaml).unwrap();
         let rule = &config.rule.unwrap()[0];
-        let doc = rule.java_doc.as_ref().unwrap();
+        let doc = rule.php_doc.as_ref().unwrap();
         assert_eq!(doc.class, Some(Visibility::All));
-        assert!(doc.method.is_none());
+        assert!(doc.function.is_none());
     }
 
     #[test]
