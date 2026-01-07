@@ -6,6 +6,7 @@ fix:
 	@cargo fix --allow-dirty --allow-staged
 	@cargo clippy --fix --allow-dirty --allow-staged
 	@cargo nextest run
+	@rec_lint validate
 
 doc:
 	@cargo run -q --manifest-path tools/schema-tools/Cargo.toml

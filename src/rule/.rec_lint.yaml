@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../..//schema/rec_lint.schema.json
+
+guideline:
+  - message: ルールの構造体を実装する
+  - message: YAML パースはすべて parser.rs で行う

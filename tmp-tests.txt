@@ -1,0 +1,171 @@
+tests
+  show
+    rec_tree.rs
+      fn dir1指定のときdir1のルールが表示される
+      fn dir2指定のときdir1のルールが表示される
+      fn dir3指定のときdir1とdir3のルールが表示される
+      fn file1指定のときdir1のルールが表示される
+      fn file2指定のときdir1のルールが表示される
+      fn file3指定のときdir1とdir3のルールが表示される
+  validate
+    config
+      include_extensions.rs
+        fn php対象のときphpは対象になる
+        fn php対象のときruleでrsを指定しても対象にならない
+      exclude_dirs
+        fn vendor除外のときvendorは対象にならない
+        fn vendor除外のときruleでvendorを有効しても対象にならない
+    rules
+      forbidden_texts.rs
+        fn 違反がない場合は空の結果を返す
+        fn キーワードがマッチすると違反が検出される
+        fn 行中のキーワードも検出される
+        fn 複数キーワードでは先に定義されたものが優先される
+        fn 最初のキーワードが無ければ次のキーワードでマッチする
+        fn 各行で最初にマッチしたキーワードのみ報告される
+        fn 複数行の違反を検出できる
+        fn 行番号は1から始まる
+        fn 行末のキーワードも検出される
+        fn 大文字小文字を区別する
+        fn 部分文字列もマッチする
+      forbidden_patterns.rs
+        fn 違反がない場合は空の結果を返す
+        fn リテラルパターンがマッチする
+        fn ワイルドカードパターンがマッチする
+        fn 文字クラスがマッチする
+        fn 単語境界で完全一致する
+        fn 単語境界は部分一致しない
+        fn 行頭アンカーがマッチする
+        fn 行頭アンカーは行中ではマッチしない
+        fn オプショナルパターンが両方にマッチする
+        fn 選択パターンがいずれかにマッチする
+        fn 複数パターンでは先に定義されたパターンが優先される
+        fn 最初のパターンが無ければ次のパターンでマッチする
+        fn 複数行の違反を検出できる
+        fn 行番号は1から始まる
+        fn カラム位置は正規表現マッチの開始位置
+        fn 貪欲マッチでもカラム位置は正しい
+        fn ドットは任意の1文字にマッチする
+        fn 検出結果には行全体が含まれる
+        fn デフォルトでは大文字小文字を区別する
+        fn 大文字小文字を無視するフラグが使える
+      custom.rs
+        fn 任意コマンドが違反を返さない場合はエラーにならない
+        fn 任意コマンドが違反を返した場合はそのままエラーメッセージになる
+      require_php_doc.rs
+        fn class指定でallのときすべてのclassにドキュメントがあれば空の結果を返す
+        fn class指定でpublicのときすべてのclassにドキュメントがあれば空の結果を返す
+        fn class指定でpublicのとき一部のclassにドキュメントがあれば空の結果を返す
+        fn class指定でallのときすべてのclassにドキュメントがなければエラーを返す
+        fn class指定でallのとき一部のclassにしかドキュメントがなければエラーを返す
+        fn class指定でpublicのとき一部のclassにしかドキュメントがなければエラーを返す
+        fn class指定で属性付きクラスも判定できる
+        fn interface指定でallのときすべてのinterfaceにドキュメントがあれば空の結果を返す
+        fn interface指定でpublicのときすべてのinterfaceにドキュメントがあれば空の結果を返す
+        fn interface指定でpublicのとき一部のinterfaceにドキュメントがあれば空の結果を返す
+        fn interface指定でallのときすべてのinterfaceにドキュメントがなければエラーを返す
+        fn interface指定でallのとき一部のinterfaceにしかドキュメントがなければエラーを返す
+        fn interface指定でpublicのとき一部のinterfaceにしかドキュメントがなければエラーを返す
+        fn trait指定でallのときすべてのtraitにドキュメントがあれば空の結果を返す
+        fn trait指定でpublicのときすべてのtraitにドキュメントがあれば空の結果を返す
+        fn trait指定でpublicのとき一部のtraitにドキュメントがあれば空の結果を返す
+        fn trait指定でallのときすべてのtraitにドキュメントがなければエラーを返す
+        fn trait指定でallのとき一部のtraitにしかドキュメントがなければエラーを返す
+        fn trait指定でpublicのとき一部のtraitにしかドキュメントがなければエラーを返す
+        fn function指定でallのときすべてのfunctionにドキュメントがあれば空の結果を返す
+        fn function指定でpublicのときすべてのfunctionにドキュメントがあれば空の結果を返す
+        fn function指定でpublicのとき一部のfunctionにドキュメントがあれば空の結果を返す
+        fn function指定でallのときすべてのfunctionにドキュメントがなければエラーを返す
+        fn function指定でallのとき一部のfunctionにしかドキュメントがなければエラーを返す
+        fn function指定でpublicのとき一部のfunctionにしかドキュメントがなければエラーを返す
+        fn function指定でもマジックメソッドはエラーにならない
+        fn function指定でもクロージャはエラーにならない
+      require_kotlin_doc.rs
+        class, interface, object, enum_class, sealed_class, sealed_interface, data_class, value_class, annotation_class, typealias, function, all において php と同じ構造
+      require_rust_doc.rs
+        struct, enum, trait, type_alias, union, fn, macro_rules, mod, all において php と同じ構造
+      require_english_comment.rs
+        fn java系フォーマット_コメント行のコメントから日本語を抽出してエラーにできる
+        fn java系フォーマット_コード行末のコメントから日本語を抽出してエラーにできる
+        fn java系フォーマット_複数行のコメントから日本語を抽出してエラーにできる
+        fn java系フォーマット_URLなどはコメントとして扱われない
+        fn java系フォーマット_URLとコメントが混在しても正しく扱える
+        fn java系フォーマット_単一行のブロックコメントから日本語を抽出してエラーにできる
+        fn java系フォーマット_複数行のブロックコメントから日本語を抽出してエラーにできる
+        fn java系フォーマット_コード中のブロックコメントから日本語を抽出してエラーにできる
+        fn rust系フォーマット_コメント行のコメントから日本語を抽出してエラーにできる
+        fn rust系フォーマット_コード行末のコメントから日本語を抽出してエラーにできる
+        fn rust系フォーマット_複数行のコメントから日本語を抽出してエラーにできる
+        fn rust系フォーマット_URLなどはコメントとして扱われない
+        fn rust系フォーマット_URLとコメントが混在しても正しく扱える
+        fn rust系フォーマット_単一行のブロックコメントから日本語を抽出してエラーにできる
+        fn rust系フォーマット_複数行のブロックコメントから日本語を抽出してエラーにできる
+        fn rust系フォーマット_コード中のブロックコメントから日本語を抽出してエラーにできる
+      require_japanese_comment.rs
+        require_english_comment と同様
+      require_japanese_phpunit_test_name.rs
+        fn testプレフィックスのメソッドを抽出できる
+        fn 日本語のテスト名は違反として検出されない
+        fn 英語のテスト名は違反として検出される
+        fn PHPDocのtestアノテーションでテストを検出できる
+        fn PHP8のTestアトリビュートでテストを検出できる
+        fn testプレフィックスがないメソッドは抽出されない
+        fn 複数のテストメソッドを抽出できる
+        fn 日本語の名前をtestアノテーションで定義した場合は違反にならない
+        fn 英語の名前をtestアノテーションで定義した場合は違反になる
+        fn プライベートメソッドでもtestプレフィックスがあれば検出する
+        fn 単一行PHPDocのtestアノテーションを検出できる
+        fn 複数のアトリビュートがある場合も検出できる
+      require_japanese_kotest_test_name.rs
+        fn testパターンからテスト名を抽出できる
+        fn contextパターンからテスト名を抽出できる
+        fn 日本語のテスト名は違反として検出されない
+        fn 英語のテスト名は違反として検出される
+        fn 複数のDSLパターンを同時に検出できる
+        fn ファイルに日本語と英語が混在する場合は英語のみ違反となる
+        fn shouldパターンを検出できる
+        fn given_when_thenパターンを検出できる
+      require_japanese_rust_test_name.rs
+        fn test属性がある関数名を抽出できる
+        fn 日本語のテスト名は違反として検出されない
+        fn 英語のテスト名は違反として検出される
+        fn tokio_test属性も検出できる
+        fn 複数の属性がある場合も正しく抽出できる
+        fn test属性がない関数は抽出されない
+        fn 複数のテスト関数を抽出できる
+        fn actix_web_test属性も検出できる
+      require_kotest_test.rs
+        fn exists指定のときmainと同じディレクトリ同じnamespageにテストがあるクラスはエラーにならない
+        fn exists指定のときmainと同じディレクトリ違うnamespageにテストがあるクラスはエラーにならない
+        fn exists指定のときmainと違うディレクトリ同じnamespageにテストがあるクラスはエラーにならない
+        fn all_public指定のときすべてのコードをテストしていればエラーにならない
+        fn all_public指定のとき一部のコードをテストがなければエラーになる
+      require_phpunit_test.rs
+        require_kotest_test と同様
+      require_rust_test.rs
+        fn unit_exists指定のときテストモジュールがあればエラーにならない.rs
+        fn unit_exists指定のときテストモジュールがあればエラーにならない.rs
+        fn unit_exists指定のときテストアトリビュートがあればエラーにならない.rs
+        fn unit_exists指定のときテストアトリビュートがあればエラーにならない.rs
+        fn unit_exists指定のときテストがあればエラーになる.rs
+        fn unit_exists指定のときテストがあればエラーになる.rs
+        fn unit_all_public指定のとき単一のテストモジュールですべての関数がテストされていればエラーにならない.rs
+        fn unit_all_public指定のとき単一のテストモジュールですべての関数がテストされていればエラーにならない.rs
+        fn unit_all_public指定のとき複数のテストモジュールですべての関数がテストされていればエラーにならない.rs
+        fn unit_all_public指定のとき複数のテストモジュールですべての関数がテストされていればエラーにならない.rs
+        fn unit_all_public指定のとき複数のテストアトリビュートですべての関数がテストされていればエラーにならない.rs
+        fn unit_all_public指定のとき複数のテストアトリビュートですべての関数がテストされていればエラーにならない.rs
+        fn unit_all_public指定のとき一部のテストがなければエラーになる.rs
+        fn unit_all_public指定のとき一部のテストがなければエラーになる.rs
+        fn unit_all_public指定でもテストモジュール内の関数は対象にならない.rs
+        fn unit_all_public指定でもテストモジュール内の関数は対象にならない.rs
+        fn unit_exists指定のときasync関数をasyncテストアトリビュートでテストすればエラーにならない.rs
+        fn unit_exists指定のときasync関数をasyncテストアトリビュートでテストすればエラーにならない.rs
+        fn unit_exists指定のときtokioテストアトリビュートでテストすればエラーにならない.rs
+        fn unit_exists指定のときtokioテストアトリビュートでテストすればエラーにならない.rs
+        fn integration_exists指定のときmainと同じディレクトリ同じnamespageにテストがあるクラスはエラーにならない
+        fn integration_exists指定のときmainと同じディレクトリ違うnamespageにテストがあるクラスはエラーにならない
+        fn integration_exists指定のときmainと違うディレクトリ同じnamespageにテストがあるクラスはエラーにならない
+        fn integration_all_public指定のときすべてのコードをテストしていればエラーにならない
+        fn integration_all_public指定のとき一部のコードをテストがなければエラーになる
+
