@@ -134,6 +134,67 @@ pub struct RawCommentConfig {
     pub custom: Option<RawCustomComment>,
 }
 
+// =============================================================================
+// Test existence validator config (require_phpunit_test, require_kotest_test, require_rust_test)
+// =============================================================================
+
+/// Require level for test existence (PHP/Kotlin)
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TestRequireLevel {
+    /// Test file must exist
+    FileExists,
+    /// All public methods must be tested
+    AllPublic,
+}
+
+/// Require level for test existence (Rust)
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TestRequireLevelRust {
+    /// Test must exist
+    Exists,
+    /// All pub functions must be tested
+    AllPublic,
+}
+
+/// Config for require_phpunit_test validator
+#[derive(Clone, Debug, Deserialize, Default)]
+pub struct RawPhpUnitTestConfig {
+    pub test_directory: Option<String>,
+    pub require: Option<TestRequireLevel>,
+    pub suffix: Option<String>,
+}
+
+/// Config for require_kotest_test validator
+#[derive(Clone, Debug, Deserialize, Default)]
+pub struct RawKotestTestConfig {
+    pub test_directory: Option<String>,
+    pub require: Option<TestRequireLevel>,
+    pub suffix: Option<String>,
+}
+
+/// Config for require_rust_test validator
+#[derive(Clone, Debug, Deserialize, Default)]
+pub struct RawRustTestConfig {
+    pub unit: Option<RawRustUnitTestConfig>,
+    pub integration: Option<RawRustIntegrationTestConfig>,
+    pub suffix: Option<String>,
+}
+
+/// Config for Rust unit test
+#[derive(Clone, Debug, Deserialize, Default)]
+pub struct RawRustUnitTestConfig {
+    pub require: Option<TestRequireLevelRust>,
+}
+
+/// Config for Rust integration test
+#[derive(Clone, Debug, Deserialize, Default)]
+pub struct RawRustIntegrationTestConfig {
+    pub test_directory: Option<String>,
+    pub require: Option<TestRequireLevelRust>,
+}
+
 #[derive(Deserialize)]
 pub struct RawConfig {
     pub rule: Option<Vec<RawRule>>,
@@ -158,6 +219,10 @@ pub struct RawRule {
     pub rust_doc: Option<RawRustDocConfig>,
     // Comment validator configs
     pub comment: Option<RawCommentConfig>,
+    // Test existence validator configs
+    pub phpunit_test: Option<RawPhpUnitTestConfig>,
+    pub kotest_test: Option<RawKotestTestConfig>,
+    pub rust_test: Option<RawRustTestConfig>,
 }
 
 #[derive(Deserialize)]

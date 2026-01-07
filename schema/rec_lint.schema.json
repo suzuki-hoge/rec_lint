@@ -56,7 +56,7 @@
       "x-doc-order": 1,
       "title": "RuleItem",
       "description": "rule に列挙するルールの定義",
-      "x-doc-description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_php_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment<br>- type: require_japanese_phpunit_test<br>- type: require_japanese_kotest_test<br>- type: require_japanese_rust_test",
+      "x-doc-description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_php_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment<br>- type: require_japanese_phpunit_test_name<br>- type: require_japanese_kotest_test_name<br>- type: require_japanese_rust_test_name<br>- type: require_phpunit_test<br>- type: require_kotest_test<br>- type: require_rust_test",
       "oneOf": [
         {
           "title": "TextRule",
@@ -299,7 +299,7 @@
           ]
         },
         {
-          "title": "JapanesePhpUnitTestRule",
+          "title": "JapanesePhpUnitTestNameRule",
           "description": "PHPUnit テスト名が日本語でないファイルを検出する",
           "allOf": [
             {
@@ -315,14 +315,14 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "require_japanese_phpunit_test"
+                  "const": "require_japanese_phpunit_test_name"
                 }
               }
             }
           ]
         },
         {
-          "title": "JapaneseKotestTestRule",
+          "title": "JapaneseKotestTestNameRule",
           "description": "Kotest テスト名が日本語でないファイルを検出する",
           "allOf": [
             {
@@ -338,14 +338,14 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "require_japanese_kotest_test"
+                  "const": "require_japanese_kotest_test_name"
                 }
               }
             }
           ]
         },
         {
-          "title": "JapaneseRustTestRule",
+          "title": "JapaneseRustTestNameRule",
           "description": "Rust テスト名が日本語でないファイルを検出する",
           "allOf": [
             {
@@ -361,7 +361,91 @@
               "properties": {
                 "type": {
                   "x-property-order": 0,
-                  "const": "require_japanese_rust_test"
+                  "const": "require_japanese_rust_test_name"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "PhpUnitTestRule",
+          "description": "PHPUnit テストファイルの存在を検証する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "require_phpunit_test"
+                },
+                "phpunit_test": {
+                  "x-property-order": 1,
+                  "description": "PHPUnit テスト存在検証設定",
+                  "$ref": "#/definitions/phpunitTestConfig"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "KotestTestRule",
+          "description": "Kotest テストファイルの存在を検証する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "require_kotest_test"
+                },
+                "kotest_test": {
+                  "x-property-order": 1,
+                  "description": "Kotest テスト存在検証設定",
+                  "$ref": "#/definitions/kotestTestConfig"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "RustTestRule",
+          "description": "Rust テストの存在を検証する",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ruleBase"
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "label",
+                "message"
+              ],
+              "properties": {
+                "type": {
+                  "x-property-order": 0,
+                  "const": "require_rust_test"
+                },
+                "rust_test": {
+                  "x-property-order": 1,
+                  "description": "Rust テスト存在検証設定",
+                  "$ref": "#/definitions/rustTestConfig"
                 }
               }
             }
@@ -662,9 +746,9 @@
         }
       }
     },
-    "japanesePhpUnitTestRule": {
+    "japanesePhpUnitTestNameRule": {
       "x-doc-order": 10,
-      "title": "JapanesePhpUnitTestRule",
+      "title": "JapanesePhpUnitTestNameRule",
       "description": "PHPUnit テスト名が日本語でないファイルを検出する",
       "type": "object",
       "required": [
@@ -675,13 +759,13 @@
       "properties": {
         "type": {
           "x-property-order": 0,
-          "const": "require_japanese_phpunit_test"
+          "const": "require_japanese_phpunit_test_name"
         }
       }
     },
-    "japaneseKotestTestRule": {
+    "japaneseKotestTestNameRule": {
       "x-doc-order": 11,
-      "title": "JapaneseKotestTestRule",
+      "title": "JapaneseKotestTestNameRule",
       "description": "Kotest テスト名が日本語でないファイルを検出する",
       "type": "object",
       "required": [
@@ -692,13 +776,13 @@
       "properties": {
         "type": {
           "x-property-order": 0,
-          "const": "require_japanese_kotest_test"
+          "const": "require_japanese_kotest_test_name"
         }
       }
     },
-    "japaneseRustTestRule": {
+    "japaneseRustTestNameRule": {
       "x-doc-order": 12,
-      "title": "JapaneseRustTestRule",
+      "title": "JapaneseRustTestNameRule",
       "description": "Rust テスト名が日本語でないファイルを検出する",
       "type": "object",
       "required": [
@@ -709,7 +793,7 @@
       "properties": {
         "type": {
           "x-property-order": 0,
-          "const": "require_japanese_rust_test"
+          "const": "require_japanese_rust_test_name"
         }
       }
     },
@@ -788,6 +872,153 @@
           "examples": [
             "*/"
           ]
+        }
+      }
+    },
+    "testRequireLevel": {
+      "x-doc-order": 17,
+      "title": "TestRequireLevel",
+      "description": "テスト存在検証レベル (PHP/Kotlin)",
+      "type": "string",
+      "oneOf": [
+        {
+          "const": "file_exists",
+          "description": "テストファイルが存在すること"
+        },
+        {
+          "const": "all_public",
+          "description": "全 public メソッドがテストで呼ばれること"
+        }
+      ]
+    },
+    "testRequireLevelRust": {
+      "x-doc-order": 18,
+      "title": "TestRequireLevelRust",
+      "description": "テスト存在検証レベル (Rust)",
+      "type": "string",
+      "oneOf": [
+        {
+          "const": "exists",
+          "description": "テストが存在すること"
+        },
+        {
+          "const": "all_public",
+          "description": "全 pub 関数がテストで呼ばれること"
+        }
+      ]
+    },
+    "phpunitTestConfig": {
+      "x-doc-order": 19,
+      "title": "PhpUnitTestConfig",
+      "description": "PHPUnit テスト存在検証設定",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "test_directory": {
+          "x-property-order": 0,
+          "description": "テストディレクトリのパス",
+          "type": "string",
+          "default": "tests"
+        },
+        "require": {
+          "x-property-order": 1,
+          "description": "検証レベル",
+          "$ref": "#/definitions/testRequireLevel",
+          "default": "file_exists"
+        },
+        "suffix": {
+          "x-property-order": 2,
+          "description": "テストファイル名のサフィックス",
+          "type": "string",
+          "default": "Test"
+        }
+      }
+    },
+    "kotestTestConfig": {
+      "x-doc-order": 20,
+      "title": "KotestTestConfig",
+      "description": "Kotest テスト存在検証設定",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "test_directory": {
+          "x-property-order": 0,
+          "description": "テストディレクトリのパス",
+          "type": "string",
+          "default": "src/test/kotlin"
+        },
+        "require": {
+          "x-property-order": 1,
+          "description": "検証レベル",
+          "$ref": "#/definitions/testRequireLevel",
+          "default": "file_exists"
+        },
+        "suffix": {
+          "x-property-order": 2,
+          "description": "テストファイル名のサフィックス",
+          "type": "string",
+          "default": "Test"
+        }
+      }
+    },
+    "rustTestConfig": {
+      "x-doc-order": 21,
+      "title": "RustTestConfig",
+      "description": "Rust テスト存在検証設定",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "unit": {
+          "x-property-order": 0,
+          "description": "ユニットテスト設定",
+          "$ref": "#/definitions/rustUnitTestConfig"
+        },
+        "integration": {
+          "x-property-order": 1,
+          "description": "統合テスト設定",
+          "$ref": "#/definitions/rustIntegrationTestConfig"
+        },
+        "suffix": {
+          "x-property-order": 2,
+          "description": "テストファイル名のサフィックス (統合テスト用)",
+          "type": "string",
+          "default": "_test"
+        }
+      }
+    },
+    "rustUnitTestConfig": {
+      "x-doc-order": 22,
+      "title": "RustUnitTestConfig",
+      "description": "Rust ユニットテスト設定",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "require": {
+          "x-property-order": 0,
+          "description": "検証レベル",
+          "$ref": "#/definitions/testRequireLevelRust",
+          "default": "exists"
+        }
+      }
+    },
+    "rustIntegrationTestConfig": {
+      "x-doc-order": 23,
+      "title": "RustIntegrationTestConfig",
+      "description": "Rust 統合テスト設定",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "test_directory": {
+          "x-property-order": 0,
+          "description": "統合テストディレクトリのパス",
+          "type": "string",
+          "default": "tests"
+        },
+        "require": {
+          "x-property-order": 1,
+          "description": "検証レベル",
+          "$ref": "#/definitions/testRequireLevelRust",
+          "default": "exists"
         }
       }
     }

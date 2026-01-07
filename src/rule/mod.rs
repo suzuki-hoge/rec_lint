@@ -11,7 +11,12 @@ use regex::Regex;
 use crate::matcher::Matcher;
 use crate::validate::comment::custom::{BlockSyntax, CustomCommentSyntax};
 use crate::validate::doc::{KotlinDocConfig, PhpDocConfig, RustDocConfig};
-use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, Visibility};
+use crate::validate::test::exists::{
+    KotestTestConfig, PhpUnitTestConfig, RustIntegrationTestConfig, RustTestConfig, RustUnitTestConfig,
+};
+use parser::{
+    CommentLang, RawConfig, RawGuidelineItem, RawRule, TestRequireLevel, TestRequireLevelRust, Visibility,
+};
 
 #[derive(Clone, Debug)]
 pub enum Rule {
@@ -26,6 +31,10 @@ pub enum Rule {
     PhpUnitTest(TestRule),
     KotestTest(TestRule),
     RustTest(TestRule),
+    // Test existence rules
+    PhpUnitTestExistence(TestExistenceRule<PhpUnitTestConfig>),
+    KotestTestExistence(TestExistenceRule<KotestTestConfig>),
+    RustTestExistence(TestExistenceRule<RustTestConfig>),
 }
 
 impl Rule {
@@ -42,6 +51,9 @@ impl Rule {
             Rule::PhpUnitTest(r) => &r.label,
             Rule::KotestTest(r) => &r.label,
             Rule::RustTest(r) => &r.label,
+            Rule::PhpUnitTestExistence(r) => &r.label,
+            Rule::KotestTestExistence(r) => &r.label,
+            Rule::RustTestExistence(r) => &r.label,
         }
     }
 
@@ -58,6 +70,9 @@ impl Rule {
             Rule::PhpUnitTest(r) => &r.matcher,
             Rule::KotestTest(r) => &r.matcher,
             Rule::RustTest(r) => &r.matcher,
+            Rule::PhpUnitTestExistence(r) => &r.matcher,
+            Rule::KotestTestExistence(r) => &r.matcher,
+            Rule::RustTestExistence(r) => &r.matcher,
         }
     }
 
@@ -74,6 +89,9 @@ impl Rule {
             Rule::PhpUnitTest(_) => None,
             Rule::KotestTest(_) => None,
             Rule::RustTest(_) => None,
+            Rule::PhpUnitTestExistence(_) => None,
+            Rule::KotestTestExistence(_) => None,
+            Rule::RustTestExistence(_) => None,
         }
     }
 }
@@ -145,6 +163,14 @@ pub struct CommentRule {
 #[derive(Clone, Debug)]
 pub struct TestRule {
     pub label: String,
+    pub message: String,
+    pub matcher: Matcher,
+}
+
+#[derive(Clone, Debug)]
+pub struct TestExistenceRule<C> {
+    pub label: String,
+    pub config: C,
     pub message: String,
     pub matcher: Matcher,
 }
@@ -299,14 +325,48 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             let source = convert_comment_source(&raw)?;
             Ok(Rule::EnglishComment(CommentRule { label: raw.label, source, message: raw.message, matcher }))
         }
-        "require_japanese_phpunit_test" => {
+        "require_japanese_phpunit_test_name" => {
             Ok(Rule::PhpUnitTest(TestRule { label: raw.label, message: raw.message, matcher }))
         }
-        "require_japanese_kotest_test" => {
+        "require_japanese_kotest_test_name" => {
             Ok(Rule::KotestTest(TestRule { label: raw.label, message: raw.message, matcher }))
         }
-        "require_japanese_rust_test" => {
+        "require_japanese_rust_test_name" => {
             Ok(Rule::RustTest(TestRule { label: raw.label, message: raw.message, matcher }))
+        }
+        "require_phpunit_test" => {
+            let raw_config = raw.phpunit_test.unwrap_or_default();
+            let config = PhpUnitTestConfig {
+                test_directory: raw_config.test_directory.unwrap_or_else(|| "tests".to_string()),
+                require: raw_config.require.unwrap_or(TestRequireLevel::FileExists),
+                suffix: raw_config.suffix.unwrap_or_else(|| "Test".to_string()),
+            };
+            Ok(Rule::PhpUnitTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
+        }
+        "require_kotest_test" => {
+            let raw_config = raw.kotest_test.unwrap_or_default();
+            let config = KotestTestConfig {
+                test_directory: raw_config.test_directory.unwrap_or_else(|| "src/test/kotlin".to_string()),
+                require: raw_config.require.unwrap_or(TestRequireLevel::FileExists),
+                suffix: raw_config.suffix.unwrap_or_else(|| "Test".to_string()),
+            };
+            Ok(Rule::KotestTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
+        }
+        "require_rust_test" => {
+            let raw_config = raw.rust_test.unwrap_or_default();
+            let unit = raw_config.unit.map(|u| RustUnitTestConfig {
+                require: u.require.unwrap_or(TestRequireLevelRust::Exists),
+            });
+            let integration = raw_config.integration.map(|i| RustIntegrationTestConfig {
+                test_directory: i.test_directory.unwrap_or_else(|| "tests".to_string()),
+                require: i.require.unwrap_or(TestRequireLevelRust::Exists),
+            });
+            let config = RustTestConfig {
+                unit,
+                integration,
+                suffix: raw_config.suffix.unwrap_or_else(|| "_test".to_string()),
+            };
+            Ok(Rule::RustTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
         }
         other => Err(anyhow!("Rule '{}': unknown type '{}'", raw.label, other)),
     }

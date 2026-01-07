@@ -11,6 +11,7 @@ use crate::commands::SortMode;
 use crate::rule::{collect_rules, CollectedRules, CommentSource, RootConfig, Rule};
 use crate::validate::comment::{self, CommentViolation};
 use crate::validate::doc::{self, DocViolation};
+use crate::validate::test::exists::{self as test_exists, TestExistenceViolation};
 use crate::validate::test::{self, TestViolation};
 use crate::validate::{custom, regex, text, CustomViolation, Violation};
 
@@ -27,6 +28,7 @@ enum ViolationDetail {
     DocViolations(Vec<DocViolation>),
     CommentViolations(Vec<CommentViolation>),
     TestViolations(Vec<TestViolation>),
+    TestExistenceViolations(Vec<TestExistenceViolation>),
 }
 
 pub fn run(paths: &[PathBuf], sort_mode: SortMode) -> Result<Vec<String>> {
@@ -256,7 +258,7 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
             }
         }
         Rule::PhpUnitTest(rule) => {
-            let violations = test::phpunit::validate(content);
+            let violations = test::name::phpunit::validate(content);
             if !violations.is_empty() {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),
@@ -267,7 +269,7 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
             }
         }
         Rule::KotestTest(rule) => {
-            let violations = test::kotest::validate(content);
+            let violations = test::name::kotest::validate(content);
             if !violations.is_empty() {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),
@@ -278,13 +280,46 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
             }
         }
         Rule::RustTest(rule) => {
-            let violations = test::rust::validate(content);
+            let violations = test::name::rust::validate(content);
             if !violations.is_empty() {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),
                     root_dir: root_dir.to_path_buf(),
                     message: rule.message.clone(),
                     detail: ViolationDetail::TestViolations(violations),
+                }));
+            }
+        }
+        Rule::PhpUnitTestExistence(rule) => {
+            let violations = test_exists::phpunit::validate(file, content, root_dir, &rule.config);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::TestExistenceViolations(violations),
+                }));
+            }
+        }
+        Rule::KotestTestExistence(rule) => {
+            let violations = test_exists::kotest::validate(file, content, root_dir, &rule.config);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::TestExistenceViolations(violations),
+                }));
+            }
+        }
+        Rule::RustTestExistence(rule) => {
+            let violations = test_exists::rust::validate(file, content, root_dir, &rule.config);
+            if !violations.is_empty() {
+                return Ok(Some(FileViolation {
+                    file: file.to_path_buf(),
+                    root_dir: root_dir.to_path_buf(),
+                    message: rule.message.clone(),
+                    detail: ViolationDetail::TestExistenceViolations(violations),
                 }));
             }
         }
@@ -371,6 +406,23 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                         line: tv.line,
                         col: 1, // Test violations don't have column info
                         message: format!("{}: \"{}\"", v.message, truncate_text(&tv.name, 40)),
+                        custom_output: None,
+                    });
+                }
+            }
+            ViolationDetail::TestExistenceViolations(existence_violations) => {
+                for ev in existence_violations {
+                    // Line number depends on the violation kind
+                    let line = match &ev.kind {
+                        test_exists::TestExistenceViolationKind::UntestedPublicMethod { line, .. } => *line,
+                        test_exists::TestExistenceViolationKind::UntestedPublicFunction { line, .. } => *line,
+                        _ => 0, // File-level violations don't have a line number
+                    };
+                    flat.push(FlatViolation {
+                        file: relative_path.clone(),
+                        line,
+                        col: 1,
+                        message: format!("{}: {}", v.message, ev.kind),
                         custom_output: None,
                     });
                 }
