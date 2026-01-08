@@ -1,0 +1,6 @@
+rule:
+  - label: 行全体テスト
+    type: forbidden_patterns
+    keywords:
+      - FORBIDDEN
+    message: パターン違反

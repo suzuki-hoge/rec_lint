@@ -1,0 +1,4 @@
+class テストがない {
+    fun create() {
+    }
+}

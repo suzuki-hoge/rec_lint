@@ -1,0 +1,7 @@
+rule:
+  - label: rust_unit_test_exists
+    type: require_rust_test
+    rust_test:
+      unit:
+        require: exists
+    message: ユニットテストが必要です

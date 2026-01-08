@@ -1,0 +1,1 @@
+pub enum Missing { Foo }

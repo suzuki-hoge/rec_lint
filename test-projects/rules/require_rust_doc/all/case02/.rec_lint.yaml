@@ -1,0 +1,8 @@
+rule:
+  - label: all_doc
+    type: require_rust_doc
+    rust_doc:
+      struct: public
+      enum: public
+      fn: public
+    message: RustDocを書いてください

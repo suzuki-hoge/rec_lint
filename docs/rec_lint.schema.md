@@ -9,7 +9,7 @@
 
 ## RuleItem
 
-rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_php_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment<br>- type: require_japanese_phpunit_test<br>- type: require_japanese_kotest_test<br>- type: require_japanese_rust_test
+rule に列挙するルールの定義<br>type ごとに異なる構造を持つ<br>- type: forbidden_texts<br>- type: forbidden_patterns<br>- type: custom<br>- type: require_php_doc<br>- type: require_kotlin_doc<br>- type: require_rust_doc<br>- type: require_english_comment<br>- type: require_japanese_comment<br>- type: require_japanese_phpunit_test_name<br>- type: require_japanese_kotest_test_name<br>- type: require_japanese_rust_test_name<br>- type: require_phpunit_test<br>- type: require_kotest_test<br>- type: require_rust_test
 
 ### TextRule
 
@@ -107,35 +107,71 @@ rustdoc がないファイルを検出する
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
-### JapanesePhpUnitTestRule
+### JapanesePhpUnitTestNameRule
 
 PHPUnit テスト名が日本語でないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_japanese_phpunit_test` | o |  |
+| type | `require_japanese_phpunit_test_name` | o |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
-### JapaneseKotestTestRule
+### JapaneseKotestTestNameRule
 
 Kotest テスト名が日本語でないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_japanese_kotest_test` | o |  |
+| type | `require_japanese_kotest_test_name` | o |  |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
 
-### JapaneseRustTestRule
+### JapaneseRustTestNameRule
 
 Rust テスト名が日本語でないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_japanese_rust_test` | o |  |
+| type | `require_japanese_rust_test_name` | o |  |
+| label | string | o | show で表示するラベル |
+| message | string | o | validation で違反しているときに表示するメッセージ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
+
+### PhpUnitTestRule
+
+PHPUnit テストファイルの存在を検証する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_phpunit_test` | o |  |
+| phpunit_test | [phpunitTestConfig](#phpunittestconfig) | - | PHPUnit テスト存在検証設定 |
+| label | string | o | show で表示するラベル |
+| message | string | o | validation で違反しているときに表示するメッセージ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
+
+### KotestTestRule
+
+Kotest テストファイルの存在を検証する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_kotest_test` | o |  |
+| kotest_test | [kotestTestConfig](#kotesttestconfig) | - | Kotest テスト存在検証設定 |
+| label | string | o | show で表示するラベル |
+| message | string | o | validation で違反しているときに表示するメッセージ |
+| match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
+
+### RustTestRule
+
+Rust テストの存在を検証する
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| type | `require_rust_test` | o |  |
+| rust_test | [rustTestConfig](#rusttestconfig) | - | Rust テスト存在検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |
@@ -235,29 +271,29 @@ rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サ�
 | lang | `java` \|<br>`kotlin` \|<br>`rust` | - | コメント構文のプリセットが提供されている言語 |
 | custom | [customComment](#customcomment) | - | プリセットが提供されていない場合の指定 |
 
-## JapanesePhpUnitTestRule
+## JapanesePhpUnitTestNameRule
 
 PHPUnit テスト名が日本語でないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_japanese_phpunit_test` | o |  |
+| type | `require_japanese_phpunit_test_name` | o |  |
 
-## JapaneseKotestTestRule
+## JapaneseKotestTestNameRule
 
 Kotest テスト名が日本語でないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_japanese_kotest_test` | o |  |
+| type | `require_japanese_kotest_test_name` | o |  |
 
-## JapaneseRustTestRule
+## JapaneseRustTestNameRule
 
 Rust テスト名が日本語でないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_japanese_rust_test` | o |  |
+| type | `require_japanese_rust_test_name` | o |  |
 
 ## Visibility
 
@@ -285,4 +321,69 @@ Doc コメントを強制する対象の可視性
 |-----------|-----|:---:|------|
 | start | string | o | ブロックコメントの開始マーカー<br>e.g. `/*` |
 | end | string | o | ブロックコメントの終了マーカー<br>e.g. `*/` |
+
+## TestRequireLevel
+
+テスト存在検証レベル (PHP/Kotlin)
+
+| 値 | 説明 |
+|----|------|
+| `file_exists` | テストファイルが存在すること |
+| `all_public` | 全 public メソッドがテストで呼ばれること |
+
+## TestRequireLevelRust
+
+テスト存在検証レベル (Rust)
+
+| 値 | 説明 |
+|----|------|
+| `exists` | テストが存在すること |
+| `all_public` | 全 pub 関数がテストで呼ばれること |
+
+## PhpUnitTestConfig
+
+PHPUnit テスト存在検証設定
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| test_directory | string | - | テストディレクトリのパス |
+| require | [testRequireLevel](#testrequirelevel) | - | 検証レベル |
+| suffix | string | - | テストファイル名のサフィックス |
+
+## KotestTestConfig
+
+Kotest テスト存在検証設定
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| test_directory | string | - | テストディレクトリのパス |
+| require | [testRequireLevel](#testrequirelevel) | - | 検証レベル |
+| suffix | string | - | テストファイル名のサフィックス |
+
+## RustTestConfig
+
+Rust テスト存在検証設定
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| unit | [rustUnitTestConfig](#rustunittestconfig) | - | ユニットテスト設定 |
+| integration | [rustIntegrationTestConfig](#rustintegrationtestconfig) | - | 統合テスト設定 |
+| suffix | string | - | テストファイル名のサフィックス (統合テスト用) |
+
+## RustUnitTestConfig
+
+Rust ユニットテスト設定
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| require | [testRequireLevelRust](#testrequirelevelrust) | - | 検証レベル |
+
+## RustIntegrationTestConfig
+
+Rust 統合テスト設定
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| test_directory | string | - | 統合テストディレクトリのパス |
+| require | [testRequireLevelRust](#testrequirelevelrust) | - | 検証レベル |
 

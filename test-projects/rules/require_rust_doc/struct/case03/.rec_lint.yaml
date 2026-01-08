@@ -1,0 +1,6 @@
+rule:
+  - label: struct_doc_public
+    type: require_rust_doc
+    rust_doc:
+      struct: public
+    message: RustDocを書いてください

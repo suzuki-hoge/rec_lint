@@ -1,0 +1,4 @@
+rule:
+  - label: kotest_test_name
+    type: require_japanese_kotest_test_name
+    message: テスト名を日本語にしてください

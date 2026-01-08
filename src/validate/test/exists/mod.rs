@@ -29,19 +29,19 @@ impl std::fmt::Display for TestExistenceViolationKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             TestExistenceViolationKind::MissingTestFile { expected_path } => {
-                write!(f, "テストファイルが存在しません: {}", expected_path)
+                write!(f, "テストファイルが存在しません: {expected_path}")
             }
             TestExistenceViolationKind::UntestedPublicMethod { line, method_name } => {
-                write!(f, "L{}: public メソッド `{}` がテストされていません", line, method_name)
+                write!(f, "L{line}: public メソッド `{method_name}` がテストされていません")
             }
             TestExistenceViolationKind::MissingUnitTest => {
                 write!(f, "ユニットテストが存在しません")
             }
             TestExistenceViolationKind::MissingIntegrationTestFile { expected_path } => {
-                write!(f, "統合テストファイルが存在しません: {}", expected_path)
+                write!(f, "統合テストファイルが存在しません: {expected_path}")
             }
             TestExistenceViolationKind::UntestedPublicFunction { line, function_name } => {
-                write!(f, "L{}: pub 関数 `{}` がテストされていません", line, function_name)
+                write!(f, "L{line}: pub 関数 `{function_name}` がテストされていません")
             }
         }
     }
@@ -57,11 +57,7 @@ pub struct PhpUnitTestConfig {
 
 impl Default for PhpUnitTestConfig {
     fn default() -> Self {
-        Self {
-            test_directory: "tests".to_string(),
-            require: TestRequireLevel::FileExists,
-            suffix: "Test".to_string(),
-        }
+        Self { test_directory: "tests".to_string(), require: TestRequireLevel::FileExists, suffix: "Test".to_string() }
     }
 }
 
@@ -112,9 +108,6 @@ pub struct RustIntegrationTestConfig {
 
 impl Default for RustIntegrationTestConfig {
     fn default() -> Self {
-        Self {
-            test_directory: "tests".to_string(),
-            require: TestRequireLevelRust::Exists,
-        }
+        Self { test_directory: "tests".to_string(), require: TestRequireLevelRust::Exists }
     }
 }

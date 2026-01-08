@@ -1,0 +1,10 @@
+rule:
+  - label: php_doc_all
+    type: require_php_doc
+    php_doc:
+      class: all
+      interface: all
+      trait: all
+      function: all
+      enum: all
+    message: PHPDocを書いてください

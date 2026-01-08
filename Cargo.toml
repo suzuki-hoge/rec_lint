@@ -14,3 +14,71 @@ rayon = "1"
 
 [dev-dependencies]
 tempfile = "3"
+
+[[test]]
+name = "show_rec_tree"
+path = "tests/show/rec_tree.rs"
+
+[[test]]
+name = "validate_config_include_extensions"
+path = "tests/validate/config/include_extensions.rs"
+
+[[test]]
+name = "validate_config_exclude_dirs"
+path = "tests/validate/config/exclude_dirs.rs"
+
+[[test]]
+name = "validate_rules_forbidden_texts"
+path = "tests/validate/rules/forbidden_texts.rs"
+
+[[test]]
+name = "validate_rules_forbidden_patterns"
+path = "tests/validate/rules/forbidden_patterns.rs"
+
+[[test]]
+name = "validate_rules_require_rust_doc"
+path = "tests/validate/rules/require_rust_doc.rs"
+
+[[test]]
+name = "validate_rules_require_english_comment"
+path = "tests/validate/rules/require_english_comment.rs"
+
+[[test]]
+name = "validate_rules_custom"
+path = "tests/validate/rules/custom.rs"
+
+[[test]]
+name = "validate_rules_require_php_doc"
+path = "tests/validate/rules/require_php_doc.rs"
+
+[[test]]
+name = "validate_rules_require_kotlin_doc"
+path = "tests/validate/rules/require_kotlin_doc.rs"
+
+[[test]]
+name = "validate_rules_require_japanese_comment"
+path = "tests/validate/rules/require_japanese_comment.rs"
+
+[[test]]
+name = "validate_rules_require_japanese_phpunit_test_name"
+path = "tests/validate/rules/require_japanese_phpunit_test_name.rs"
+
+[[test]]
+name = "validate_rules_require_japanese_kotest_test_name"
+path = "tests/validate/rules/require_japanese_kotest_test_name.rs"
+
+[[test]]
+name = "validate_rules_require_japanese_rust_test_name"
+path = "tests/validate/rules/require_japanese_rust_test_name.rs"
+
+[[test]]
+name = "validate_rules_require_phpunit_test"
+path = "tests/validate/rules/require_phpunit_test.rs"
+
+[[test]]
+name = "validate_rules_require_kotest_test"
+path = "tests/validate/rules/require_kotest_test.rs"
+
+[[test]]
+name = "validate_rules_require_rust_test"
+path = "tests/validate/rules/require_rust_test.rs"

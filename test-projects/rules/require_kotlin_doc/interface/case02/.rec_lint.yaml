@@ -1,0 +1,6 @@
+rule:
+  - label: kotlin_doc_interface_all
+    type: require_kotlin_doc
+    kotlin_doc:
+      interface: all
+    message: KDocを書いてください

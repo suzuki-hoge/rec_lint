@@ -1,0 +1,8 @@
+rule:
+  - label: rust_integration_test_exists
+    type: require_rust_test
+    rust_test:
+      integration:
+        require: exists
+        test_directory: tests
+    message: インテグレーションテストが必要です

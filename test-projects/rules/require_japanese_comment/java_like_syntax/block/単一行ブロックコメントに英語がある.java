@@ -1,0 +1,2 @@
+/* english comment */
+class Sample {}

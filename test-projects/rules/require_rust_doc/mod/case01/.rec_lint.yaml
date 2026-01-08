@@ -1,0 +1,6 @@
+rule:
+  - label: mod_doc
+    type: require_rust_doc
+    rust_doc:
+      mod: public
+    message: RustDocを書いてください

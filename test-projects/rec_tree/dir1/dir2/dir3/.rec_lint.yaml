@@ -1,0 +1,8 @@
+rule:
+  - label: dir3-rule
+    type: forbidden_texts
+    keywords: [BBB]
+    message: dir3 violation
+
+guideline:
+  - message: dir3-guideline

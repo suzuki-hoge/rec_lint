@@ -14,9 +14,7 @@ use crate::validate::doc::{KotlinDocConfig, PhpDocConfig, RustDocConfig};
 use crate::validate::test::exists::{
     KotestTestConfig, PhpUnitTestConfig, RustIntegrationTestConfig, RustTestConfig, RustUnitTestConfig,
 };
-use parser::{
-    CommentLang, RawConfig, RawGuidelineItem, RawRule, TestRequireLevel, TestRequireLevelRust, Visibility,
-};
+use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, TestRequireLevel, TestRequireLevelRust, Visibility};
 
 #[derive(Clone, Debug)]
 pub enum Rule {
@@ -341,7 +339,12 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 require: raw_config.require.unwrap_or(TestRequireLevel::FileExists),
                 suffix: raw_config.suffix.unwrap_or_else(|| "Test".to_string()),
             };
-            Ok(Rule::PhpUnitTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
+            Ok(Rule::PhpUnitTestExistence(TestExistenceRule {
+                label: raw.label,
+                config,
+                message: raw.message,
+                matcher,
+            }))
         }
         "require_kotest_test" => {
             let raw_config = raw.kotest_test.unwrap_or_default();
@@ -354,18 +357,15 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
         }
         "require_rust_test" => {
             let raw_config = raw.rust_test.unwrap_or_default();
-            let unit = raw_config.unit.map(|u| RustUnitTestConfig {
-                require: u.require.unwrap_or(TestRequireLevelRust::Exists),
-            });
+            let unit = raw_config
+                .unit
+                .map(|u| RustUnitTestConfig { require: u.require.unwrap_or(TestRequireLevelRust::Exists) });
             let integration = raw_config.integration.map(|i| RustIntegrationTestConfig {
                 test_directory: i.test_directory.unwrap_or_else(|| "tests".to_string()),
                 require: i.require.unwrap_or(TestRequireLevelRust::Exists),
             });
-            let config = RustTestConfig {
-                unit,
-                integration,
-                suffix: raw_config.suffix.unwrap_or_else(|| "_test".to_string()),
-            };
+            let config =
+                RustTestConfig { unit, integration, suffix: raw_config.suffix.unwrap_or_else(|| "_test".to_string()) };
             Ok(Rule::RustTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
         }
         other => Err(anyhow!("Rule '{}': unknown type '{}'", raw.label, other)),

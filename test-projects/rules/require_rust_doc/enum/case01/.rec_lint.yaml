@@ -1,0 +1,6 @@
+rule:
+  - label: enum_doc
+    type: require_rust_doc
+    rust_doc:
+      enum: all
+    message: RustDocを書いてください

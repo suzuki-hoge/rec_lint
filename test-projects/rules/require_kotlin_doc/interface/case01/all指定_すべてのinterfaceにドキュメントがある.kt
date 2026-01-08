@@ -1,0 +1,4 @@
+/**
+ * Documented interface
+ */
+interface MyInterface {}

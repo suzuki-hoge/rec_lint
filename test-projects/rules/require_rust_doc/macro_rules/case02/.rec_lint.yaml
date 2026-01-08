@@ -1,0 +1,6 @@
+rule:
+  - label: macro_rules_doc
+    type: require_rust_doc
+    rust_doc:
+      macro_rules: all
+    message: RustDocを書いてください

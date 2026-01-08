@@ -1,0 +1,4 @@
+include_extensions:
+  - .rs
+exclude_dirs:
+  - tests

@@ -1,0 +1,10 @@
+rule:
+  - label: comment_rule
+    type: require_english_comment
+    comment:
+      custom:
+        lines: ["#"]
+        blocks:
+          - start: '"""'
+            end: '"""'
+    message: コメントを英語にしてください

@@ -1,0 +1,5 @@
+rule:
+  - label: forbidden_texts_check
+    type: forbidden_texts
+    keywords: [needle]
+    message: テキスト違反

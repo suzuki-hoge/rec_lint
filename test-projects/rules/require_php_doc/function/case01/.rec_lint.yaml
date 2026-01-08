@@ -1,0 +1,6 @@
+rule:
+  - label: php_doc_function_all
+    type: require_php_doc
+    php_doc:
+      function: all
+    message: PHPDocを書いてください

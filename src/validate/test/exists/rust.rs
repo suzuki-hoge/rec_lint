@@ -17,9 +17,7 @@ pub fn validate(
         let has_test_module = has_test_module_or_function(content);
 
         if !has_test_module {
-            violations.push(TestExistenceViolation {
-                kind: TestExistenceViolationKind::MissingUnitTest,
-            });
+            violations.push(TestExistenceViolation { kind: TestExistenceViolationKind::MissingUnitTest });
         } else if unit_config.require == TestRequireLevelRust::AllPublic {
             // Check that all public functions are tested
             let test_content = extract_test_module_content(content);
@@ -28,10 +26,7 @@ pub fn validate(
             for (line, func_name) in public_functions {
                 if !test_content.contains(&func_name) {
                     violations.push(TestExistenceViolation {
-                        kind: TestExistenceViolationKind::UntestedPublicFunction {
-                            line,
-                            function_name: func_name,
-                        },
+                        kind: TestExistenceViolationKind::UntestedPublicFunction { line, function_name: func_name },
                     });
                 }
             }
@@ -58,10 +53,7 @@ pub fn validate(
             for (line, func_name) in public_functions {
                 if !test_content.contains(&func_name) {
                     violations.push(TestExistenceViolation {
-                        kind: TestExistenceViolationKind::UntestedPublicFunction {
-                            line,
-                            function_name: func_name,
-                        },
+                        kind: TestExistenceViolationKind::UntestedPublicFunction { line, function_name: func_name },
                     });
                 }
             }
@@ -85,9 +77,9 @@ fn build_integration_test_path(
     // Replace .rs with {suffix}.rs (or just .rs if suffix is empty)
     let test_file = if let Some(base) = stripped.strip_suffix(".rs") {
         if suffix.is_empty() {
-            format!("{}.rs", base)
+            format!("{base}.rs")
         } else {
-            format!("{}{}.rs", base, suffix)
+            format!("{base}{suffix}.rs")
         }
     } else {
         stripped.to_string()
@@ -180,10 +172,7 @@ fn extract_fn_name(line: &str) -> Option<String> {
     let name_start = after_fn.trim();
 
     // Extract identifier
-    let name: String = name_start
-        .chars()
-        .take_while(|c| c.is_alphanumeric() || *c == '_')
-        .collect();
+    let name: String = name_start.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
 
     if name.is_empty() {
         None

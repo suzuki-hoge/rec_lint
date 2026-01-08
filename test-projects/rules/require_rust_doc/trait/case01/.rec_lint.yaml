@@ -1,0 +1,6 @@
+rule:
+  - label: trait_doc
+    type: require_rust_doc
+    rust_doc:
+      trait: all
+    message: RustDocを書いてください

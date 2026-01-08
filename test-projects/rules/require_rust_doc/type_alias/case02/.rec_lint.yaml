@@ -1,0 +1,6 @@
+rule:
+  - label: type_alias_doc
+    type: require_rust_doc
+    rust_doc:
+      type_alias: public
+    message: RustDocを書いてください

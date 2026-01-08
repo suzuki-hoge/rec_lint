@@ -1,0 +1,6 @@
+rule:
+  - label: struct_doc_all
+    type: require_rust_doc
+    rust_doc:
+      struct: all
+    message: RustDocを書いてください

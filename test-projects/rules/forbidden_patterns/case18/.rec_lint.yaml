@@ -1,0 +1,6 @@
+rule:
+  - label: カラム位置テスト
+    type: forbidden_patterns
+    keywords:
+      - FORBIDDEN
+    message: パターン違反

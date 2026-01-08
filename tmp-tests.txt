@@ -136,36 +136,28 @@ tests
         fn actix_web_test属性も検出できる
       require_kotest_test.rs
         fn exists指定のときmainと同じディレクトリ同じnamespageにテストがあるクラスはエラーにならない
-        fn exists指定のときmainと同じディレクトリ違うnamespageにテストがあるクラスはエラーにならない
-        fn exists指定のときmainと違うディレクトリ同じnamespageにテストがあるクラスはエラーにならない
+        fn exists指定のときmainと同じディレクトリ違うnamespageにテストがあるクラスはテストなしとなる
+        fn exists指定のときmainと違うディレクトリ同じnamespageにテストがあるクラスはテストなしとなる
         fn all_public指定のときすべてのコードをテストしていればエラーにならない
         fn all_public指定のとき一部のコードをテストがなければエラーになる
       require_phpunit_test.rs
         require_kotest_test と同様
       require_rust_test.rs
         fn unit_exists指定のときテストモジュールがあればエラーにならない.rs
-        fn unit_exists指定のときテストモジュールがあればエラーにならない.rs
         fn unit_exists指定のときテストアトリビュートがあればエラーにならない.rs
-        fn unit_exists指定のときテストアトリビュートがあればエラーにならない.rs
-        fn unit_exists指定のときテストがあればエラーになる.rs
-        fn unit_exists指定のときテストがあればエラーになる.rs
-        fn unit_all_public指定のとき単一のテストモジュールですべての関数がテストされていればエラーにならない.rs
+        fn unit_exists指定のときテストモジュールがなければエラーになる.rs
+        fn unit_exists指定のときテストモジュールもアトリビュートもなければエラーになる.rs
         fn unit_all_public指定のとき単一のテストモジュールですべての関数がテストされていればエラーにならない.rs
         fn unit_all_public指定のとき複数のテストモジュールですべての関数がテストされていればエラーにならない.rs
-        fn unit_all_public指定のとき複数のテストモジュールですべての関数がテストされていればエラーにならない.rs
-        fn unit_all_public指定のとき複数のテストアトリビュートですべての関数がテストされていればエラーにならない.rs
+        fn unit_all_public指定のとき単数のテストアトリビュートですべての関数がテストされていればエラーにならない.rs
         fn unit_all_public指定のとき複数のテストアトリビュートですべての関数がテストされていればエラーにならない.rs
         fn unit_all_public指定のとき一部のテストがなければエラーになる.rs
-        fn unit_all_public指定のとき一部のテストがなければエラーになる.rs
-        fn unit_all_public指定でもテストモジュール内の関数は対象にならない.rs
         fn unit_all_public指定でもテストモジュール内の関数は対象にならない.rs
         fn unit_exists指定のときasync関数をasyncテストアトリビュートでテストすればエラーにならない.rs
-        fn unit_exists指定のときasync関数をasyncテストアトリビュートでテストすればエラーにならない.rs
         fn unit_exists指定のときtokioテストアトリビュートでテストすればエラーにならない.rs
-        fn unit_exists指定のときtokioテストアトリビュートでテストすればエラーにならない.rs
-        fn integration_exists指定のときmainと同じディレクトリ同じnamespageにテストがあるクラスはエラーにならない
-        fn integration_exists指定のときmainと同じディレクトリ違うnamespageにテストがあるクラスはエラーにならない
-        fn integration_exists指定のときmainと違うディレクトリ同じnamespageにテストがあるクラスはエラーにならない
-        fn integration_all_public指定のときすべてのコードをテストしていればエラーにならない
+        fn integration_exists指定のときmainと同じディレクトリにテストがあるときはエラーにならない
+        fn integration_exists指定のときmainと違うディレクトリにテストがあるときはテストなしとなる
+        fn integration_all_public指定のときすべてのコードをテストモジュールでテストしていればエラーにならない
+        fn integration_all_public指定のときすべてのコードをテストアトリビュートでテストしていればエラーにならない
         fn integration_all_public指定のとき一部のコードをテストがなければエラーになる
 

@@ -1,0 +1,4 @@
+rule:
+  - label: phpunit_test_name
+    type: require_japanese_phpunit_test_name
+    message: テスト名を日本語にしてください

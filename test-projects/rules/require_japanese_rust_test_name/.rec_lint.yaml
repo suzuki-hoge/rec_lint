@@ -1,0 +1,4 @@
+rule:
+  - label: rust_test_name
+    type: require_japanese_rust_test_name
+    message: テスト名を日本語にしてください

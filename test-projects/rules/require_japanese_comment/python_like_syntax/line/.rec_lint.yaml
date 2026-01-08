@@ -1,0 +1,11 @@
+rule:
+  - label: comment_rule
+    type: require_japanese_comment
+    comment:
+      custom:
+        lines:
+          - "#"
+        blocks:
+          - start: "\"\"\""
+            end: "\"\"\""
+    message: コメントを日本語にしてください

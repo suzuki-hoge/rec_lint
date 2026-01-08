@@ -1,0 +1,8 @@
+rule:
+  - label: kotest_test_all_public
+    type: require_kotest_test
+    kotest_test:
+      test_directory: src/test/kotlin
+      require: all_public
+      suffix: Test
+    message: テストファイルが必要です

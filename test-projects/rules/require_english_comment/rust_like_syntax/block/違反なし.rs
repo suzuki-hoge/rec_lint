@@ -1,0 +1,2 @@
+/** English */
+pub struct Sample;
