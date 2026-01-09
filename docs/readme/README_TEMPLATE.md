@@ -30,27 +30,27 @@ $ rec_lint add sub-dir
 
 ## 設定ファイル
 
-- [.rec_lint_config.yaml](docs/rec_lint_config.schema.md) - ルートディレクトリに配置（プロジェクト全体の設定）
-- [.rec_lint.yaml](docs/rec_lint.schema.md) - 各ディレクトリに配置（ルール定義）
+- [.rec_lint_config.yaml](docs/schema/rec_lint_config.schema.md) - ルートディレクトリに配置（プロジェクト全体の設定）
+- [.rec_lint.yaml](docs/schema/rec_lint.schema.md) - 各ディレクトリに配置（ルール定義）
 
 ## 設定例
 
 `.rec_lint_config.yaml`
 
 ```yaml
-{{exec: cat docs/sample/.rec_lint_config.yaml}}
+{{exec: cat docs/readme/sample/.rec_lint_config.yaml}}
 ```
 
 `src/main/java/.rec_lint.yaml`
 
 ```yaml
-{{exec: cat docs/sample/src/.rec_lint.yaml}}
+{{exec: cat docs/readme/sample/src/.rec_lint.yaml}}
 ```
 
 `src/main/java/db/.rec_lint.yaml`
 
 ```yaml
-{{exec: cat docs/sample/src/db/.rec_lint.yaml}}
+{{exec: cat docs/readme/sample/src/db/.rec_lint.yaml}}
 ```
 
 ## サブコマンド
@@ -61,14 +61,14 @@ $ rec_lint add sub-dir
 
 ```
 $ rec_lint show src/main/java
-{{exec: cargo run --quiet -- show docs/sample/src}}
+{{exec: cargo run --quiet -- show docs/readme/sample/src}}
 ```
 
 下位ディレクトリは上位ディレクトリの設定を継承する
 
 ```
 $ rec_lint show src/main/java/db
-{{exec: cargo run --quiet -- show docs/sample/src/db}}
+{{exec: cargo run --quiet -- show docs/readme/sample/src/db}}
 ```
 
 ### validate
@@ -77,14 +77,14 @@ $ rec_lint show src/main/java/db
 
 ```
 $ rec_lint validate src/main/java/db/UserQuery.java
-{{exec: cargo run --quiet -- validate docs/sample/src/db/UserQuery.java || true}}
+{{exec: cargo run --quiet -- validate docs/readme/sample/src/db/UserQuery.java || true}}
 ```
 
 ディレクトリを指定した場合はそれ以下のすべてのファイルを検証する
 
 ```
 $ rec_lint validate src/main/java/db
-{{exec: cargo run --quiet -- validate docs/sample/src/db || true}}
+{{exec: cargo run --quiet -- validate docs/readme/sample/src/db || true}}
 ```
 
 オプション:
@@ -97,7 +97,7 @@ $ rec_lint validate src/main/java/db
 
 ```
 $ rec_lint guideline src/main/java/db
-{{exec: cargo run --quiet -- guideline docs/sample/src/db}}
+{{exec: cargo run --quiet -- guideline docs/readme/sample/src/db}}
 ```
 
 ## 活用ノウハウ
@@ -121,14 +121,14 @@ $ rec_lint guideline src/main/java/db
 
 ```
 $ rec_lint validate --sort rule src/main/java
-{{exec: cargo run --quiet -- validate -s rule docs/sample/src || true}}
+{{exec: cargo run --quiet -- validate -s rule docs/readme/sample/src || true}}
 ```
 
 `--sort file` は特定ファイルを修正したい場合に向いている
 
 ```
 $ rec_lint validate --sort file src/main/java
-{{exec: cargo run --quiet -- validate -s file docs/sample/src || true}}
+{{exec: cargo run --quiet -- validate -s file docs/readme/sample/src || true}}
 ```
 
 ### Yaml Language Server の利用
@@ -154,4 +154,4 @@ $ rec_lint validate --sort file src/main/java
 
 プリセットの `type: forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `type: custom` で rec_lint 処理フロー中から任意のコマンドを実行できる
 
-詳細は [docs/rec_lint.schema.md](docs/rec_lint.schema.md) を参照
+詳細は [docs/schema/rec_lint.schema.md](docs/schema/rec_lint.schema.md) を参照

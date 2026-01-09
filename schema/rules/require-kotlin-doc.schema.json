@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "noKotlinDocRule": {
+      "x-doc-order": 1,
+      "title": "NoKotlinDocRule",
+      "description": "KDoc がないファイルを検出する",
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/definitions/ruleBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "label",
+            "message"
+          ],
+          "properties": {
+            "type": {
+              "x-property-order": 0,
+              "const": "require_kotlin_doc"
+            },
+            "kotlin_doc": {
+              "x-property-order": 1,
+              "description": "KDoc 検証設定",
+              "$ref": "#/definitions/kotlinDocConfig"
+            }
+          }
+        }
+      ]
+    },
+    "kotlinDocConfig": {
+      "x-doc-order": 2,
+      "title": "KotlinDocConfig",
+      "description": "KDoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "x-doc-description": "KDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: property, constructor, enum_entry, companion_object",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "class": {
+          "x-property-order": 0,
+          "description": "class 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "interface": {
+          "x-property-order": 1,
+          "description": "interface 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "object": {
+          "x-property-order": 2,
+          "description": "object 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "enum_class": {
+          "x-property-order": 3,
+          "description": "enum class 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "sealed_class": {
+          "x-property-order": 4,
+          "description": "sealed class 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "sealed_interface": {
+          "x-property-order": 5,
+          "description": "sealed interface 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "data_class": {
+          "x-property-order": 6,
+          "description": "data class 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "value_class": {
+          "x-property-order": 7,
+          "description": "value class 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "annotation_class": {
+          "x-property-order": 8,
+          "description": "annotation class 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "typealias": {
+          "x-property-order": 9,
+          "description": "typealias 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "function": {
+          "x-property-order": 10,
+          "description": "fun 宣言に KDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        }
+      }
+    }
+  }
+}

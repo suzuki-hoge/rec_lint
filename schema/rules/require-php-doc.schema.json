@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "noPhpDocRule": {
+      "x-doc-order": 1,
+      "title": "NoPhpDocRule",
+      "description": "PHPDoc がないファイルを検出する",
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/definitions/ruleBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "label",
+            "message"
+          ],
+          "properties": {
+            "type": {
+              "x-property-order": 0,
+              "const": "require_php_doc"
+            },
+            "php_doc": {
+              "x-property-order": 1,
+              "description": "PHPDoc 検証設定",
+              "$ref": "#/definitions/phpDocConfig"
+            }
+          }
+        }
+      ]
+    },
+    "phpDocConfig": {
+      "x-doc-order": 2,
+      "title": "PhpDocConfig",
+      "description": "PHPDoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "x-doc-description": "PHPDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: file, property, constant, define, include/require",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "class": {
+          "x-property-order": 0,
+          "description": "class 宣言に PHPDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "interface": {
+          "x-property-order": 1,
+          "description": "interface 宣言に PHPDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "trait": {
+          "x-property-order": 2,
+          "description": "trait 宣言に PHPDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "enum": {
+          "x-property-order": 3,
+          "description": "enum 宣言に PHPDoc がないことを認めない (PHP 8.1+)",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "function": {
+          "x-property-order": 4,
+          "description": "関数/メソッド宣言に PHPDoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        }
+      }
+    }
+  }
+}

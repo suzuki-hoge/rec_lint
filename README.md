@@ -30,8 +30,8 @@ $ rec_lint add sub-dir
 
 ## 設定ファイル
 
-- [.rec_lint_config.yaml](docs/rec_lint_config.schema.md) - ルートディレクトリに配置（プロジェクト全体の設定）
-- [.rec_lint.yaml](docs/rec_lint.schema.md) - 各ディレクトリに配置（ルール定義）
+- [.rec_lint_config.yaml](docs/schema/rec_lint_config.schema.md) - ルートディレクトリに配置（プロジェクト全体の設定）
+- [.rec_lint.yaml](docs/schema/rec_lint.schema.md) - 各ディレクトリに配置（ルール定義）
 
 ## 設定例
 
@@ -203,4 +203,4 @@ src/db/UserCommand.php:15:9: デバッグ残りは削除し、必要な出力は
 
 プリセットの `type: forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `type: custom` で rec_lint 処理フロー中から任意のコマンドを実行できる
 
-詳細は [docs/rec_lint.schema.md](docs/rec_lint.schema.md) を参照
+詳細は [docs/schema/rec_lint.schema.md](docs/schema/rec_lint.schema.md) を参照

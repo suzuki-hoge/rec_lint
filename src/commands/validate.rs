@@ -475,7 +475,7 @@ fn format_violations(violations: &[FileViolation], sort_mode: SortMode) -> Vec<S
     let mut output = Vec::new();
     for fv in flat {
         let found_suffix = match &fv.found {
-            Some(found) => format!(" [ found: {} ]", found),
+            Some(found) => format!(" [ found: {found} ]"),
             None => String::new(),
         };
         let formatted = match sort_mode {

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "textRule": {
+      "x-doc-order": 1,
+      "title": "TextRule",
+      "description": "特定のキーワードを含むファイルを完全一致で検出する",
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/definitions/ruleBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "label",
+            "message",
+            "keywords"
+          ],
+          "properties": {
+            "type": {
+              "x-property-order": 0,
+              "const": "forbidden_texts"
+            },
+            "keywords": {
+              "x-property-order": 1,
+              "description": "validate で探す禁止キーワード",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

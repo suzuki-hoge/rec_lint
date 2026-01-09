@@ -1,40 +1,291 @@
 use anyhow::{Context, Result};
-use jsonschema::Validator;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const OUTPUT_DIR: &str = "docs";
+const OUTPUT_DIR: &str = "docs/schema";
+const RULES_OUTPUT_DIR: &str = "docs/schema/rules";
 
-struct SchemaFile {
+struct SchemaConfig {
     input: &'static str,
     output: &'static str,
+    is_index: bool,
 }
 
-const SCHEMAS: &[SchemaFile] = &[
-    SchemaFile { input: "schema/rec_lint.schema.json", output: "rec_lint.schema.md" },
-    SchemaFile { input: "schema/rec_lint_config.schema.json", output: "rec_lint_config.schema.md" },
+const SCHEMAS: &[SchemaConfig] = &[
+    SchemaConfig {
+        input: "schema/rec_lint.schema.json",
+        output: "rec_lint.schema.md",
+        is_index: true,
+    },
+    SchemaConfig {
+        input: "schema/rec_lint_config.schema.json",
+        output: "rec_lint_config.schema.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/common.schema.json",
+        output: "rules/common.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/guideline.schema.json",
+        output: "rules/guideline.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/forbidden-texts.schema.json",
+        output: "rules/forbidden-texts.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/forbidden-patterns.schema.json",
+        output: "rules/forbidden-patterns.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/custom.schema.json",
+        output: "rules/custom.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-php-doc.schema.json",
+        output: "rules/require-php-doc.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-kotlin-doc.schema.json",
+        output: "rules/require-kotlin-doc.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-rust-doc.schema.json",
+        output: "rules/require-rust-doc.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-english-comment.schema.json",
+        output: "rules/require-english-comment.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-japanese-comment.schema.json",
+        output: "rules/require-japanese-comment.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-japanese-phpunit-test-name.schema.json",
+        output: "rules/require-japanese-phpunit-test-name.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-japanese-kotest-test-name.schema.json",
+        output: "rules/require-japanese-kotest-test-name.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-japanese-rust-test-name.schema.json",
+        output: "rules/require-japanese-rust-test-name.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-phpunit-test.schema.json",
+        output: "rules/require-phpunit-test.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-kotest-test.schema.json",
+        output: "rules/require-kotest-test.md",
+        is_index: false,
+    },
+    SchemaConfig {
+        input: "schema/rules/require-rust-test.schema.json",
+        output: "rules/require-rust-test.md",
+        is_index: false,
+    },
 ];
+
+struct RuleTypeInfo {
+    type_name: &'static str,
+    description: &'static str,
+    doc_path: &'static str,
+}
+
+const RULE_TYPES: &[RuleTypeInfo] = &[
+    RuleTypeInfo {
+        type_name: "forbidden_texts",
+        description: "禁止キーワードを完全一致で検出",
+        doc_path: "./rules/forbidden-texts.md",
+    },
+    RuleTypeInfo {
+        type_name: "forbidden_patterns",
+        description: "禁止パターンを正規表現で検出",
+        doc_path: "./rules/forbidden-patterns.md",
+    },
+    RuleTypeInfo {
+        type_name: "custom",
+        description: "任意のコマンドを実行して検証",
+        doc_path: "./rules/custom.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_php_doc",
+        description: "PHPDoc がないファイルを検出",
+        doc_path: "./rules/require-php-doc.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_kotlin_doc",
+        description: "KDoc がないファイルを検出",
+        doc_path: "./rules/require-kotlin-doc.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_rust_doc",
+        description: "rustdoc がないファイルを検出",
+        doc_path: "./rules/require-rust-doc.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_english_comment",
+        description: "コメントが日本語のファイルを検出",
+        doc_path: "./rules/require-english-comment.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_japanese_comment",
+        description: "コメントが英語のファイルを検出",
+        doc_path: "./rules/require-japanese-comment.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_japanese_phpunit_test_name",
+        description: "PHPUnit テスト名が日本語でないファイルを検出",
+        doc_path: "./rules/require-japanese-phpunit-test-name.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_japanese_kotest_test_name",
+        description: "Kotest テスト名が日本語でないファイルを検出",
+        doc_path: "./rules/require-japanese-kotest-test-name.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_japanese_rust_test_name",
+        description: "Rust テスト名が日本語でないファイルを検出",
+        doc_path: "./rules/require-japanese-rust-test-name.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_phpunit_test",
+        description: "PHPUnit テストファイルの存在を検証",
+        doc_path: "./rules/require-phpunit-test.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_kotest_test",
+        description: "Kotest テストファイルの存在を検証",
+        doc_path: "./rules/require-kotest-test.md",
+    },
+    RuleTypeInfo {
+        type_name: "require_rust_test",
+        description: "Rust テストの存在を検証",
+        doc_path: "./rules/require-rust-test.md",
+    },
+];
+
+struct SchemaSet {
+    schemas: BTreeMap<PathBuf, Value>,
+    base_path: PathBuf,
+}
+
+impl SchemaSet {
+    fn new(repo_root: &Path) -> Self {
+        Self {
+            schemas: BTreeMap::new(),
+            base_path: repo_root.to_path_buf(),
+        }
+    }
+
+    fn load(&mut self, relative_path: &str) -> Result<()> {
+        let path = self.base_path.join(relative_path);
+        let json_str = fs::read_to_string(&path)
+            .with_context(|| format!("スキーマファイルの読み込みに失敗: {}", path.display()))?;
+        let schema: Value = serde_json::from_str(&json_str)
+            .with_context(|| format!("JSONパースに失敗: {}", path.display()))?;
+        self.schemas.insert(PathBuf::from(relative_path), schema);
+        Ok(())
+    }
+
+    fn get(&self, relative_path: &str) -> Option<&Value> {
+        self.schemas.get(&PathBuf::from(relative_path))
+    }
+
+    fn resolve_ref(&self, ref_path: &str, current_schema_path: &str) -> Option<&Value> {
+        if ref_path.starts_with('#') {
+            let def_path = ref_path.trim_start_matches("#/definitions/");
+            self.get(current_schema_path)
+                .and_then(|s| s.get("definitions"))
+                .and_then(|d| d.get(def_path))
+        } else if ref_path.contains('#') {
+            let parts: Vec<&str> = ref_path.splitn(2, '#').collect();
+            let file_path = parts[0];
+            let def_path = parts[1].trim_start_matches("/definitions/");
+
+            let current_dir = Path::new(current_schema_path).parent().unwrap_or(Path::new(""));
+            let resolved_path = current_dir.join(file_path);
+            let normalized = normalize_path(&resolved_path);
+
+            self.schemas
+                .get(&normalized)
+                .and_then(|s| s.get("definitions"))
+                .and_then(|d| d.get(def_path))
+        } else {
+            None
+        }
+    }
+}
+
+fn normalize_path(path: &Path) -> PathBuf {
+    let mut result = PathBuf::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::ParentDir => {
+                result.pop();
+            }
+            std::path::Component::Normal(c) => {
+                result.push(c);
+            }
+            std::path::Component::CurDir => {}
+            _ => {
+                result.push(component);
+            }
+        }
+    }
+    result
+}
 
 fn main() -> Result<()> {
     let repo_root = get_repo_root()?;
     let output_dir = repo_root.join(OUTPUT_DIR);
+    let rules_output_dir = repo_root.join(RULES_OUTPUT_DIR);
     fs::create_dir_all(&output_dir)?;
+    fs::create_dir_all(&rules_output_dir)?;
 
-    for schema_file in SCHEMAS {
-        let input_path = repo_root.join(schema_file.input);
-        let json_str = fs::read_to_string(&input_path).context("Failed to read schema file")?;
-        let schema: Value = serde_json::from_str(&json_str).context("Failed to parse JSON")?;
+    let mut schema_set = SchemaSet::new(&repo_root);
 
-        Validator::new(&schema).context("Invalid JSON Schema")?;
-        println!("Validated: {}", input_path.display());
+    for config in SCHEMAS {
+        schema_set.load(config.input)?;
+        println!("Loaded: {}", config.input);
+    }
 
-        let md = render_schema(&schema);
+    for config in SCHEMAS {
+        let schema = schema_set.get(config.input).unwrap();
+        let md = if config.is_index {
+            render_index_schema(schema, &schema_set, config.input)
+        } else if config.input.contains("rec_lint_config") {
+            render_schema(schema, &schema_set, config.input, false)
+        } else {
+            render_rule_schema(schema, &schema_set, config.input)
+        };
 
-        let output_path = output_dir.join(schema_file.output);
+        let output_path = output_dir.join(config.output);
+        if let Some(parent) = output_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
         fs::write(&output_path, &md)?;
         println!("Generated: {}", output_path.display());
     }
@@ -46,25 +297,198 @@ fn get_repo_root() -> Result<PathBuf> {
     let output = Command::new("git")
         .args(["rev-parse", "--show-toplevel"])
         .output()
-        .context("Failed to run git rev-parse")?;
+        .context("git rev-parse の実行に失敗")?;
 
     if !output.status.success() {
-        anyhow::bail!("Not in a git repository");
+        anyhow::bail!("git リポジトリ内ではありません");
     }
 
     let root = String::from_utf8(output.stdout)
-        .context("Invalid UTF-8 in git output")?
+        .context("git 出力が不正な UTF-8")?
         .trim()
         .to_string();
 
     Ok(PathBuf::from(root))
 }
 
-fn render_schema(schema: &Value) -> String {
+fn render_index_schema(schema: &Value, schema_set: &SchemaSet, current_path: &str) -> String {
+    let mut out = String::new();
+
+    if let Some(title) = schema.get("title").and_then(|v| v.as_str()) {
+        writeln!(out, "# {}\n", title).unwrap();
+    }
+
+    writeln!(out, "## トップレベル\n").unwrap();
+    if let Some(props) = schema.get("properties").and_then(|v| v.as_object()) {
+        writeln!(out, "| フィールド | 型 | 必須 | 説明 |").unwrap();
+        writeln!(out, "|-----------|-----|:---:|------|").unwrap();
+
+        let mut sorted_props: Vec<_> = props.iter().collect();
+        sorted_props.sort_by(|(_, a), (_, b)| {
+            let a_order = a
+                .get("x-property-order")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i64::MAX);
+            let b_order = b
+                .get("x-property-order")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i64::MAX);
+            a_order.cmp(&b_order)
+        });
+
+        for (name, prop) in sorted_props {
+            let type_str = if name == "rule" {
+                "[RuleItem](#rule-types)[]".to_string()
+            } else {
+                get_type_string_with_link_and_target(prop, schema_set, current_path, current_path)
+            };
+            let desc = get_doc_description(prop).unwrap_or("");
+            writeln!(out, "| {} | {} | - | {} |", name, type_str, desc).unwrap();
+        }
+        writeln!(out).unwrap();
+    }
+
+    writeln!(out, "## Rule Types\n").unwrap();
+    writeln!(out, "| type | 説明 | ドキュメント |").unwrap();
+    writeln!(out, "|------|------|--------------|").unwrap();
+    for rule_type in RULE_TYPES {
+        writeln!(
+            out,
+            "| `{}` | {} | [詳細]({}) |",
+            rule_type.type_name, rule_type.description, rule_type.doc_path
+        )
+        .unwrap();
+    }
+    writeln!(out).unwrap();
+
+    writeln!(out, "## 共通定義\n").unwrap();
+    writeln!(out, "[共通定義ドキュメント](./rules/common.md) を参照\n").unwrap();
+    writeln!(
+        out,
+        "- [RuleBase](./rules/common.md#rulebase) - ルールの共通フィールド"
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "- [MatchItem](./rules/common.md#matchitem) - ファイルマッチ条件"
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "- [MatchPattern](./rules/common.md#matchpattern) - マッチパターンの種類"
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "- [MatchCond](./rules/common.md#matchcond) - keywords の結合条件"
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "- [Visibility](./rules/common.md#visibility) - Doc コメントを強制する対象の可視性"
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "- [TestRequireLevelExternalFile](./rules/common.md#testrequirelevelexternalfile) - テスト存在検証レベル (外部ファイル)"
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "- [TestRequireLevelSameFile](./rules/common.md#testrequirelevelsamefile) - テスト存在検証レベル (同一ファイル)"
+    )
+    .unwrap();
+
+    out
+}
+
+fn render_rule_schema(schema: &Value, schema_set: &SchemaSet, current_path: &str) -> String {
+    let mut out = String::new();
+
+    let definitions = schema.get("definitions").and_then(|v| v.as_object());
+    let is_common = current_path.contains("common.schema.json");
+
+    if let Some(defs) = definitions {
+        let mut sorted_defs: Vec<_> = defs.iter().collect();
+        sorted_defs.sort_by(|(_, a), (_, b)| {
+            let a_order = a
+                .get("x-doc-order")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i64::MAX);
+            let b_order = b
+                .get("x-doc-order")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i64::MAX);
+            a_order.cmp(&b_order)
+        });
+
+        let mut is_first = true;
+        for (name, def) in sorted_defs {
+            if is_first {
+                if is_common {
+                    writeln!(out, "# 共通定義\n").unwrap();
+                    writeln!(
+                        out,
+                        "[← トップに戻る](../rec_lint.schema.md)\n"
+                    )
+                    .unwrap();
+                } else {
+                    let type_const = extract_type_const(def, schema_set, current_path);
+                    if let Some(type_name) = type_const {
+                        writeln!(out, "# {}\n", type_name).unwrap();
+                    } else {
+                        let title = def.get("title").and_then(|v| v.as_str()).unwrap_or(name);
+                        writeln!(out, "# {}\n", title).unwrap();
+                    }
+                    writeln!(
+                        out,
+                        "[← ルール一覧に戻る](../rec_lint.schema.md#rule-types)\n"
+                    )
+                    .unwrap();
+                    if let Some(desc) = get_doc_description(def) {
+                        writeln!(out, "{}\n", desc).unwrap();
+                    }
+                }
+                is_first = false;
+            }
+            render_definition(&mut out, name, def, schema_set, current_path);
+        }
+    }
+
+    out
+}
+
+fn extract_type_const(def: &Value, schema_set: &SchemaSet, current_path: &str) -> Option<String> {
+    if let Some(all_of) = def.get("allOf").and_then(|v| v.as_array()) {
+        for item in all_of {
+            if let Some(props) = item.get("properties").and_then(|v| v.as_object()) {
+                if let Some(type_prop) = props.get("type") {
+                    if let Some(const_val) = type_prop.get("const").and_then(|v| v.as_str()) {
+                        return Some(const_val.to_string());
+                    }
+                }
+            }
+            if let Some(ref_path) = item.get("$ref").and_then(|v| v.as_str()) {
+                if let Some(resolved) = schema_set.resolve_ref(ref_path, current_path) {
+                    if let Some(result) = extract_type_const(resolved, schema_set, current_path) {
+                        return Some(result);
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+fn render_schema(
+    schema: &Value,
+    schema_set: &SchemaSet,
+    current_path: &str,
+    _is_rule: bool,
+) -> String {
     let mut out = String::new();
     let definitions = schema.get("definitions").and_then(|v| v.as_object());
 
-    // Title and description
     if let Some(title) = schema.get("title").and_then(|v| v.as_str()) {
         writeln!(out, "# {}\n", title).unwrap();
     }
@@ -72,27 +496,30 @@ fn render_schema(schema: &Value) -> String {
         writeln!(out, "{}\n", desc).unwrap();
     }
 
-    // Top-level properties
     if let Some(props) = schema.get("properties").and_then(|v| v.as_object()) {
         writeln!(out, "## トップレベル\n").unwrap();
-        render_properties_table(&mut out, props, &[], definitions);
+        render_properties_table(&mut out, props, &[], schema_set, current_path);
     }
 
-    // Definitions (sorted by x-doc-order)
     if let Some(defs) = definitions {
         let mut sorted_defs: Vec<_> = defs.iter().collect();
         sorted_defs.sort_by(|(_, a), (_, b)| {
-            let a_order = a.get("x-doc-order").and_then(|v| v.as_i64()).unwrap_or(i64::MAX);
-            let b_order = b.get("x-doc-order").and_then(|v| v.as_i64()).unwrap_or(i64::MAX);
+            let a_order = a
+                .get("x-doc-order")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i64::MAX);
+            let b_order = b
+                .get("x-doc-order")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i64::MAX);
             a_order.cmp(&b_order)
         });
 
         for (name, def) in sorted_defs {
-            // Skip ruleBase (it's merged into each rule variant)
             if name == "ruleBase" {
                 continue;
             }
-            render_definition(&mut out, name, def, definitions);
+            render_definition(&mut out, name, def, schema_set, current_path);
         }
     }
 
@@ -103,7 +530,8 @@ fn render_definition(
     out: &mut String,
     name: &str,
     def: &Value,
-    definitions: Option<&serde_json::Map<String, Value>>,
+    schema_set: &SchemaSet,
+    current_path: &str,
 ) {
     let title = def.get("title").and_then(|v| v.as_str()).unwrap_or(name);
 
@@ -113,9 +541,7 @@ fn render_definition(
         writeln!(out, "{}\n", desc).unwrap();
     }
 
-    // Handle oneOf
     if let Some(one_of) = def.get("oneOf").and_then(|v| v.as_array()) {
-        // Check if this is a string enum (oneOf with const values)
         let is_string_enum = def.get("type").and_then(|v| v.as_str()) == Some("string")
             || one_of.iter().all(|v| v.get("const").is_some());
 
@@ -124,48 +550,86 @@ fn render_definition(
             return;
         }
 
-        // Otherwise it's a discriminated union (each variant has allOf)
         for variant in one_of {
-            render_one_of_variant(out, variant, definitions);
+            render_one_of_variant(out, variant, schema_set, current_path);
         }
         return;
     }
 
-    // For object types
+    if def.get("allOf").is_some() {
+        let (merged, required) = merge_all_of(def, schema_set, current_path);
+        writeln!(out, "| フィールド | 型 | 必須 | 説明 |").unwrap();
+        writeln!(out, "|-----------|-----|:---:|------|").unwrap();
+
+        let mut sorted_fields: Vec<_> = merged.iter().collect();
+        sorted_fields.sort_by(|(a, (a_prop, _)), (b, (b_prop, _))| {
+            let a_order = a_prop
+                .get("x-property-order")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i64::MAX);
+            let b_order = b_prop
+                .get("x-property-order")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(i64::MAX);
+            a_order.cmp(&b_order).then_with(|| a.cmp(b))
+        });
+
+        for (field_name, (prop, source_path)) in sorted_fields {
+            let type_str = get_type_string_with_link_and_target(prop, schema_set, &source_path, current_path);
+            let is_required = if required.iter().any(|r| r == field_name) {
+                "o"
+            } else {
+                "-"
+            };
+            let desc = get_description_with_examples(prop);
+            writeln!(out, "| {} | {} | {} | {} |", field_name, type_str, is_required, desc).unwrap();
+        }
+        writeln!(out).unwrap();
+        return;
+    }
+
     if let Some(props) = def.get("properties").and_then(|v| v.as_object()) {
         let required = get_required_fields(def);
-        render_properties_table(out, props, &required, definitions);
+        render_properties_table(out, props, &required, schema_set, current_path);
     }
 }
 
 fn render_one_of_variant(
     out: &mut String,
     variant: &Value,
-    definitions: Option<&serde_json::Map<String, Value>>,
+    schema_set: &SchemaSet,
+    current_path: &str,
 ) {
-    let title = variant.get("title").and_then(|v| v.as_str()).unwrap_or("Variant");
+    let title = variant
+        .get("title")
+        .and_then(|v| v.as_str())
+        .unwrap_or("Variant");
     writeln!(out, "### {}\n", title).unwrap();
 
     if let Some(desc) = get_doc_description(variant) {
         writeln!(out, "{}\n", desc).unwrap();
     }
 
-    // Merge allOf schemas
-    let (merged, required) = merge_all_of(variant, definitions);
+    let (merged, required) = merge_all_of(variant, schema_set, current_path);
 
     writeln!(out, "| フィールド | 型 | 必須 | 説明 |").unwrap();
     writeln!(out, "|-----------|-----|:---:|------|").unwrap();
 
-    // Sort fields by x-property-order
     let mut sorted_fields: Vec<_> = merged.iter().collect();
-    sorted_fields.sort_by(|(a, a_prop), (b, b_prop)| {
-        let a_order = a_prop.get("x-property-order").and_then(|v| v.as_i64()).unwrap_or(i64::MAX);
-        let b_order = b_prop.get("x-property-order").and_then(|v| v.as_i64()).unwrap_or(i64::MAX);
+    sorted_fields.sort_by(|(a, (a_prop, _)), (b, (b_prop, _))| {
+        let a_order = a_prop
+            .get("x-property-order")
+            .and_then(|v| v.as_i64())
+            .unwrap_or(i64::MAX);
+        let b_order = b_prop
+            .get("x-property-order")
+            .and_then(|v| v.as_i64())
+            .unwrap_or(i64::MAX);
         a_order.cmp(&b_order).then_with(|| a.cmp(b))
     });
 
-    for (name, prop) in sorted_fields {
-        let type_str = get_type_string(prop, definitions);
+    for (name, (prop, source_path)) in sorted_fields {
+        let type_str = get_type_string_with_link_and_target(prop, schema_set, &source_path, current_path);
         let is_required = if required.iter().any(|r| r == name) {
             "o"
         } else {
@@ -179,30 +643,29 @@ fn render_one_of_variant(
 
 fn merge_all_of(
     variant: &Value,
-    definitions: Option<&serde_json::Map<String, Value>>,
-) -> (BTreeMap<String, Value>, Vec<String>) {
-    let mut merged: BTreeMap<String, Value> = BTreeMap::new();
+    schema_set: &SchemaSet,
+    current_path: &str,
+) -> (BTreeMap<String, (Value, String)>, Vec<String>) {
+    let mut merged: BTreeMap<String, (Value, String)> = BTreeMap::new();
     let mut required: Vec<String> = Vec::new();
 
     if let Some(all_of) = variant.get("allOf").and_then(|v| v.as_array()) {
         for schema in all_of {
-            // Handle $ref
             if let Some(ref_path) = schema.get("$ref").and_then(|v| v.as_str()) {
-                if let Some(resolved) = resolve_ref(ref_path, definitions) {
+                let ref_source_path = resolve_ref_source_path(ref_path, current_path);
+                if let Some(resolved) = schema_set.resolve_ref(ref_path, current_path) {
                     if let Some(props) = resolved.get("properties").and_then(|v| v.as_object()) {
                         for (k, v) in props {
-                            merged.insert(k.clone(), v.clone());
+                            merged.insert(k.clone(), (v.clone(), ref_source_path.clone()));
                         }
                     }
                 }
             }
-            // Handle inline properties
             if let Some(props) = schema.get("properties").and_then(|v| v.as_object()) {
                 for (k, v) in props {
-                    merged.insert(k.clone(), v.clone());
+                    merged.insert(k.clone(), (v.clone(), current_path.to_string()));
                 }
             }
-            // Collect required fields
             if let Some(req) = schema.get("required").and_then(|v| v.as_array()) {
                 for r in req {
                     if let Some(s) = r.as_str() {
@@ -218,15 +681,17 @@ fn merge_all_of(
     (merged, required)
 }
 
-fn resolve_ref<'a>(
-    ref_path: &str,
-    definitions: Option<&'a serde_json::Map<String, Value>>,
-) -> Option<&'a Value> {
-    if ref_path.starts_with("#/definitions/") {
-        let name = ref_path.trim_start_matches("#/definitions/");
-        definitions.and_then(|defs| defs.get(name))
+fn resolve_ref_source_path(ref_path: &str, current_path: &str) -> String {
+    if ref_path.starts_with('#') {
+        current_path.to_string()
+    } else if ref_path.contains('#') {
+        let parts: Vec<&str> = ref_path.splitn(2, '#').collect();
+        let file_path = parts[0];
+        let current_dir = Path::new(current_path).parent().unwrap_or(Path::new(""));
+        let resolved_path = current_dir.join(file_path);
+        normalize_path(&resolved_path).to_string_lossy().to_string()
     } else {
-        None
+        current_path.to_string()
     }
 }
 
@@ -241,21 +706,27 @@ fn render_properties_table(
     out: &mut String,
     props: &serde_json::Map<String, Value>,
     required: &[&str],
-    definitions: Option<&serde_json::Map<String, Value>>,
+    schema_set: &SchemaSet,
+    current_path: &str,
 ) {
     writeln!(out, "| フィールド | 型 | 必須 | 説明 |").unwrap();
     writeln!(out, "|-----------|-----|:---:|------|").unwrap();
 
-    // Sort fields by x-property-order
     let mut sorted_props: Vec<_> = props.iter().collect();
     sorted_props.sort_by(|(a, a_prop), (b, b_prop)| {
-        let a_order = a_prop.get("x-property-order").and_then(|v| v.as_i64()).unwrap_or(i64::MAX);
-        let b_order = b_prop.get("x-property-order").and_then(|v| v.as_i64()).unwrap_or(i64::MAX);
+        let a_order = a_prop
+            .get("x-property-order")
+            .and_then(|v| v.as_i64())
+            .unwrap_or(i64::MAX);
+        let b_order = b_prop
+            .get("x-property-order")
+            .and_then(|v| v.as_i64())
+            .unwrap_or(i64::MAX);
         a_order.cmp(&b_order).then_with(|| a.cmp(b))
     });
 
     for (name, prop) in sorted_props {
-        let type_str = get_type_string(prop, definitions);
+        let type_str = get_type_string_with_link_and_target(prop, schema_set, current_path, current_path);
         let is_required = if required.contains(&name.as_str()) {
             "o"
         } else {
@@ -280,7 +751,6 @@ fn render_enum_table(out: &mut String, one_of: &[Value]) {
     writeln!(out).unwrap();
 }
 
-/// Get description for documentation (prefers x-doc-description over description)
 fn get_doc_description(obj: &Value) -> Option<&str> {
     obj.get("x-doc-description")
         .and_then(|v| v.as_str())
@@ -299,14 +769,16 @@ fn get_description_with_examples(prop: &Value) -> String {
                     if let Some(s) = ex.as_str() {
                         vec![format!("<br>e.g. `{}`", s)]
                     } else if let Some(inner_arr) = ex.as_array() {
-                        // Handle nested array: expand each item
                         inner_arr
                             .iter()
                             .filter_map(|item| item.as_str())
                             .map(|s| format!("<br>e.g. `{}`", s))
                             .collect()
                     } else {
-                        vec![format!("<br>e.g. `{}`", serde_json::to_string(ex).unwrap_or_default())]
+                        vec![format!(
+                            "<br>e.g. `{}`",
+                            serde_json::to_string(ex).unwrap_or_default()
+                        )]
                     }
                 })
                 .collect::<Vec<_>>()
@@ -321,19 +793,20 @@ fn get_description_with_examples(prop: &Value) -> String {
     }
 }
 
-fn get_type_string(prop: &Value, definitions: Option<&serde_json::Map<String, Value>>) -> String {
-    // Check for const (discriminator value)
+fn get_type_string_with_link_and_target(
+    prop: &Value,
+    schema_set: &SchemaSet,
+    source_path: &str,
+    target_doc_path: &str,
+) -> String {
     if let Some(const_val) = prop.get("const").and_then(|v| v.as_str()) {
         return format!("`{}`", const_val);
     }
 
-    // Check for $ref first
     if let Some(ref_path) = prop.get("$ref").and_then(|v| v.as_str()) {
-        let type_name = ref_path.split('/').last().unwrap_or(ref_path);
-        return format!("[{}](#{})", type_name, type_name.to_lowercase());
+        return ref_to_markdown_link_with_target(ref_path, source_path, target_doc_path);
     }
 
-    // Check for oneOf (enum with descriptions)
     if let Some(one_of) = prop.get("oneOf").and_then(|v| v.as_array()) {
         let values: Vec<&str> = one_of
             .iter()
@@ -344,17 +817,15 @@ fn get_type_string(prop: &Value, definitions: Option<&serde_json::Map<String, Va
         }
     }
 
-    // Check for enum
     if let Some(enum_vals) = prop.get("enum").and_then(|v| v.as_array()) {
         let values: Vec<&str> = enum_vals.iter().filter_map(|v| v.as_str()).collect();
         return format!("`{}`", values.join("` \\|<br>`"));
     }
 
-    // Check for type
     if let Some(type_val) = prop.get("type").and_then(|v| v.as_str()) {
         if type_val == "array" {
             if let Some(items) = prop.get("items") {
-                let item_type = get_type_string(items, definitions);
+                let item_type = get_type_string_with_link_and_target(items, schema_set, source_path, target_doc_path);
                 return format!("{}[]", item_type);
             }
             return "array".to_string();
@@ -363,4 +834,70 @@ fn get_type_string(prop: &Value, definitions: Option<&serde_json::Map<String, Va
     }
 
     "any".to_string()
+}
+
+fn ref_to_markdown_link_with_target(ref_path: &str, source_path: &str, target_doc_path: &str) -> String {
+    if ref_path.starts_with('#') {
+        let def_name = ref_path.trim_start_matches("#/definitions/");
+
+        let source_md = schema_path_to_md_path(source_path);
+        let target_md = schema_path_to_md_path(target_doc_path);
+
+        if source_md == target_md {
+            return format!("[{}](#{})", def_name, def_name.to_lowercase());
+        } else {
+            let relative_link = get_relative_md_link(&target_md, &source_md);
+            return format!("[{}]({}#{})", def_name, relative_link, def_name.to_lowercase());
+        }
+    }
+
+    if ref_path.contains('#') {
+        let parts: Vec<&str> = ref_path.splitn(2, '#').collect();
+        let file_path = parts[0];
+        let def_name = parts[1].trim_start_matches("/definitions/");
+
+        let current_dir = Path::new(source_path).parent().unwrap_or(Path::new(""));
+        let resolved_path = current_dir.join(file_path);
+        let normalized = normalize_path(&resolved_path);
+
+        let resolved_md = schema_path_to_md_path(&normalized.to_string_lossy());
+        let target_md = schema_path_to_md_path(target_doc_path);
+        let relative_link = get_relative_md_link(&target_md, &resolved_md);
+
+        return format!("[{}]({}#{})", def_name, relative_link, def_name.to_lowercase());
+    }
+
+    ref_path.to_string()
+}
+
+fn schema_path_to_md_path(schema_path: &str) -> String {
+    let path = schema_path
+        .replace("schema/rules/", "docs/schema/rules/")
+        .replace("schema/", "docs/schema/")
+        .replace(".schema.json", ".md");
+
+    if path.ends_with(".json") {
+        path.replace(".json", ".md")
+    } else {
+        path
+    }
+}
+
+fn get_relative_md_link(from_md: &str, to_md: &str) -> String {
+    let to_path = Path::new(to_md);
+
+    let from_in_rules = from_md.contains("rules/");
+    let to_in_rules = to_md.contains("rules/");
+
+    let to_filename = to_path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+
+    if from_in_rules && to_in_rules {
+        format!("./{}", to_filename)
+    } else if from_in_rules && !to_in_rules {
+        format!("../{}", to_filename)
+    } else if !from_in_rules && to_in_rules {
+        format!("./rules/{}", to_filename)
+    } else {
+        format!("./{}", to_filename)
+    }
 }

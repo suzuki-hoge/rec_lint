@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "noJapaneseCommentRule": {
+      "x-doc-order": 1,
+      "title": "NoJapaneseCommentRule",
+      "description": "コメントが日本語のファイルを検出する",
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/definitions/ruleBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "label",
+            "message",
+            "comment"
+          ],
+          "properties": {
+            "type": {
+              "x-property-order": 0,
+              "const": "require_english_comment"
+            },
+            "comment": {
+              "x-property-order": 1,
+              "description": "コメント構文設定",
+              "$ref": "#/definitions/commentConfig"
+            }
+          }
+        }
+      ]
+    },
+    "commentConfig": {
+      "x-doc-order": 2,
+      "title": "CommentConfig",
+      "description": "コメント構文の定義 (lang と custom のどちらかのみ指定)",
+      "x-doc-description": "コメント構文の定義<br>lang と custom のどちらかのみ必ず指定する",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lang": {
+          "x-property-order": 0,
+          "description": "コメント構文のプリセットが提供されている言語",
+          "type": "string",
+          "oneOf": [
+            {
+              "const": "java",
+              "description": "Java のコメント構文（//, /* */）"
+            },
+            {
+              "const": "kotlin",
+              "description": "Kotlin のコメント構文（//, /* */）"
+            },
+            {
+              "const": "rust",
+              "description": "Rust のコメント構文（//, /* */）"
+            }
+          ]
+        },
+        "custom": {
+          "x-property-order": 1,
+          "description": "プリセットが提供されていない場合の指定",
+          "$ref": "#/definitions/customComment"
+        }
+      }
+    },
+    "customComment": {
+      "x-doc-order": 3,
+      "title": "CustomComment",
+      "description": "コメント構文の定義",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lines": {
+          "x-property-order": 0,
+          "description": "行コメントの開始マーカー",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "//",
+              "#"
+            ]
+          ]
+        },
+        "blocks": {
+          "x-property-order": 1,
+          "description": "ブロックコメント構文の定義",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/blockComment"
+          }
+        }
+      }
+    },
+    "blockComment": {
+      "x-doc-order": 4,
+      "title": "BlockComment",
+      "description": "ブロックコメント構文の定義",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "x-property-order": 0,
+          "description": "ブロックコメントの開始マーカー",
+          "type": "string",
+          "examples": [
+            "/*"
+          ]
+        },
+        "end": {
+          "x-property-order": 1,
+          "description": "ブロックコメントの終了マーカー",
+          "type": "string",
+          "examples": [
+            "*/"
+          ]
+        }
+      }
+    }
+  }
+}

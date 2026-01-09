@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "noRustDocRule": {
+      "x-doc-order": 1,
+      "title": "NoRustDocRule",
+      "description": "rustdoc がないファイルを検出する",
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/definitions/ruleBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "label",
+            "message"
+          ],
+          "properties": {
+            "type": {
+              "x-property-order": 0,
+              "const": "require_rust_doc"
+            },
+            "rust_doc": {
+              "x-property-order": 1,
+              "description": "rustdoc 検証設定",
+              "$ref": "#/definitions/rustDocConfig"
+            }
+          }
+        }
+      ]
+    },
+    "rustDocConfig": {
+      "x-doc-order": 2,
+      "title": "RustDocConfig",
+      "description": "rustdoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "x-doc-description": "rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: const, static, struct_field, enum_variant, impl, trait_impl",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "struct": {
+          "x-property-order": 0,
+          "description": "struct 宣言に rustdoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "enum": {
+          "x-property-order": 1,
+          "description": "enum 宣言に rustdoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "trait": {
+          "x-property-order": 2,
+          "description": "trait 宣言に rustdoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "type_alias": {
+          "x-property-order": 3,
+          "description": "type 宣言に rustdoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "union": {
+          "x-property-order": 4,
+          "description": "union 宣言に rustdoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "fn": {
+          "x-property-order": 5,
+          "description": "fn 宣言に rustdoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "macro_rules": {
+          "x-property-order": 6,
+          "description": "macro_rules! 宣言に rustdoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        },
+        "mod": {
+          "x-property-order": 7,
+          "description": "mod 宣言に rustdoc がないことを認めない",
+          "$ref": "common.schema.json#/definitions/visibility"
+        }
+      }
+    }
+  }
+}

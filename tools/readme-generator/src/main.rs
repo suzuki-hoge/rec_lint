@@ -3,7 +3,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::{Command, exit};
 
-const TEMPLATE_PATH: &str = "docs/README_TEMPLATE.md";
+const TEMPLATE_PATH: &str = "docs/readme/README_TEMPLATE.md";
 const OUTPUT_PATH: &str = "README.md";
 
 fn main() {

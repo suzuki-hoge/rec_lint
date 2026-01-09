@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "regexRule": {
+      "x-doc-order": 1,
+      "title": "RegexRule",
+      "description": "特定のキーワードを含むファイルを正規表現で検出する",
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/definitions/ruleBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "label",
+            "message",
+            "keywords"
+          ],
+          "properties": {
+            "type": {
+              "x-property-order": 0,
+              "const": "forbidden_patterns"
+            },
+            "keywords": {
+              "x-property-order": 1,
+              "description": "validate で探す禁止キーワードの正規表現",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

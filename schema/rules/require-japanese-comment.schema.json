@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "noEnglishCommentRule": {
+      "x-doc-order": 1,
+      "title": "NoEnglishCommentRule",
+      "description": "コメントが英語のファイルを検出する",
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/definitions/ruleBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "label",
+            "message",
+            "comment"
+          ],
+          "properties": {
+            "type": {
+              "x-property-order": 0,
+              "const": "require_japanese_comment"
+            },
+            "comment": {
+              "x-property-order": 1,
+              "description": "コメント構文設定",
+              "$ref": "require-english-comment.schema.json#/definitions/commentConfig"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

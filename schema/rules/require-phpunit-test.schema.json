@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "phpUnitTestRule": {
+      "x-doc-order": 1,
+      "title": "PhpUnitTestRule",
+      "description": "PHPUnit テストファイルの存在を検証する",
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/definitions/ruleBase"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "label",
+            "message"
+          ],
+          "properties": {
+            "type": {
+              "x-property-order": 0,
+              "const": "require_phpunit_test"
+            },
+            "phpunit_test": {
+              "x-property-order": 1,
+              "description": "PHPUnit テスト存在検証設定",
+              "$ref": "#/definitions/phpunitTestConfig"
+            }
+          }
+        }
+      ]
+    },
+    "phpunitTestConfig": {
+      "x-doc-order": 2,
+      "title": "PhpUnitTestConfig",
+      "description": "PHPUnit テスト存在検証設定",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "test_directory": {
+          "x-property-order": 0,
+          "description": "テストディレクトリのパス",
+          "type": "string",
+          "default": "tests"
+        },
+        "require": {
+          "x-property-order": 1,
+          "description": "検証レベル",
+          "$ref": "common.schema.json#/definitions/testRequireLevelExternalFile",
+          "default": "file_exists"
+        },
+        "suffix": {
+          "x-property-order": 2,
+          "description": "テストファイル名のサフィックス",
+          "type": "string",
+          "default": "Test"
+        }
+      }
+    }
+  }
+}

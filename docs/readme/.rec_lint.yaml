@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../schema/rec_lint.schema.json
+
+guideline:
+  - message: tools/readme-generator を使って docs/README_TEMPLATE.md から README.md を生成する
+  - message: tools/schema-tools を使って schema/*.json から docs/*.schema.md を生成する
