@@ -344,6 +344,7 @@ struct FlatViolation {
     line: usize,
     col: usize,
     message: String,
+    found: Option<String>,
     custom_output: Option<String>,
 }
 
@@ -364,6 +365,7 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                         line: lv.line,
                         col: lv.col,
                         message: v.message.clone(),
+                        found: None,
                         custom_output: None,
                     });
                 }
@@ -374,6 +376,7 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                     line: 0,
                     col: 0,
                     message: v.message.clone(),
+                    found: None,
                     custom_output: if custom.output.is_empty() { None } else { Some(custom.output.clone()) },
                 });
             }
@@ -382,8 +385,9 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                     flat.push(FlatViolation {
                         file: relative_path.clone(),
                         line: dv.line,
-                        col: 1, // Doc violations don't have column info
-                        message: format!("{} ({} {})", v.message, dv.kind, dv.name),
+                        col: 1,
+                        message: v.message.clone(),
+                        found: Some(format!("{} {}", dv.kind, dv.name)),
                         custom_output: None,
                     });
                 }
@@ -393,8 +397,9 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                     flat.push(FlatViolation {
                         file: relative_path.clone(),
                         line: cv.line,
-                        col: 1, // Comment violations don't have column info
-                        message: format!("{}: \"{}\"", v.message, truncate_text(&cv.text, 40)),
+                        col: 1,
+                        message: v.message.clone(),
+                        found: Some(truncate_text(&cv.text, 40)),
                         custom_output: None,
                     });
                 }
@@ -404,8 +409,9 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                     flat.push(FlatViolation {
                         file: relative_path.clone(),
                         line: tv.line,
-                        col: 1, // Test violations don't have column info
-                        message: format!("{}: \"{}\"", v.message, truncate_text(&tv.name, 40)),
+                        col: 1,
+                        message: v.message.clone(),
+                        found: Some(tv.name.clone()),
                         custom_output: None,
                     });
                 }
@@ -422,7 +428,8 @@ fn flatten_violations(violations: &[FileViolation]) -> Vec<FlatViolation> {
                         file: relative_path.clone(),
                         line,
                         col: 1,
-                        message: format!("{}: {}", v.message, ev.kind),
+                        message: v.message.clone(),
+                        found: Some(ev.kind.to_string()),
                         custom_output: None,
                     });
                 }
@@ -467,21 +474,25 @@ fn format_violations(violations: &[FileViolation], sort_mode: SortMode) -> Vec<S
 
     let mut output = Vec::new();
     for fv in flat {
+        let found_suffix = match &fv.found {
+            Some(found) => format!(" [ found: {} ]", found),
+            None => String::new(),
+        };
         let formatted = match sort_mode {
             SortMode::Rule => {
-                // message: file:line:col
+                // message: file:line:col [ found: xxx ]
                 if fv.line == 0 {
-                    format!("{}: {}", fv.message, fv.file)
+                    format!("{}: {}{}", fv.message, fv.file, found_suffix)
                 } else {
-                    format!("{}: {}:{}:{}", fv.message, fv.file, fv.line, fv.col)
+                    format!("{}: {}:{}:{}{}", fv.message, fv.file, fv.line, fv.col, found_suffix)
                 }
             }
             SortMode::File => {
-                // file:line:col: message
+                // file:line:col: message [ found: xxx ]
                 if fv.line == 0 {
-                    format!("{}: {}", fv.file, fv.message)
+                    format!("{}: {}{}", fv.file, fv.message, found_suffix)
                 } else {
-                    format!("{}:{}:{}: {}", fv.file, fv.line, fv.col, fv.message)
+                    format!("{}:{}:{}: {}{}", fv.file, fv.line, fv.col, fv.message, found_suffix)
                 }
             }
         };

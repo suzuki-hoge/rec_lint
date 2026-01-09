@@ -31,7 +31,7 @@ fn exists指定のときmainと同じディレクトリ違うpackageにテスト
         "package_check",
         "違うpackage.kt",
         r#"
-            テストファイルが必要です: テストファイルが存在しません: src/test/kotlin/com/example/service/OrderServiceTest.kt: src/main/kotlin/違うpackage.kt
+            テストファイルが必要です: src/main/kotlin/違うpackage.kt [ found: テストファイルが存在しません: src/test/kotlin/com/example/service/OrderServiceTest.kt ]
         "#,
     );
 }
@@ -42,7 +42,7 @@ fn exists指定のときmainと違うディレクトリ同じpackageにテスト
         "different_dir",
         "com/example/service/UserService.kt",
         r#"
-            テストファイルが必要です: テストファイルが存在しません: src/test/kotlin/com/example/service/UserServiceTest.kt: src/main/kotlin/com/example/service/UserService.kt
+            テストファイルが必要です: src/main/kotlin/com/example/service/UserService.kt [ found: テストファイルが存在しません: src/test/kotlin/com/example/service/UserServiceTest.kt ]
         "#,
     );
 }
@@ -60,7 +60,7 @@ fn all_public指定のとき一部のコードをテストがなければエラ�
         "all_public",
         "一部メソッド未テスト.kt",
         r#"
-            テストファイルが必要です: L5: public メソッド `deleteUser` がテストされていません: src/main/kotlin/一部メソッド未テスト.kt:5:1
+            テストファイルが必要です: src/main/kotlin/一部メソッド未テスト.kt:5:1 [ found: L5: public メソッド `deleteUser` がテストされていません ]
         "#,
     );
 }

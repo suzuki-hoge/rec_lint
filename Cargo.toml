@@ -82,3 +82,7 @@ path = "tests/validate/rules/require_kotest_test.rs"
 [[test]]
 name = "validate_rules_require_rust_test"
 path = "tests/validate/rules/require_rust_test.rs"
+
+[[test]]
+name = "validate_sort_file"
+path = "tests/validate/sort/sort_file_test.rs"

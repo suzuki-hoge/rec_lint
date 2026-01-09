@@ -28,8 +28,8 @@ fn 英語テスト名は違反になる() {
     expect_violation(
         "英語テスト名.kt",
         r#"
-            テスト名を日本語にしてください: "should create user": require_japanese_kotest_test_name/英語テスト名.kt:2:1
-            テスト名を日本語にしてください: "should validate email": require_japanese_kotest_test_name/英語テスト名.kt:5:1
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/英語テスト名.kt:2:1 [ found: should create user ]
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/英語テスト名.kt:5:1 [ found: should validate email ]
         "#,
     );
 }
@@ -44,8 +44,8 @@ fn describeパターンで英語は違反になる() {
     expect_violation(
         "describeパターン英語.kt",
         r#"
-            テスト名を日本語にしてください: "UserService": require_japanese_kotest_test_name/describeパターン英語.kt:2:1
-            テスト名を日本語にしてください: "should create user": require_japanese_kotest_test_name/describeパターン英語.kt:3:1
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/describeパターン英語.kt:2:1 [ found: UserService ]
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/describeパターン英語.kt:3:1 [ found: should create user ]
         "#,
     );
 }
@@ -60,9 +60,9 @@ fn behaviorパターンで英語は違反になる() {
     expect_violation(
         "behaviorパターン英語.kt",
         r#"
-            テスト名を日本語にしてください: "a logged in user": require_japanese_kotest_test_name/behaviorパターン英語.kt:2:1
-            テスト名を日本語にしてください: "should succeed": require_japanese_kotest_test_name/behaviorパターン英語.kt:4:1
-            テスト名を日本語にしてください: "updating profile": require_japanese_kotest_test_name/behaviorパターン英語.kt:3:1
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/behaviorパターン英語.kt:2:1 [ found: a logged in user ]
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/behaviorパターン英語.kt:3:1 [ found: updating profile ]
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/behaviorパターン英語.kt:4:1 [ found: should succeed ]
         "#,
     );
 }
@@ -72,7 +72,7 @@ fn 日本語と英語が混在する場合は英語のみ違反になる() {
     expect_violation(
         "混在.kt",
         r#"
-            テスト名を日本語にしてください: "should validate email": require_japanese_kotest_test_name/混在.kt:5:1
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/混在.kt:5:1 [ found: should validate email ]
         "#,
     );
 }
@@ -87,8 +87,8 @@ fn contextパターンで英語は違反になる() {
     expect_violation(
         "contextパターン英語.kt",
         r#"
-            テスト名を日本語にしてください: "User registration": require_japanese_kotest_test_name/contextパターン英語.kt:1:1
-            テスト名を日本語にしてください: "should create user": require_japanese_kotest_test_name/contextパターン英語.kt:2:1
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/contextパターン英語.kt:1:1 [ found: User registration ]
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/contextパターン英語.kt:2:1 [ found: should create user ]
         "#,
     );
 }
@@ -114,8 +114,8 @@ fn given_when_thenパターンで英語は違反になる() {
     expect_violation(
         "given_when_thenパターン英語.kt",
         r#"
-            テスト名を日本語にしてください: "a valid user": require_japanese_kotest_test_name/given_when_thenパターン英語.kt:1:1
-            テスト名を日本語にしてください: "user should be created": require_japanese_kotest_test_name/given_when_thenパターン英語.kt:3:1
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/given_when_thenパターン英語.kt:1:1 [ found: a valid user ]
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/given_when_thenパターン英語.kt:3:1 [ found: user should be created ]
         "#,
     );
 }
@@ -125,9 +125,9 @@ fn 複数のDSLパターンを同時に検出できる() {
     expect_violation(
         "複数のDSLパターン.kt",
         r#"
-            テスト名を日本語にしてください: "User service": require_japanese_kotest_test_name/複数のDSLパターン.kt:1:1
-            テスト名を日本語にしてください: "should succeed": require_japanese_kotest_test_name/複数のDSLパターン.kt:3:1
-            テスト名を日本語にしてください: "when creating user": require_japanese_kotest_test_name/複数のDSLパターン.kt:2:1
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/複数のDSLパターン.kt:1:1 [ found: User service ]
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/複数のDSLパターン.kt:2:1 [ found: when creating user ]
+            テスト名を日本語にしてください: require_japanese_kotest_test_name/複数のDSLパターン.kt:3:1 [ found: should succeed ]
         "#,
     );
 }

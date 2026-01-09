@@ -29,7 +29,7 @@ fn class_all指定ですべてのclassにドキュメントがあると違反に
 fn class_all指定で一部のclassにドキュメントがないと違反になる() {
     expect_violation(
         "class/case02/all指定_一部のclassにしかドキュメントがない.php",
-        "PHPDocを書いてください (class MissingDocClass): require_php_doc/class/case02/all指定_一部のclassにしかドキュメントがない.php:7:1",
+        "PHPDocを書いてください: require_php_doc/class/case02/all指定_一部のclassにしかドキュメントがない.php:7:1 [ found: class MissingDocClass ]",
     );
 }
 
@@ -52,7 +52,7 @@ fn interface_all指定ですべてのinterfaceにドキュメントがあると�
 fn interface_all指定で一部のinterfaceにドキュメントがないと違反になる() {
     expect_violation(
         "interface/case02/all指定_一部のinterfaceにしかドキュメントがない.php",
-        "PHPDocを書いてください (interface MissingDocInterface): require_php_doc/interface/case02/all指定_一部のinterfaceにしかドキュメントがない.php:7:1",
+        "PHPDocを書いてください: require_php_doc/interface/case02/all指定_一部のinterfaceにしかドキュメントがない.php:7:1 [ found: interface MissingDocInterface ]",
     );
 }
 
@@ -67,7 +67,7 @@ fn trait_all指定ですべてのtraitにドキュメントがあると違反に
 fn trait_all指定で一部のtraitにドキュメントがないと違反になる() {
     expect_violation(
         "trait/case02/all指定_一部のtraitにしかドキュメントがない.php",
-        "PHPDocを書いてください (trait MissingDocTrait): require_php_doc/trait/case02/all指定_一部のtraitにしかドキュメントがない.php:7:1",
+        "PHPDocを書いてください: require_php_doc/trait/case02/all指定_一部のtraitにしかドキュメントがない.php:7:1 [ found: trait MissingDocTrait ]",
     );
 }
 
@@ -82,7 +82,7 @@ fn function_all指定ですべてのfunctionにドキュメントがあると違
 fn function_all指定で一部のfunctionにドキュメントがないと違反になる() {
     expect_violation(
         "function/case02/all指定_一部のfunctionにしかドキュメントがない.php",
-        "PHPDocを書いてください (function missingDocFunction): require_php_doc/function/case02/all指定_一部のfunctionにしかドキュメントがない.php:7:1",
+        "PHPDocを書いてください: require_php_doc/function/case02/all指定_一部のfunctionにしかドキュメントがない.php:7:1 [ found: function missingDocFunction ]",
     );
 }
 
@@ -107,7 +107,7 @@ fn enum_all指定ですべてのenumにドキュメントがあると違反に�
 fn enum_all指定で一部のenumにドキュメントがないと違反になる() {
     expect_violation(
         "enum/case02/all指定_一部のenumにしかドキュメントがない.php",
-        "PHPDocを書いてください (enum MissingDocStatus): require_php_doc/enum/case02/all指定_一部のenumにしかドキュメントがない.php:9:1",
+        "PHPDocを書いてください: require_php_doc/enum/case02/all指定_一部のenumにしかドキュメントがない.php:9:1 [ found: enum MissingDocStatus ]",
     );
 }
 
@@ -123,9 +123,9 @@ fn all指定で複数種類にドキュメントがないと違反になる() {
     expect_violation(
         "all/case02/all指定_複数種類にドキュメントがない.php",
         r#"
-            PHPDocを書いてください (class MissingClass): require_php_doc/all/case02/all指定_複数種類にドキュメントがない.php:2:1
-            PHPDocを書いてください (function missingFunction): require_php_doc/all/case02/all指定_複数種類にドキュメントがない.php:6:1
-            PHPDocを書いてください (interface MissingInterface): require_php_doc/all/case02/all指定_複数種類にドキュメントがない.php:4:1
+            PHPDocを書いてください: require_php_doc/all/case02/all指定_複数種類にドキュメントがない.php:2:1 [ found: class MissingClass ]
+            PHPDocを書いてください: require_php_doc/all/case02/all指定_複数種類にドキュメントがない.php:4:1 [ found: interface MissingInterface ]
+            PHPDocを書いてください: require_php_doc/all/case02/all指定_複数種類にドキュメントがない.php:6:1 [ found: function missingFunction ]
         "#,
     );
 }

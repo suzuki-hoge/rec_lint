@@ -28,8 +28,8 @@ fn 英語テスト名は違反になる() {
     expect_violation(
         "英語テスト名.php",
         r#"
-            テスト名を日本語にしてください: "testCreateUser": require_japanese_phpunit_test_name/英語テスト名.php:5:1
-            テスト名を日本語にしてください: "testValidateEmail": require_japanese_phpunit_test_name/英語テスト名.php:9:1
+            テスト名を日本語にしてください: require_japanese_phpunit_test_name/英語テスト名.php:5:1 [ found: testCreateUser ]
+            テスト名を日本語にしてください: require_japanese_phpunit_test_name/英語テスト名.php:9:1 [ found: testValidateEmail ]
         "#,
     );
 }
@@ -44,7 +44,7 @@ fn アノテーションで英語テスト名は違反になる() {
     expect_violation(
         "アノテーションで英語.php",
         r#"
-            テスト名を日本語にしてください: "shouldCreateUser": require_japanese_phpunit_test_name/アノテーションで英語.php:5:1
+            テスト名を日本語にしてください: require_japanese_phpunit_test_name/アノテーションで英語.php:5:1 [ found: shouldCreateUser ]
         "#,
     );
 }
@@ -59,7 +59,7 @@ fn アトリビュートで英語テスト名は違反になる() {
     expect_violation(
         "アトリビュートで英語.php",
         r#"
-            テスト名を日本語にしてください: "shouldCreateUser": require_japanese_phpunit_test_name/アトリビュートで英語.php:5:1
+            テスト名を日本語にしてください: require_japanese_phpunit_test_name/アトリビュートで英語.php:5:1 [ found: shouldCreateUser ]
         "#,
     );
 }
@@ -74,7 +74,7 @@ fn プライベートメソッドでもtestプレフィックスがあれば検�
     expect_violation(
         "プライベートメソッドでtestプレフィックス.php",
         r#"
-            テスト名を日本語にしてください: "testPrivateMethod": require_japanese_phpunit_test_name/プライベートメソッドでtestプレフィックス.php:3:1
+            テスト名を日本語にしてください: require_japanese_phpunit_test_name/プライベートメソッドでtestプレフィックス.php:3:1 [ found: testPrivateMethod ]
         "#,
     );
 }
@@ -84,7 +84,7 @@ fn 単一行PHPDocのtestアノテーションを検出できる() {
     expect_violation(
         "単一行PHPDocアノテーション.php",
         r#"
-            テスト名を日本語にしてください: "shouldCreateUser": require_japanese_phpunit_test_name/単一行PHPDocアノテーション.php:3:1
+            テスト名を日本語にしてください: require_japanese_phpunit_test_name/単一行PHPDocアノテーション.php:3:1 [ found: shouldCreateUser ]
         "#,
     );
 }
@@ -94,7 +94,7 @@ fn 複数のアトリビュートがある場合も検出できる() {
     expect_violation(
         "複数のアトリビュート.php",
         r#"
-            テスト名を日本語にしてください: "shouldCreateUser": require_japanese_phpunit_test_name/複数のアトリビュート.php:3:1
+            テスト名を日本語にしてください: require_japanese_phpunit_test_name/複数のアトリビュート.php:3:1 [ found: shouldCreateUser ]
         "#,
     );
 }

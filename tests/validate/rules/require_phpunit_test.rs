@@ -31,7 +31,7 @@ fn exists指定のときmainと同じディレクトリ違うnamespaceにテス�
         "namespace_check",
         "違うnamespace.php",
         r#"
-            テストファイルが必要です: テストファイルが存在しません: tests/App/Service/OrderServiceTest.php: src/違うnamespace.php
+            テストファイルが必要です: src/違うnamespace.php [ found: テストファイルが存在しません: tests/App/Service/OrderServiceTest.php ]
         "#,
     );
 }
@@ -42,7 +42,7 @@ fn exists指定のときmainと違うディレクトリ同じnamespaceにテス�
         "different_dir",
         "App/Service/UserService.php",
         r#"
-            テストファイルが必要です: テストファイルが存在しません: tests/App/Service/UserServiceTest.php: src/App/Service/UserService.php
+            テストファイルが必要です: src/App/Service/UserService.php [ found: テストファイルが存在しません: tests/App/Service/UserServiceTest.php ]
         "#,
     );
 }
@@ -60,7 +60,7 @@ fn all_public指定のとき一部のコードをテストがなければエラ�
         "all_public",
         "一部メソッド未テスト.php",
         r#"
-            テストファイルが必要です: L9: public メソッド `deleteUser` がテストされていません: src/一部メソッド未テスト.php:9:1
+            テストファイルが必要です: src/一部メソッド未テスト.php:9:1 [ found: L9: public メソッド `deleteUser` がテストされていません ]
         "#,
     );
 }

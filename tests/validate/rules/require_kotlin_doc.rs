@@ -29,7 +29,7 @@ fn class_all指定ですべてのclassにドキュメントがあると違反に
 fn class_all指定で一部のclassにドキュメントがないと違反になる() {
     expect_violation(
         "class/case02/all指定_一部のclassにしかドキュメントがない.kt",
-        "KDocを書いてください (class MissingDocClass): require_kotlin_doc/class/case02/all指定_一部のclassにしかドキュメントがない.kt:6:1",
+        "KDocを書いてください: require_kotlin_doc/class/case02/all指定_一部のclassにしかドキュメントがない.kt:6:1 [ found: class MissingDocClass ]",
     );
 }
 
@@ -44,7 +44,7 @@ fn interface_all指定ですべてのinterfaceにドキュメントがあると�
 fn interface_all指定で一部のinterfaceにドキュメントがないと違反になる() {
     expect_violation(
         "interface/case02/all指定_一部のinterfaceにしかドキュメントがない.kt",
-        "KDocを書いてください (interface MissingDocInterface): require_kotlin_doc/interface/case02/all指定_一部のinterfaceにしかドキュメントがない.kt:6:1",
+        "KDocを書いてください: require_kotlin_doc/interface/case02/all指定_一部のinterfaceにしかドキュメントがない.kt:6:1 [ found: interface MissingDocInterface ]",
     );
 }
 
@@ -59,7 +59,7 @@ fn function_all指定ですべてのfunctionにドキュメントがあると違
 fn function_all指定で一部のfunctionにドキュメントがないと違反になる() {
     expect_violation(
         "function/case02/all指定_一部のfunctionにしかドキュメントがない.kt",
-        "KDocを書いてください (function missingDocFunction): require_kotlin_doc/function/case02/all指定_一部のfunctionにしかドキュメントがない.kt:6:1",
+        "KDocを書いてください: require_kotlin_doc/function/case02/all指定_一部のfunctionにしかドキュメントがない.kt:6:1 [ found: function missingDocFunction ]",
     );
 }
 
@@ -75,9 +75,9 @@ fn all指定で複数種類にドキュメントがないと違反になる() {
     expect_violation(
         "all/case02/all指定_複数種類にドキュメントがない.kt",
         r#"
-            KDocを書いてください (class MissingClass): require_kotlin_doc/all/case02/all指定_複数種類にドキュメントがない.kt:1:1
-            KDocを書いてください (function missingFunction): require_kotlin_doc/all/case02/all指定_複数種類にドキュメントがない.kt:5:1
-            KDocを書いてください (interface MissingInterface): require_kotlin_doc/all/case02/all指定_複数種類にドキュメントがない.kt:3:1
+            KDocを書いてください: require_kotlin_doc/all/case02/all指定_複数種類にドキュメントがない.kt:1:1 [ found: class MissingClass ]
+            KDocを書いてください: require_kotlin_doc/all/case02/all指定_複数種類にドキュメントがない.kt:3:1 [ found: interface MissingInterface ]
+            KDocを書いてください: require_kotlin_doc/all/case02/all指定_複数種類にドキュメントがない.kt:5:1 [ found: function missingFunction ]
         "#,
     );
 }

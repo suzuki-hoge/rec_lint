@@ -35,7 +35,7 @@ fn java_line_コメント行に日本語コメントがある() {
     expect_comment_violation(
         "java_like_syntax/line/コメント行に日本語コメントがある.java",
         r#"
-            コメントを英語にしてください: "日本語コメント": require_english_comment/java_like_syntax/line/コメント行に日本語コメントがある.java:1:1
+            コメントを英語にしてください: require_english_comment/java_like_syntax/line/コメント行に日本語コメントがある.java:1:1 [ found: 日本語コメント ]
         "#,
     );
 }
@@ -45,7 +45,7 @@ fn java_line_コード行末に日本語コメントがある() {
     expect_comment_violation(
         "java_like_syntax/line/コード行末に日本語コメントがある.java",
         r#"
-            コメントを英語にしてください: "説明": require_english_comment/java_like_syntax/line/コード行末に日本語コメントがある.java:1:1
+            コメントを英語にしてください: require_english_comment/java_like_syntax/line/コード行末に日本語コメントがある.java:1:1 [ found: 説明 ]
         "#,
     );
 }
@@ -55,8 +55,8 @@ fn java_line_複数行に日本語コメントがある() {
     expect_comment_violation(
         "java_like_syntax/line/複数行に日本語コメントがある.java",
         r#"
-            コメントを英語にしてください: "一行目": require_english_comment/java_like_syntax/line/複数行に日本語コメントがある.java:1:1
-            コメントを英語にしてください: "二行目": require_english_comment/java_like_syntax/line/複数行に日本語コメントがある.java:2:1
+            コメントを英語にしてください: require_english_comment/java_like_syntax/line/複数行に日本語コメントがある.java:1:1 [ found: 一行目 ]
+            コメントを英語にしてください: require_english_comment/java_like_syntax/line/複数行に日本語コメントがある.java:2:1 [ found: 二行目 ]
         "#,
     );
 }
@@ -71,7 +71,7 @@ fn java_line_URL文字列と同じ行末にコメントがある() {
     expect_comment_violation(
         "java_like_syntax/line/URL文字列と同じ行末にコメントがある.java",
         r#"
-            コメントを英語にしてください: "説明": require_english_comment/java_like_syntax/line/URL文字列と同じ行末にコメントがある.java:1:1
+            コメントを英語にしてください: require_english_comment/java_like_syntax/line/URL文字列と同じ行末にコメントがある.java:1:1 [ found: 説明 ]
         "#,
     );
 }
@@ -93,7 +93,7 @@ fn java_block_単一行ブロックコメントに日本語がある() {
     expect_comment_violation(
         "java_like_syntax/block/単一行ブロックコメントに日本語がある.java",
         r#"
-            コメントを英語にしてください: "日本語コメント": require_english_comment/java_like_syntax/block/単一行ブロックコメントに日本語がある.java:1:1
+            コメントを英語にしてください: require_english_comment/java_like_syntax/block/単一行ブロックコメントに日本語がある.java:1:1 [ found: 日本語コメント ]
         "#,
     );
 }
@@ -103,8 +103,8 @@ fn java_block_複数行ブロックコメントに日本語がある() {
     expect_comment_violation(
         "java_like_syntax/block/複数行ブロックコメントに日本語がある.java",
         r#"
-            コメントを英語にしてください: "* 一行目": require_english_comment/java_like_syntax/block/複数行ブロックコメントに日本語がある.java:2:1
-            コメントを英語にしてください: "* 二行目": require_english_comment/java_like_syntax/block/複数行ブロックコメントに日本語がある.java:3:1
+            コメントを英語にしてください: require_english_comment/java_like_syntax/block/複数行ブロックコメントに日本語がある.java:2:1 [ found: * 一行目 ]
+            コメントを英語にしてください: require_english_comment/java_like_syntax/block/複数行ブロックコメントに日本語がある.java:3:1 [ found: * 二行目 ]
         "#,
     );
 }
@@ -114,7 +114,7 @@ fn java_block_コード行中のブロックコメントに日本語がある() 
     expect_comment_violation(
         "java_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.java",
         r#"
-            コメントを英語にしてください: "日本語": require_english_comment/java_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.java:1:1
+            コメントを英語にしてください: require_english_comment/java_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.java:1:1 [ found: 日本語 ]
         "#,
     );
 }
@@ -136,7 +136,7 @@ fn python_line_コメント行に日本語コメントがある() {
     expect_comment_violation(
         "python_like_syntax/line/コメント行に日本語コメントがある.py",
         r#"
-            コメントを英語にしてください: "日本語コメント": require_english_comment/python_like_syntax/line/コメント行に日本語コメントがある.py:1:1
+            コメントを英語にしてください: require_english_comment/python_like_syntax/line/コメント行に日本語コメントがある.py:1:1 [ found: 日本語コメント ]
         "#,
     );
 }
@@ -146,7 +146,7 @@ fn python_line_コード行末に日本語コメントがある() {
     expect_comment_violation(
         "python_like_syntax/line/コード行末に日本語コメントがある.py",
         r#"
-            コメントを英語にしてください: "説明": require_english_comment/python_like_syntax/line/コード行末に日本語コメントがある.py:1:1
+            コメントを英語にしてください: require_english_comment/python_like_syntax/line/コード行末に日本語コメントがある.py:1:1 [ found: 説明 ]
         "#,
     );
 }
@@ -156,8 +156,8 @@ fn python_line_複数行に日本語コメントがある() {
     expect_comment_violation(
         "python_like_syntax/line/複数行に日本語コメントがある.py",
         r#"
-            コメントを英語にしてください: "一行目": require_english_comment/python_like_syntax/line/複数行に日本語コメントがある.py:1:1
-            コメントを英語にしてください: "二行目": require_english_comment/python_like_syntax/line/複数行に日本語コメントがある.py:2:1
+            コメントを英語にしてください: require_english_comment/python_like_syntax/line/複数行に日本語コメントがある.py:1:1 [ found: 一行目 ]
+            コメントを英語にしてください: require_english_comment/python_like_syntax/line/複数行に日本語コメントがある.py:2:1 [ found: 二行目 ]
         "#,
     );
 }
@@ -172,7 +172,7 @@ fn python_line_URL文字列と同じ行末にコメントがある() {
     expect_comment_violation(
         "python_like_syntax/line/URL文字列と同じ行末にコメントがある.py",
         r#"
-            コメントを英語にしてください: "説明": require_english_comment/python_like_syntax/line/URL文字列と同じ行末にコメントがある.py:1:1
+            コメントを英語にしてください: require_english_comment/python_like_syntax/line/URL文字列と同じ行末にコメントがある.py:1:1 [ found: 説明 ]
         "#,
     );
 }
@@ -192,7 +192,7 @@ fn python_block_単一行ブロックコメントに日本語がある() {
     expect_comment_violation(
         "python_like_syntax/block/単一行ブロックコメントに日本語がある.py",
         r#"
-            コメントを英語にしてください: "日本語": require_english_comment/python_like_syntax/block/単一行ブロックコメントに日本語がある.py:1:1
+            コメントを英語にしてください: require_english_comment/python_like_syntax/block/単一行ブロックコメントに日本語がある.py:1:1 [ found: 日本語 ]
         "#,
     );
 }
@@ -202,8 +202,8 @@ fn python_block_複数行ブロックコメントに日本語がある() {
     expect_comment_violation(
         "python_like_syntax/block/複数行ブロックコメントに日本語がある.py",
         r#"
-            コメントを英語にしてください: "一行目": require_english_comment/python_like_syntax/block/複数行ブロックコメントに日本語がある.py:2:1
-            コメントを英語にしてください: "二行目": require_english_comment/python_like_syntax/block/複数行ブロックコメントに日本語がある.py:3:1
+            コメントを英語にしてください: require_english_comment/python_like_syntax/block/複数行ブロックコメントに日本語がある.py:2:1 [ found: 一行目 ]
+            コメントを英語にしてください: require_english_comment/python_like_syntax/block/複数行ブロックコメントに日本語がある.py:3:1 [ found: 二行目 ]
         "#,
     );
 }
@@ -213,7 +213,7 @@ fn python_block_コード行中のブロックコメントに日本語がある(
     expect_comment_violation(
         "python_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.py",
         r#"
-            コメントを英語にしてください: "日本語": require_english_comment/python_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.py:2:1
+            コメントを英語にしてください: require_english_comment/python_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.py:2:1 [ found: 日本語 ]
         "#,
     );
 }
@@ -235,7 +235,7 @@ fn rust_line_コメント行に日本語コメントがある() {
     expect_comment_violation(
         "rust_like_syntax/line/コメント行に日本語コメントがある.rs",
         r#"
-            コメントを英語にしてください: "日本語コメント": require_english_comment/rust_like_syntax/line/コメント行に日本語コメントがある.rs:1:1
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/line/コメント行に日本語コメントがある.rs:1:1 [ found: 日本語コメント ]
         "#,
     );
 }
@@ -245,7 +245,7 @@ fn rust_line_コード行末に日本語コメントがある() {
     expect_comment_violation(
         "rust_like_syntax/line/コード行末に日本語コメントがある.rs",
         r#"
-            コメントを英語にしてください: "説明": require_english_comment/rust_like_syntax/line/コード行末に日本語コメントがある.rs:1:1
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/line/コード行末に日本語コメントがある.rs:1:1 [ found: 説明 ]
         "#,
     );
 }
@@ -255,8 +255,8 @@ fn rust_line_複数行に日本語コメントがある() {
     expect_comment_violation(
         "rust_like_syntax/line/複数行に日本語コメントがある.rs",
         r#"
-            コメントを英語にしてください: "一行目": require_english_comment/rust_like_syntax/line/複数行に日本語コメントがある.rs:1:1
-            コメントを英語にしてください: "二行目": require_english_comment/rust_like_syntax/line/複数行に日本語コメントがある.rs:2:1
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/line/複数行に日本語コメントがある.rs:1:1 [ found: 一行目 ]
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/line/複数行に日本語コメントがある.rs:2:1 [ found: 二行目 ]
         "#,
     );
 }
@@ -271,7 +271,7 @@ fn rust_line_URL文字列と同じ行末にコメントがある() {
     expect_comment_violation(
         "rust_like_syntax/line/URL文字列と同じ行末にコメントがある.rs",
         r#"
-            コメントを英語にしてください: "説明": require_english_comment/rust_like_syntax/line/URL文字列と同じ行末にコメントがある.rs:1:1
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/line/URL文字列と同じ行末にコメントがある.rs:1:1 [ found: 説明 ]
         "#,
     );
 }
@@ -291,7 +291,7 @@ fn rust_block_単一行ブロックコメントに日本語がある() {
     expect_comment_violation(
         "rust_like_syntax/block/単一行ブロックコメントに日本語がある.rs",
         r#"
-            コメントを英語にしてください: "日本語コメント": require_english_comment/rust_like_syntax/block/単一行ブロックコメントに日本語がある.rs:1:1
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/block/単一行ブロックコメントに日本語がある.rs:1:1 [ found: 日本語コメント ]
         "#,
     );
 }
@@ -301,8 +301,8 @@ fn rust_block_複数行ブロックコメントに日本語がある() {
     expect_comment_violation(
         "rust_like_syntax/block/複数行ブロックコメントに日本語がある.rs",
         r#"
-            コメントを英語にしてください: "* 一行目": require_english_comment/rust_like_syntax/block/複数行ブロックコメントに日本語がある.rs:2:1
-            コメントを英語にしてください: "* 二行目": require_english_comment/rust_like_syntax/block/複数行ブロックコメントに日本語がある.rs:3:1
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/block/複数行ブロックコメントに日本語がある.rs:2:1 [ found: * 一行目 ]
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/block/複数行ブロックコメントに日本語がある.rs:3:1 [ found: * 二行目 ]
         "#,
     );
 }
@@ -312,7 +312,7 @@ fn rust_block_コード行中のブロックコメントに日本語がある() 
     expect_comment_violation(
         "rust_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.rs",
         r#"
-            コメントを英語にしてください: "日本語": require_english_comment/rust_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.rs:1:1
+            コメントを英語にしてください: require_english_comment/rust_like_syntax/block/コード行の中の単一行ブロックコメントに日本語がある.rs:1:1 [ found: 日本語 ]
         "#,
     );
 }

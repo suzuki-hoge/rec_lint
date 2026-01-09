@@ -28,8 +28,8 @@ fn struct_all指定で一部のstructにドキュメントがないと違反に�
     expect_violation(
         "struct/case02/all指定_一部のstructにしかドキュメントがない.rs",
         r#"
-            RustDocを書いてください (struct MissingDoc): require_rust_doc/struct/case02/all指定_一部のstructにしかドキュメントがない.rs:4:1
-            RustDocを書いてください (struct PrivateStruct): require_rust_doc/struct/case02/all指定_一部のstructにしかドキュメントがない.rs:6:1
+            RustDocを書いてください: require_rust_doc/struct/case02/all指定_一部のstructにしかドキュメントがない.rs:4:1 [ found: struct MissingDoc ]
+            RustDocを書いてください: require_rust_doc/struct/case02/all指定_一部のstructにしかドキュメントがない.rs:6:1 [ found: struct PrivateStruct ]
         "#,
     );
 }
@@ -44,7 +44,7 @@ fn struct_public指定ですべてのpublicなstructにドキュメントがな�
     expect_violation(
         "struct/case04/public指定_すべてのpublicなstructにはドキュメントがない.rs",
         r#"
-            RustDocを書いてください (struct MissingPublicDoc): require_rust_doc/struct/case04/public指定_すべてのpublicなstructにはドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/struct/case04/public指定_すべてのpublicなstructにはドキュメントがない.rs:1:1 [ found: struct MissingPublicDoc ]
         "#,
     );
 }
@@ -59,7 +59,7 @@ fn enum_public指定ですべてのpublicなenumにドキュメントがない�
     expect_violation(
         "enum/case02/public指定_すべてのpublicなenumにはドキュメントがない.rs",
         r#"
-            RustDocを書いてください (enum Missing): require_rust_doc/enum/case02/public指定_すべてのpublicなenumにはドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/enum/case02/public指定_すべてのpublicなenumにはドキュメントがない.rs:1:1 [ found: enum Missing ]
         "#,
     );
 }
@@ -74,7 +74,7 @@ fn trait_public指定ですべてのpublicなtraitにドキュメントがない
     expect_violation(
         "trait/case02/public指定_すべてのpublicなtraitにはドキュメントがない.rs",
         r#"
-            RustDocを書いてください (trait MissingTrait): require_rust_doc/trait/case02/public指定_すべてのpublicなtraitにはドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/trait/case02/public指定_すべてのpublicなtraitにはドキュメントがない.rs:1:1 [ found: trait MissingTrait ]
         "#,
     );
 }
@@ -89,7 +89,7 @@ fn typealias_public指定ですべてのpublicなtypealiasにドキュメント�
     expect_violation(
         "type_alias/case02/public指定_すべてのpublicなtypealiasにはドキュメントがない.rs",
         r#"
-            RustDocを書いてください (type MissingAlias): require_rust_doc/type_alias/case02/public指定_すべてのpublicなtypealiasにはドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/type_alias/case02/public指定_すべてのpublicなtypealiasにはドキュメントがない.rs:1:1 [ found: type MissingAlias ]
         "#,
     );
 }
@@ -104,7 +104,7 @@ fn union_public指定ですべてのpublicなunionにドキュメントがない
     expect_violation(
         "union/case02/public指定_すべてのpublicなunionにはドキュメントがない.rs",
         r#"
-            RustDocを書いてください (union MissingUnion): require_rust_doc/union/case02/public指定_すべてのpublicなunionにはドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/union/case02/public指定_すべてのpublicなunionにはドキュメントがない.rs:1:1 [ found: union MissingUnion ]
         "#,
     );
 }
@@ -119,7 +119,7 @@ fn fn_public指定ですべてのpublicな関数にドキュメントがない�
     expect_violation(
         "fn/case02/public指定_すべてのpublicなfnにはドキュメントがない.rs",
         r#"
-            RustDocを書いてください (fn missing): require_rust_doc/fn/case02/public指定_すべてのpublicなfnにはドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/fn/case02/public指定_すべてのpublicなfnにはドキュメントがない.rs:1:1 [ found: fn missing ]
         "#,
     );
 }
@@ -134,7 +134,7 @@ fn macro_all指定ですべてのmacroにドキュメントがないと違反に
     expect_violation(
         "macro_rules/case02/all指定_すべてのmacroにはドキュメントがない.rs",
         r#"
-            RustDocを書いてください (macro_rules missing): require_rust_doc/macro_rules/case02/all指定_すべてのmacroにはドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/macro_rules/case02/all指定_すべてのmacroにはドキュメントがない.rs:1:1 [ found: macro_rules missing ]
         "#,
     );
 }
@@ -149,7 +149,7 @@ fn mod_public指定ですべてのpublicなmodにドキュメントがないと�
     expect_violation(
         "mod/case02/public指定_すべてのpublicなmodにはドキュメントがない.rs",
         r#"
-            RustDocを書いてください (mod missing): require_rust_doc/mod/case02/public指定_すべてのpublicなmodにはドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/mod/case02/public指定_すべてのpublicなmodにはドキュメントがない.rs:1:1 [ found: mod missing ]
         "#,
     );
 }
@@ -164,9 +164,9 @@ fn all指定で複数種類にドキュメントがないと違反になる() {
     expect_violation(
         "all/case02/all指定_複数種類にドキュメントがない.rs",
         r#"
-            RustDocを書いてください (enum MissingEnum): require_rust_doc/all/case02/all指定_複数種類にドキュメントがない.rs:3:1
-            RustDocを書いてください (fn missing_fn): require_rust_doc/all/case02/all指定_複数種類にドキュメントがない.rs:5:1
-            RustDocを書いてください (struct MissingStruct): require_rust_doc/all/case02/all指定_複数種類にドキュメントがない.rs:1:1
+            RustDocを書いてください: require_rust_doc/all/case02/all指定_複数種類にドキュメントがない.rs:1:1 [ found: struct MissingStruct ]
+            RustDocを書いてください: require_rust_doc/all/case02/all指定_複数種類にドキュメントがない.rs:3:1 [ found: enum MissingEnum ]
+            RustDocを書いてください: require_rust_doc/all/case02/all指定_複数種類にドキュメントがない.rs:5:1 [ found: fn missing_fn ]
         "#,
     );
 }

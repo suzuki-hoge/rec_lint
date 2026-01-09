@@ -1,0 +1,20 @@
+rule:
+  - label: todo_check
+    type: forbidden_texts
+    keywords: [TODO]
+    message: TODO禁止
+
+  - label: fixme_pattern
+    type: forbidden_patterns
+    keywords: ["FIXME:.*"]
+    message: FIXMEパターン禁止
+
+  - label: japanese_comment
+    type: require_japanese_comment
+    comment:
+      lang: java
+    message: コメントを日本語にしてください
+    match:
+      - pattern: file_ends_with
+        keywords: [.kt, .java]
+        cond: or

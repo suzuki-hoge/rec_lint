@@ -36,7 +36,7 @@ fn unit_exists指定のときテストモジュールがなければエラーに
         "unit_file_exists",
         "テストがない.rs",
         r#"
-            ユニットテストが必要です: ユニットテストが存在しません: src/テストがない.rs
+            ユニットテストが必要です: src/テストがない.rs [ found: ユニットテストが存在しません ]
         "#,
     );
 }
@@ -47,7 +47,7 @@ fn unit_exists指定のときテストモジュールもアトリビュートも
         "unit_file_exists",
         "テストがない.rs",
         r#"
-            ユニットテストが必要です: ユニットテストが存在しません: src/テストがない.rs
+            ユニットテストが必要です: src/テストがない.rs [ found: ユニットテストが存在しません ]
         "#,
     );
 }
@@ -95,7 +95,7 @@ fn unit_all_public指定のとき一部のテストがなければエラーに�
         "unit_all_public",
         "一部メソッド未テスト.rs",
         r#"
-            全てのpublic関数にテストが必要です: L4: pub 関数 `delete_user` がテストされていません: src/一部メソッド未テスト.rs:4:1
+            全てのpublic関数にテストが必要です: src/一部メソッド未テスト.rs:4:1 [ found: L4: pub 関数 `delete_user` がテストされていません ]
         "#,
     );
 }
@@ -113,7 +113,7 @@ fn integration_exists指定のときmainと違うディレクトリにテスト�
         "integration_file_exists",
         "subdir/テストがない.rs",
         r#"
-            インテグレーションテストが必要です: 統合テストファイルが存在しません: tests/subdir/テストがない_test.rs: src/subdir/テストがない.rs
+            インテグレーションテストが必要です: src/subdir/テストがない.rs [ found: 統合テストファイルが存在しません: tests/subdir/テストがない_test.rs ]
         "#,
     );
 }
@@ -136,7 +136,7 @@ fn integration_all_public指定のとき一部のコードをテストがなけ�
         "integration_all_public",
         "一部メソッド未テスト.rs",
         r#"
-            全てのpublic関数にインテグレーションテストが必要です: L4: pub 関数 `delete_user` がテストされていません: src/一部メソッド未テスト.rs:4:1
+            全てのpublic関数にインテグレーションテストが必要です: src/一部メソッド未テスト.rs:4:1 [ found: L4: pub 関数 `delete_user` がテストされていません ]
         "#,
     );
 }
