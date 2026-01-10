@@ -1,0 +1,4 @@
+rule:
+  - label: invalid-rule
+    type: unknown_type
+    message: This has unknown type

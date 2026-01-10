@@ -6,14 +6,28 @@ edition = "2021"
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 serde_yaml = "0.9"
 walkdir = "2"
 regex = "1"
 anyhow = "1"
 rayon = "1"
+jsonschema = "0.38"
 
 [dev-dependencies]
 tempfile = "3"
+
+[[test]]
+name = "check_list"
+path = "tests/check/list.rs"
+
+[[test]]
+name = "check_tree"
+path = "tests/check/tree.rs"
+
+[[test]]
+name = "check_schema"
+path = "tests/check/schema.rs"
 
 [[test]]
 name = "show_rec_tree"

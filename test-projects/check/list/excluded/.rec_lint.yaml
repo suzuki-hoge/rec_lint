@@ -1,0 +1,5 @@
+rule:
+  - label: excluded-rule
+    type: forbidden_texts
+    keywords: [EXCLUDED]
+    message: Should not appear

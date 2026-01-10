@@ -1,0 +1,5 @@
+rule:
+  - label: src-rule
+    type: custom
+    exec: "true"
+    message: Custom rule

@@ -1,0 +1,5 @@
+rule:
+  - label: valid-rule
+    type: custom
+    exec: "true"
+    message: Custom rule

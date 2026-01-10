@@ -1,0 +1,5 @@
+rule:
+  - label: root-rule
+    type: forbidden_texts
+    keywords: [TODO]
+    message: TODO found

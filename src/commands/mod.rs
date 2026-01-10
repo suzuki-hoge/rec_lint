@@ -1,4 +1,5 @@
 pub mod add;
+pub mod check;
 pub mod desc;
 pub mod guideline;
 pub mod init;
@@ -18,6 +19,14 @@ pub enum SortMode {
     Rule,
     /// Sort by file order (output: file:line:col: message)
     File,
+}
+
+/// Check mode for check command
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CheckMode {
+    List,
+    Tree,
+    Schema,
 }
 
 #[derive(Parser)]
@@ -93,4 +102,24 @@ Guideline items are informational reminders for code reviewers.")]
 
     /// Show description of rec_lint
     Desc,
+
+    /// Check project configuration
+    #[command(long_about = "Check project configuration structure.\n\n\
+Options:\n\
+  --list:   List directories with .rec_lint.yaml and their rule types\n\
+  --tree:   Show directory tree with rule types at each level\n\
+  --schema: Validate all .rec_lint.yaml files against JSON Schema")]
+    Check {
+        /// List directories with .rec_lint.yaml and their rule types
+        #[arg(long, group = "mode")]
+        list: bool,
+
+        /// Show directory tree with rule types
+        #[arg(long, group = "mode")]
+        tree: bool,
+
+        /// Validate all .rec_lint.yaml files against JSON Schema
+        #[arg(long, group = "mode")]
+        schema: bool,
+    },
 }

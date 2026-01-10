@@ -1,1 +1,6 @@
-# Root marker file for rec_lint
+# yaml-language-server: $schema=schema/rec_lint_config.schema.json
+
+exclude_dirs:
+  - .claude
+  - .idea
+  - target

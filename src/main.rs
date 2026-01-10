@@ -3,7 +3,7 @@ use std::process::ExitCode;
 use clap::Parser;
 
 use rec_lint::commands;
-use rec_lint::commands::{Cli, Commands};
+use rec_lint::commands::{CheckMode, Cli, Commands};
 
 fn main() -> ExitCode {
     match run() {
@@ -28,6 +28,22 @@ fn run() -> anyhow::Result<ExitCode> {
         Commands::Init { dir } => commands::init::run(&dir)?,
         Commands::Add { dir } => commands::add::run(&dir)?,
         Commands::Desc => commands::desc::run()?,
+        Commands::Check { list, tree, schema } => {
+            let mode = if list {
+                CheckMode::List
+            } else if tree {
+                CheckMode::Tree
+            } else if schema {
+                CheckMode::Schema
+            } else {
+                // No option provided, show help
+                return Err(anyhow::anyhow!(
+                    "No option specified. Use --list, --tree, or --schema.\n\n\
+                    Run 'rec_lint check --help' for more information."
+                ));
+            };
+            commands::check::run(mode)?
+        }
     };
 
     let has_violations = is_validate && !output.is_empty();
