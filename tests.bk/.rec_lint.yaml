@@ -1,7 +1,0 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.3/schema/rec_lint.schema.json
-
-guideline:
-  - message: テスト名は日本語であること
-  - message: イテレータを検証するときは必ず件数を検証し、全件内容を検証すること
-  - message: 文字列を検証するときは contains などの部分一致を使わず、完全一致で検証すること
-  - message: / や " などを文字列で使うときは、エスケープではなく raw string literals を使うこと
