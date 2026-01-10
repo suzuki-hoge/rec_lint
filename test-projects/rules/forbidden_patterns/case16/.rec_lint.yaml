@@ -1,11 +1,11 @@
 rule:
   - label: 最初のパターン
     type: forbidden_patterns
-    keywords:
+    patterns:
       - NOTEXIST
     message: パターン違反1
   - label: 次のパターン
     type: forbidden_patterns
-    keywords:
+    patterns:
       - FIXME
     message: パターン違反2

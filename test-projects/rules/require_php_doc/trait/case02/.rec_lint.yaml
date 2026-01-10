@@ -1,6 +1,6 @@
 rule:
   - label: php_doc_trait_all
     type: require_php_doc
-    php_doc:
+    option:
       trait: all
     message: PHPDocを書いてください

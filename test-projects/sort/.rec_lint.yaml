@@ -1,17 +1,17 @@
 rule:
   - label: todo_check
     type: forbidden_texts
-    keywords: [TODO]
+    texts: [TODO]
     message: TODO禁止
 
   - label: fixme_pattern
     type: forbidden_patterns
-    keywords: ["FIXME:.*"]
+    patterns: ["FIXME:.*"]
     message: FIXMEパターン禁止
 
   - label: japanese_comment
     type: require_japanese_comment
-    comment:
+    format:
       lang: java
     message: コメントを日本語にしてください
     match:

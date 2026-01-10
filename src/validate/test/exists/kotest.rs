@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use super::{KotestTestConfig, TestExistenceViolation, TestExistenceViolationKind};
+use super::{ExternalFileTestConfig, TestExistenceViolation, TestExistenceViolationKind};
 use crate::rule::parser::TestRequireLevel;
 
 /// Validate test existence for a Kotlin source file
@@ -8,7 +8,7 @@ pub fn validate(
     file_path: &Path,
     content: &str,
     root_dir: &Path,
-    config: &KotestTestConfig,
+    config: &ExternalFileTestConfig,
 ) -> Vec<TestExistenceViolation> {
     let mut violations = Vec::new();
 
@@ -22,7 +22,7 @@ pub fn validate(
     let source_package = extract_package_path(content);
 
     // Build test file path: {test_directory}/{package_path}/{ClassName}{suffix}.kt
-    let test_file_name = format!("{}{}.kt", class_name, config.suffix);
+    let test_file_name = format!("{}{}.kt", class_name, config.test_file_suffix);
     let test_path = if let Some(pkg_path) = &source_package {
         root_dir.join(&config.test_directory).join(pkg_path).join(&test_file_name)
     } else {
@@ -99,7 +99,11 @@ pub fn validate(
 }
 
 /// Build test file path from source file path
-fn build_test_path_from_file(relative_path: &Path, root_dir: &Path, config: &KotestTestConfig) -> std::path::PathBuf {
+fn build_test_path_from_file(
+    relative_path: &Path,
+    root_dir: &Path,
+    config: &ExternalFileTestConfig,
+) -> std::path::PathBuf {
     // Remove common source prefixes like src/main/kotlin/, src/, etc.
     let path_str = relative_path.to_string_lossy();
     let stripped = path_str
@@ -110,7 +114,7 @@ fn build_test_path_from_file(relative_path: &Path, root_dir: &Path, config: &Kot
 
     // Replace .kt with {suffix}.kt
     let test_file = if let Some(base) = stripped.strip_suffix(".kt") {
-        format!("{}{}.kt", base, config.suffix)
+        format!("{}{}.kt", base, config.test_file_suffix)
     } else {
         stripped.to_string()
     };

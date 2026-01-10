@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use super::{PhpUnitTestConfig, TestExistenceViolation, TestExistenceViolationKind};
+use super::{ExternalFileTestConfig, TestExistenceViolation, TestExistenceViolationKind};
 use crate::rule::parser::TestRequireLevel;
 
 /// Validate test existence for a PHP source file
@@ -8,7 +8,7 @@ pub fn validate(
     file_path: &Path,
     content: &str,
     root_dir: &Path,
-    config: &PhpUnitTestConfig,
+    config: &ExternalFileTestConfig,
 ) -> Vec<TestExistenceViolation> {
     let mut violations = Vec::new();
 
@@ -22,7 +22,7 @@ pub fn validate(
     let source_namespace = extract_namespace_path(content);
 
     // Build test file path: {test_directory}/{namespace_path}/{ClassName}{suffix}.php
-    let test_file_name = format!("{}{}.php", class_name, config.suffix);
+    let test_file_name = format!("{}{}.php", class_name, config.test_file_suffix);
     let test_path = if let Some(ns_path) = &source_namespace {
         root_dir.join(&config.test_directory).join(ns_path).join(&test_file_name)
     } else {
@@ -99,7 +99,11 @@ pub fn validate(
 }
 
 /// Build test file path from source file path
-fn build_test_path_from_file(relative_path: &Path, root_dir: &Path, config: &PhpUnitTestConfig) -> std::path::PathBuf {
+fn build_test_path_from_file(
+    relative_path: &Path,
+    root_dir: &Path,
+    config: &ExternalFileTestConfig,
+) -> std::path::PathBuf {
     // Remove common source prefixes like src/, src/main/php/, etc.
     let path_str = relative_path.to_string_lossy();
     let stripped = path_str
@@ -110,7 +114,7 @@ fn build_test_path_from_file(relative_path: &Path, root_dir: &Path, config: &Php
 
     // Replace .php with {suffix}.php
     let test_file = if let Some(base) = stripped.strip_suffix(".php") {
-        format!("{}{}.php", base, config.suffix)
+        format!("{}{}.php", base, config.test_file_suffix)
     } else {
         stripped.to_string()
     };

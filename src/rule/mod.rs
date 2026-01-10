@@ -11,8 +11,8 @@ use regex::Regex;
 use crate::matcher::Matcher;
 use crate::validate::comment::custom::{BlockSyntax, CustomCommentSyntax};
 use crate::validate::doc::{KotlinDocConfig, PhpDocConfig, RustDocConfig};
-use crate::validate::test::exists::{KotestTestConfig, PhpUnitTestConfig, RustTestConfig, RustUnitTestConfig};
-use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, TestRequireLevel, TestRequireLevelRust, Visibility};
+use crate::validate::test::exists::{ExternalFileTestConfig, SameFileTestConfig};
+use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, TestRequireLevel, Visibility};
 
 #[derive(Clone, Debug)]
 pub enum Rule {
@@ -28,9 +28,9 @@ pub enum Rule {
     KotestTest(TestRule),
     RustTest(TestRule),
     // Test existence rules
-    PhpUnitTestExistence(TestExistenceRule<PhpUnitTestConfig>),
-    KotestTestExistence(TestExistenceRule<KotestTestConfig>),
-    RustTestExistence(TestExistenceRule<RustTestConfig>),
+    PhpUnitTestExistence(TestExistenceRule<ExternalFileTestConfig>),
+    KotestTestExistence(TestExistenceRule<ExternalFileTestConfig>),
+    RustTestExistence(TestExistenceRule<SameFileTestConfig>),
 }
 
 impl Rule {
@@ -201,38 +201,43 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
 
     match raw.type_.as_str() {
         "forbidden_texts" => {
-            let keywords = raw
-                .keywords
-                .ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_texts' requires 'keywords'", raw.label))?;
+            let texts =
+                raw.texts.ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_texts' requires 'texts'", raw.label))?;
             if raw.exec.is_some() {
                 return Err(anyhow!("Rule '{}': type 'forbidden_texts' must not have 'exec'", raw.label));
             }
-            Ok(Rule::Text(TextRule { label: raw.label, keywords, message: raw.message, matcher }))
+            Ok(Rule::Text(TextRule { label: raw.label, keywords: texts, message: raw.message, matcher }))
         }
         "forbidden_patterns" => {
-            let keywords = raw
-                .keywords
-                .ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_patterns' requires 'keywords'", raw.label))?;
+            let pattern_strs = raw
+                .patterns
+                .ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_patterns' requires 'patterns'", raw.label))?;
             if raw.exec.is_some() {
                 return Err(anyhow!("Rule '{}': type 'forbidden_patterns' must not have 'exec'", raw.label));
             }
-            let patterns = keywords
+            let patterns = pattern_strs
                 .iter()
                 .map(|k| Regex::new(k).map_err(|e| anyhow!("Rule '{}': invalid regex '{}': {}", raw.label, k, e)))
                 .collect::<Result<Vec<_>>>()?;
-            Ok(Rule::Regex(RegexRule { label: raw.label, patterns, keywords, message: raw.message, matcher }))
+            Ok(Rule::Regex(RegexRule {
+                label: raw.label,
+                patterns,
+                keywords: pattern_strs,
+                message: raw.message,
+                matcher,
+            }))
         }
         "custom" => {
             let exec = raw.exec.ok_or_else(|| anyhow!("Rule '{}': type 'custom' requires 'exec'", raw.label))?;
-            if raw.keywords.is_some() {
-                return Err(anyhow!("Rule '{}': type 'custom' must not have 'keywords'", raw.label));
+            if raw.texts.is_some() || raw.patterns.is_some() {
+                return Err(anyhow!("Rule '{}': type 'custom' must not have 'texts' or 'patterns'", raw.label));
             }
             Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, matcher }))
         }
         "require_php_doc" => {
             let raw_config = raw
-                .php_doc
-                .ok_or_else(|| anyhow!("Rule '{}': type 'require_php_doc' requires 'php_doc' config", raw.label))?;
+                .option
+                .ok_or_else(|| anyhow!("Rule '{}': type 'require_php_doc' requires 'option' config", raw.label))?;
             if raw_config.class.is_none()
                 && raw_config.interface.is_none()
                 && raw_config.trait_.is_none()
@@ -240,7 +245,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 && raw_config.function.is_none()
             {
                 return Err(anyhow!(
-                    "Rule '{}': 'php_doc' config requires at least one element (class, interface, trait, enum, function)",
+                    "Rule '{}': 'option' config requires at least one element (class, interface, trait, enum, function)",
                     raw.label
                 ));
             }
@@ -254,9 +259,9 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             Ok(Rule::PhpDoc(PhpDocRule { label: raw.label, config, message: raw.message, matcher }))
         }
         "require_kotlin_doc" => {
-            let raw_config = raw.kotlin_doc.ok_or_else(|| {
-                anyhow!("Rule '{}': type 'require_kotlin_doc' requires 'kotlin_doc' config", raw.label)
-            })?;
+            let raw_config = raw
+                .option
+                .ok_or_else(|| anyhow!("Rule '{}': type 'require_kotlin_doc' requires 'option' config", raw.label))?;
             if raw_config.class.is_none()
                 && raw_config.interface.is_none()
                 && raw_config.object.is_none()
@@ -269,7 +274,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 && raw_config.typealias.is_none()
                 && raw_config.function.is_none()
             {
-                return Err(anyhow!("Rule '{}': 'kotlin_doc' config requires at least one element", raw.label));
+                return Err(anyhow!("Rule '{}': 'option' config requires at least one element", raw.label));
             }
             let config = KotlinDocConfig {
                 class: raw_config.class.map(convert_visibility),
@@ -288,8 +293,8 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
         }
         "require_rust_doc" => {
             let raw_config = raw
-                .rust_doc
-                .ok_or_else(|| anyhow!("Rule '{}': type 'require_rust_doc' requires 'rust_doc' config", raw.label))?;
+                .option
+                .ok_or_else(|| anyhow!("Rule '{}': type 'require_rust_doc' requires 'option' config", raw.label))?;
             if raw_config.struct_.is_none()
                 && raw_config.enum_.is_none()
                 && raw_config.trait_.is_none()
@@ -299,7 +304,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
                 && raw_config.macro_rules.is_none()
                 && raw_config.mod_.is_none()
             {
-                return Err(anyhow!("Rule '{}': 'rust_doc' config requires at least one element", raw.label));
+                return Err(anyhow!("Rule '{}': 'option' config requires at least one element", raw.label));
             }
             let config = RustDocConfig {
                 struct_: raw_config.struct_.map(convert_visibility),
@@ -331,11 +336,11 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             Ok(Rule::RustTest(TestRule { label: raw.label, message: raw.message, matcher }))
         }
         "require_phpunit_test" => {
-            let raw_config = raw.phpunit_test.unwrap_or_default();
-            let config = PhpUnitTestConfig {
+            let raw_config = raw.option.unwrap_or_default();
+            let config = ExternalFileTestConfig {
                 test_directory: raw_config.test_directory.unwrap_or_else(|| "tests".to_string()),
-                require: raw_config.require.unwrap_or(TestRequireLevel::FileExists),
-                suffix: raw_config.suffix.unwrap_or_else(|| "Test".to_string()),
+                require: raw_config.require.unwrap_or(TestRequireLevel::Exists),
+                test_file_suffix: raw_config.test_file_suffix.unwrap_or_else(|| "Test".to_string()),
             };
             Ok(Rule::PhpUnitTestExistence(TestExistenceRule {
                 label: raw.label,
@@ -345,20 +350,17 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             }))
         }
         "require_kotest_test" => {
-            let raw_config = raw.kotest_test.unwrap_or_default();
-            let config = KotestTestConfig {
+            let raw_config = raw.option.unwrap_or_default();
+            let config = ExternalFileTestConfig {
                 test_directory: raw_config.test_directory.unwrap_or_else(|| "src/test/kotlin".to_string()),
-                require: raw_config.require.unwrap_or(TestRequireLevel::FileExists),
-                suffix: raw_config.suffix.unwrap_or_else(|| "Test".to_string()),
+                require: raw_config.require.unwrap_or(TestRequireLevel::Exists),
+                test_file_suffix: raw_config.test_file_suffix.unwrap_or_else(|| "Test".to_string()),
             };
             Ok(Rule::KotestTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
         }
-        "require_rust_test" => {
-            let raw_config = raw.rust_test.unwrap_or_default();
-            let unit = raw_config
-                .unit
-                .map(|u| RustUnitTestConfig { require: u.require.unwrap_or(TestRequireLevelRust::Exists) });
-            let config = RustTestConfig { unit };
+        "require_rust_unit_test" => {
+            let raw_config = raw.option.unwrap_or_default();
+            let config = SameFileTestConfig { require: raw_config.require.unwrap_or(TestRequireLevel::Exists) };
             Ok(Rule::RustTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
         }
         other => Err(anyhow!("Rule '{}': unknown type '{}'", raw.label, other)),
@@ -373,7 +375,7 @@ fn convert_visibility(vis: parser::Visibility) -> Visibility {
 }
 
 fn convert_comment_source(raw: &RawRule) -> Result<CommentSource> {
-    let config = raw.comment.as_ref().ok_or_else(|| anyhow!("Rule '{}': comment config is required", raw.label))?;
+    let config = raw.format.as_ref().ok_or_else(|| anyhow!("Rule '{}': format config is required", raw.label))?;
 
     // lang and custom are mutually exclusive
     match (&config.lang, &config.custom) {

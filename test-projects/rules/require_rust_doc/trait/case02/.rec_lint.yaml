@@ -1,6 +1,6 @@
 rule:
   - label: trait_doc
     type: require_rust_doc
-    rust_doc:
+    option:
       trait: public
     message: RustDocを書いてください

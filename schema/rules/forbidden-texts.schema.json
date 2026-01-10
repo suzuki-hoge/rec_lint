@@ -15,14 +15,14 @@
             "type",
             "label",
             "message",
-            "keywords"
+            "texts"
           ],
           "properties": {
             "type": {
               "x-property-order": 0,
               "const": "forbidden_texts"
             },
-            "keywords": {
+            "texts": {
               "x-property-order": 1,
               "description": "validate で探す禁止キーワード",
               "type": "array",

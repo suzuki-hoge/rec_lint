@@ -21,7 +21,7 @@
               "x-property-order": 0,
               "const": "require_php_doc"
             },
-            "php_doc": {
+            "option": {
               "x-property-order": 1,
               "description": "PHPDoc 検証設定",
               "$ref": "#/definitions/phpDocConfig"

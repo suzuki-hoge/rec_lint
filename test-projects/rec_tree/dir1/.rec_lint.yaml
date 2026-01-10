@@ -1,7 +1,7 @@
 rule:
   - label: dir1-rule
     type: forbidden_texts
-    keywords: [AAA]
+    texts: [AAA]
     message: dir1 violation
 
 guideline:

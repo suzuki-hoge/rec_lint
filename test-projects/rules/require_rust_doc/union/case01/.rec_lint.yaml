@@ -1,6 +1,6 @@
 rule:
   - label: union_doc
     type: require_rust_doc
-    rust_doc:
+    option:
       union: all
     message: RustDocを書いてください

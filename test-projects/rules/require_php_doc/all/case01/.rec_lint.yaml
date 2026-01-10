@@ -1,7 +1,7 @@
 rule:
   - label: php_doc_all
     type: require_php_doc
-    php_doc:
+    option:
       class: all
       interface: all
       trait: all

@@ -1,5 +1,5 @@
 rule:
   - label: forbidden_patterns_check
     type: forbidden_patterns
-    keywords: ["a.b"]
+    patterns: ["a.b"]
     message: パターン違反

@@ -11,7 +11,7 @@ KDoc がないファイルを検出する
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | type | `require_kotlin_doc` | o |  |
-| kotlin_doc | [kotlinDocConfig](#kotlindocconfig) | - | KDoc 検証設定 |
+| option | [kotlinDocConfig](#kotlindocconfig) | - | KDoc 検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |
 | match | [matchItem](./common.md#matchitem)[] | - | show と validation で対象とするファイルの条件<br>複数指定時は and で結合 |

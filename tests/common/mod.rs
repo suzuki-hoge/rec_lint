@@ -5,10 +5,12 @@ pub fn test_project_path(subpath: impl AsRef<Path>) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test-projects").join(subpath)
 }
 
+#[allow(dead_code)]
 pub fn project_dir(name: &str) -> PathBuf {
     test_project_path(Path::new("rules").join(name))
 }
 
+#[allow(dead_code)]
 pub fn project_file(name: &str, relative: impl AsRef<Path>) -> PathBuf {
     project_dir(name).join(relative)
 }

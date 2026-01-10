@@ -70,7 +70,7 @@
           "$ref": "rules/require-kotest-test.schema.json#/definitions/kotestTestRule"
         },
         {
-          "$ref": "rules/require-rust-test.schema.json#/definitions/rustTestRule"
+          "$ref": "rules/require-rust-unit-test.schema.json#/definitions/rustUnitTestRule"
         }
       ]
     }

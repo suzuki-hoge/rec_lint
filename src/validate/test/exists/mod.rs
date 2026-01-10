@@ -2,7 +2,7 @@ pub mod kotest;
 pub mod phpunit;
 pub mod rust;
 
-use crate::rule::parser::{TestRequireLevel, TestRequireLevelRust};
+use crate::rule::parser::TestRequireLevel;
 
 /// A test existence violation (missing test file or untested public method)
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,52 +42,22 @@ impl std::fmt::Display for TestExistenceViolationKind {
     }
 }
 
-/// Config for PHPUnit test existence checks
+/// Config for external file test existence checks (PHPUnit, Kotest)
 #[derive(Debug, Clone)]
-pub struct PhpUnitTestConfig {
+pub struct ExternalFileTestConfig {
     pub test_directory: String,
     pub require: TestRequireLevel,
-    pub suffix: String,
+    pub test_file_suffix: String,
 }
 
-impl Default for PhpUnitTestConfig {
-    fn default() -> Self {
-        Self { test_directory: "tests".to_string(), require: TestRequireLevel::FileExists, suffix: "Test".to_string() }
-    }
-}
-
-/// Config for Kotest test existence checks
+/// Config for same file test existence checks (Rust unit test)
 #[derive(Debug, Clone)]
-pub struct KotestTestConfig {
-    pub test_directory: String,
+pub struct SameFileTestConfig {
     pub require: TestRequireLevel,
-    pub suffix: String,
 }
 
-impl Default for KotestTestConfig {
+impl Default for SameFileTestConfig {
     fn default() -> Self {
-        Self {
-            test_directory: "src/test/kotlin".to_string(),
-            require: TestRequireLevel::FileExists,
-            suffix: "Test".to_string(),
-        }
-    }
-}
-
-/// Config for Rust test existence checks
-#[derive(Debug, Clone, Default)]
-pub struct RustTestConfig {
-    pub unit: Option<RustUnitTestConfig>,
-}
-
-/// Config for Rust unit test checks
-#[derive(Debug, Clone)]
-pub struct RustUnitTestConfig {
-    pub require: TestRequireLevelRust,
-}
-
-impl Default for RustUnitTestConfig {
-    fn default() -> Self {
-        Self { require: TestRequireLevelRust::Exists }
+        Self { require: TestRequireLevel::Exists }
     }
 }

@@ -1,5 +1,5 @@
 rule:
   - label: valid-root
     type: forbidden_texts
-    keywords: [TODO]
+    texts: [TODO]
     message: TODO found

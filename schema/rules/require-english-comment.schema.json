@@ -15,14 +15,14 @@
             "type",
             "label",
             "message",
-            "comment"
+            "format"
           ],
           "properties": {
             "type": {
               "x-property-order": 0,
               "const": "require_english_comment"
             },
-            "comment": {
+            "format": {
               "x-property-order": 1,
               "description": "コメント構文設定",
               "$ref": "#/definitions/commentConfig"

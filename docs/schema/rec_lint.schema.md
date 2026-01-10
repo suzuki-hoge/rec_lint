@@ -24,7 +24,7 @@
 | `require_japanese_rust_test_name` | Rust テスト名が日本語でないファイルを検出 | [詳細](./rules/require-japanese-rust-test-name.md) |
 | `require_phpunit_test` | PHPUnit テストファイルの存在を検証 | [詳細](./rules/require-phpunit-test.md) |
 | `require_kotest_test` | Kotest テストファイルの存在を検証 | [詳細](./rules/require-kotest-test.md) |
-| `require_rust_test` | Rust テストの存在を検証 | [詳細](./rules/require-rust-test.md) |
+| `require_rust_unit_test` | Rust ユニットテストの存在を検証 | [詳細](./rules/require-rust-unit-test.md) |
 
 ## 共通定義
 

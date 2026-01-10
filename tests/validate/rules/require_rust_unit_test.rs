@@ -4,7 +4,7 @@ mod common;
 use rec_lint::commands::SortMode;
 
 fn validate_file(mode: &str, relative: &str) -> Vec<String> {
-    let file = common::project_dir("require_rust_test").join(mode).join("src").join(relative);
+    let file = common::project_dir("require_rust_unit_test").join(mode).join("src").join(relative);
     rec_lint::commands::validate::run(&[file], SortMode::Rule).unwrap()
 }
 

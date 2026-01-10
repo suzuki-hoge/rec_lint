@@ -1,5 +1,5 @@
 rule:
   - label: forbidden_texts_check
     type: forbidden_texts
-    keywords: [foo, bar]
+    texts: [foo, bar]
     message: テキスト違反

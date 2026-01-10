@@ -29,7 +29,7 @@ const REQUIRE_JAPANESE_RUST_TEST_NAME_SCHEMA: &str =
     include_str!("../../../schema/rules/require-japanese-rust-test-name.schema.json");
 const REQUIRE_PHPUNIT_TEST_SCHEMA: &str = include_str!("../../../schema/rules/require-phpunit-test.schema.json");
 const REQUIRE_KOTEST_TEST_SCHEMA: &str = include_str!("../../../schema/rules/require-kotest-test.schema.json");
-const REQUIRE_RUST_TEST_SCHEMA: &str = include_str!("../../../schema/rules/require-rust-test.schema.json");
+const REQUIRE_RUST_UNIT_TEST_SCHEMA: &str = include_str!("../../../schema/rules/require-rust-unit-test.schema.json");
 
 struct EmbeddedSchemaRetriever;
 
@@ -60,7 +60,7 @@ impl Retrieve for EmbeddedSchemaRetriever {
             p if p.ends_with("require-japanese-rust-test-name.schema.json") => REQUIRE_JAPANESE_RUST_TEST_NAME_SCHEMA,
             p if p.ends_with("require-phpunit-test.schema.json") => REQUIRE_PHPUNIT_TEST_SCHEMA,
             p if p.ends_with("require-kotest-test.schema.json") => REQUIRE_KOTEST_TEST_SCHEMA,
-            p if p.ends_with("require-rust-test.schema.json") => REQUIRE_RUST_TEST_SCHEMA,
+            p if p.ends_with("require-rust-unit-test.schema.json") => REQUIRE_RUST_UNIT_TEST_SCHEMA,
             _ => return Err(format!("Unknown schema: {path}").into()),
         };
 

@@ -1,7 +1,7 @@
 rule:
   - label: kotlin_doc_all
     type: require_kotlin_doc
-    kotlin_doc:
+    option:
       class: all
       interface: all
       function: all

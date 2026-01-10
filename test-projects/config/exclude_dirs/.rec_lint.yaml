@@ -1,7 +1,7 @@
 rule:
   - label: exclude test
     type: forbidden_texts
-    keywords: [NGWORD]
+    texts: [NGWORD]
     message: exclude対象テスト
     match:
       - pattern: path_contains

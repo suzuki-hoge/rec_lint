@@ -1,8 +1,8 @@
 rule:
   - label: phpunit_test_check
     type: require_phpunit_test
-    phpunit_test:
-      require: file_exists
+    option:
+      require: exists
       test_directory: tests
-      suffix: Test
+      test_file_suffix: Test
     message: テストファイルが必要です

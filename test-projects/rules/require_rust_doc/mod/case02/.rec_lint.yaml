@@ -1,6 +1,6 @@
 rule:
   - label: mod_doc
     type: require_rust_doc
-    rust_doc:
+    option:
       mod: public
     message: RustDocを書いてください

@@ -1,13 +1,4 @@
 # yaml-language-server: $schema=../..//schema/rec_lint.schema.json
 
-rule:
-  - type: require_rust_test
-    label: Integration Test 必須
-    message: すべての public 関数を tests/ に integration test として実装してください
-    rust_test:
-      integration:
-        require: all_public
-        test_directory: tests
-
 guideline:
   - message: 1 ファイルに 1 ルールを実装する

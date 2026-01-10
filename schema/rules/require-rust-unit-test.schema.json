@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "noEnglishCommentRule": {
+    "rustUnitTestRule": {
       "x-doc-order": 1,
-      "title": "NoEnglishCommentRule",
-      "description": "コメントが英語のファイルを検出する",
+      "title": "RustUnitTestRule",
+      "description": "Rust ユニットテストの存在を検証する",
       "allOf": [
         {
           "$ref": "common.schema.json#/definitions/ruleBase"
@@ -14,18 +14,17 @@
           "required": [
             "type",
             "label",
-            "message",
-            "format"
+            "message"
           ],
           "properties": {
             "type": {
               "x-property-order": 0,
-              "const": "require_japanese_comment"
+              "const": "require_rust_unit_test"
             },
-            "format": {
+            "option": {
               "x-property-order": 1,
-              "description": "コメント構文設定",
-              "$ref": "require-english-comment.schema.json#/definitions/commentConfig"
+              "description": "Rust ユニットテスト存在検証設定",
+              "$ref": "common.schema.json#/definitions/sameFileTestConfig"
             }
           }
         }

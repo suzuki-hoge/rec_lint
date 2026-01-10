@@ -53,21 +53,30 @@ Doc コメントを強制する対象の可視性
 | `public` | その言語における public のコードのみ検証 |
 | `all` | すべての可視性を検証 |
 
-## TestRequireLevelExternalFile
+## TestRequireLevel
 
-テスト存在検証レベル (外部ファイル)
-
-| 値 | 説明 |
-|----|------|
-| `file_exists` | テストファイルが存在すること |
-| `all_public` | 全 public メソッドがテストで呼ばれること |
-
-## TestRequireLevelSameFile
-
-テスト存在検証レベル (同一ファイル)
+テスト存在検証レベル
 
 | 値 | 説明 |
 |----|------|
 | `exists` | テストが存在すること |
-| `all_public` | 全 pub 関数がテストで呼ばれること |
+| `all_public` | 全 public メソッド/関数がテストで呼ばれること |
+
+## ExternalFileTestConfig
+
+外部ファイルテスト存在検証設定 (PHPUnit, Kotest)
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| test_directory | string | - | テストディレクトリのパス |
+| test_file_suffix | string | - | テストファイル名のサフィックス |
+| require | [testRequireLevel](#testrequirelevel) | - | 検証レベル |
+
+## SameFileTestConfig
+
+同一ファイルテスト存在検証設定 (Rust unit test)
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|:---:|------|
+| require | [testRequireLevel](#testrequirelevel) | - | 検証レベル |
 

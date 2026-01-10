@@ -1,5 +1,5 @@
 rule:
   - label: forbidden_texts_check
     type: forbidden_texts
-    keywords: [END]
+    texts: [END]
     message: テキスト違反

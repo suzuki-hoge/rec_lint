@@ -1,5 +1,5 @@
 rule:
   - label: include test
     type: forbidden_texts
-    keywords: [NGWORD]
+    texts: [NGWORD]
     message: include対象テスト

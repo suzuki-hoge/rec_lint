@@ -1,27 +1,24 @@
-use super::{RustTestConfig, TestExistenceViolation, TestExistenceViolationKind};
-use crate::rule::parser::TestRequireLevelRust;
+use super::{SameFileTestConfig, TestExistenceViolation, TestExistenceViolationKind};
+use crate::rule::parser::TestRequireLevel;
 
 /// Validate test existence for a Rust source file
-pub fn validate(content: &str, config: &RustTestConfig) -> Vec<TestExistenceViolation> {
+pub fn validate(content: &str, config: &SameFileTestConfig) -> Vec<TestExistenceViolation> {
     let mut violations = Vec::new();
 
-    // Check unit tests
-    if let Some(unit_config) = &config.unit {
-        let has_test_module = has_test_module_or_function(content);
+    let has_test_module = has_test_module_or_function(content);
 
-        if !has_test_module {
-            violations.push(TestExistenceViolation { kind: TestExistenceViolationKind::MissingUnitTest });
-        } else if unit_config.require == TestRequireLevelRust::AllPublic {
-            // Check that all public functions are tested
-            let test_content = extract_test_module_content(content);
-            let public_functions = extract_public_functions(content);
+    if !has_test_module {
+        violations.push(TestExistenceViolation { kind: TestExistenceViolationKind::MissingUnitTest });
+    } else if config.require == TestRequireLevel::AllPublic {
+        // Check that all public functions are tested
+        let test_content = extract_test_module_content(content);
+        let public_functions = extract_public_functions(content);
 
-            for (line, func_name) in public_functions {
-                if !test_content.contains(&func_name) {
-                    violations.push(TestExistenceViolation {
-                        kind: TestExistenceViolationKind::UntestedPublicFunction { line, function_name: func_name },
-                    });
-                }
+        for (line, func_name) in public_functions {
+            if !test_content.contains(&func_name) {
+                violations.push(TestExistenceViolation {
+                    kind: TestExistenceViolationKind::UntestedPublicFunction { line, function_name: func_name },
+                });
             }
         }
     }

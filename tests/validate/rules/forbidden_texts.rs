@@ -4,7 +4,6 @@ mod common;
 use rec_lint::commands::SortMode;
 
 fn run(case: &str, file: &str) -> Vec<String> {
-    let path = format!("forbidden_texts/{case}/{file}");
     let file = common::project_file("forbidden_texts", format!("{case}/{file}"));
     rec_lint::commands::validate::run(&[file], SortMode::Rule).unwrap()
 }

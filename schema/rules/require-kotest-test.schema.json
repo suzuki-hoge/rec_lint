@@ -21,41 +21,15 @@
               "x-property-order": 0,
               "const": "require_kotest_test"
             },
-            "kotest_test": {
+            "option": {
               "x-property-order": 1,
               "description": "Kotest テスト存在検証設定",
-              "$ref": "#/definitions/kotestTestConfig"
+              "x-doc-description": "Kotest テスト存在検証設定<br>test_directory のデフォルトは src/test/kotlin",
+              "$ref": "common.schema.json#/definitions/externalFileTestConfig"
             }
           }
         }
       ]
-    },
-    "kotestTestConfig": {
-      "x-doc-order": 2,
-      "title": "KotestTestConfig",
-      "description": "Kotest テスト存在検証設定",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "test_directory": {
-          "x-property-order": 0,
-          "description": "テストディレクトリのパス",
-          "type": "string",
-          "default": "src/test/kotlin"
-        },
-        "require": {
-          "x-property-order": 1,
-          "description": "検証レベル",
-          "$ref": "common.schema.json#/definitions/testRequireLevelExternalFile",
-          "default": "file_exists"
-        },
-        "suffix": {
-          "x-property-order": 2,
-          "description": "テストファイル名のサフィックス",
-          "type": "string",
-          "default": "Test"
-        }
-      }
     }
   }
 }

@@ -1,7 +1,7 @@
 rule:
   - label: comment_rule
     type: require_japanese_comment
-    comment:
+    format:
       custom:
         lines:
           - "#"

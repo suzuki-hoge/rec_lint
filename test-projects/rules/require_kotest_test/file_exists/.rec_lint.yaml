@@ -1,8 +1,8 @@
 rule:
   - label: kotest_test_exists
     type: require_kotest_test
-    kotest_test:
+    option:
       test_directory: src/test/kotlin
-      require: file_exists
-      suffix: Test
+      require: exists
+      test_file_suffix: Test
     message: テストファイルが必要です

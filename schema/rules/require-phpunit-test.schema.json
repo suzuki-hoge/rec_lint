@@ -21,41 +21,15 @@
               "x-property-order": 0,
               "const": "require_phpunit_test"
             },
-            "phpunit_test": {
+            "option": {
               "x-property-order": 1,
               "description": "PHPUnit テスト存在検証設定",
-              "$ref": "#/definitions/phpunitTestConfig"
+              "x-doc-description": "PHPUnit テスト存在検証設定<br>test_directory のデフォルトは tests",
+              "$ref": "common.schema.json#/definitions/externalFileTestConfig"
             }
           }
         }
       ]
-    },
-    "phpunitTestConfig": {
-      "x-doc-order": 2,
-      "title": "PhpUnitTestConfig",
-      "description": "PHPUnit テスト存在検証設定",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "test_directory": {
-          "x-property-order": 0,
-          "description": "テストディレクトリのパス",
-          "type": "string",
-          "default": "tests"
-        },
-        "require": {
-          "x-property-order": 1,
-          "description": "検証レベル",
-          "$ref": "common.schema.json#/definitions/testRequireLevelExternalFile",
-          "default": "file_exists"
-        },
-        "suffix": {
-          "x-property-order": 2,
-          "description": "テストファイル名のサフィックス",
-          "type": "string",
-          "default": "Test"
-        }
-      }
     }
   }
 }

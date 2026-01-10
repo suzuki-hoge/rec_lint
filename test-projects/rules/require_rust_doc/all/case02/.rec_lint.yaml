@@ -1,7 +1,7 @@
 rule:
   - label: all_doc
     type: require_rust_doc
-    rust_doc:
+    option:
       struct: public
       enum: public
       fn: public

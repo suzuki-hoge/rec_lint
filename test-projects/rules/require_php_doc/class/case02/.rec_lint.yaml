@@ -1,6 +1,6 @@
 rule:
   - label: php_doc_class_all
     type: require_php_doc
-    php_doc:
+    option:
       class: all
     message: PHPDocを書いてください

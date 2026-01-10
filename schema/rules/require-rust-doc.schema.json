@@ -21,7 +21,7 @@
               "x-property-order": 0,
               "const": "require_rust_doc"
             },
-            "rust_doc": {
+            "option": {
               "x-property-order": 1,
               "description": "rustdoc 検証設定",
               "$ref": "#/definitions/rustDocConfig"

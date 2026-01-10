@@ -1,6 +1,6 @@
 rule:
   - label: カラム位置テスト
     type: forbidden_patterns
-    keywords:
+    patterns:
       - FORBIDDEN
     message: パターン違反

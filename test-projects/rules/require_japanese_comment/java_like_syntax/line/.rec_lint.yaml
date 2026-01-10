@@ -1,6 +1,6 @@
 rule:
   - label: comment_rule
     type: require_japanese_comment
-    comment:
+    format:
       lang: java
     message: コメントを日本語にしてください

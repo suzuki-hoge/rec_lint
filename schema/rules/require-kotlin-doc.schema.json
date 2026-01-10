@@ -21,7 +21,7 @@
               "x-property-order": 0,
               "const": "require_kotlin_doc"
             },
-            "kotlin_doc": {
+            "option": {
               "x-property-order": 1,
               "description": "KDoc 検証設定",
               "$ref": "#/definitions/kotlinDocConfig"

@@ -1,9 +1,9 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.3/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint.schema.json
 
 rule:
   - label: http 処理の禁止
     type: forbidden_patterns
-    keywords: [ "use.*Http" ]
+    patterns: [ "use.*Http" ]
     message: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること
     match:
       - pattern: file_ends_with

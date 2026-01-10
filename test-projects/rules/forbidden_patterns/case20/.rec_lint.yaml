@@ -1,6 +1,6 @@
 rule:
   - label: 大文字小文字無視テスト
     type: forbidden_patterns
-    keywords:
+    patterns:
       - "(?i)forbidden"
     message: パターン違反

@@ -135,55 +135,55 @@ pub struct RawCommentConfig {
 }
 
 // =============================================================================
-// Test existence validator config (require_phpunit_test, require_kotest_test, require_rust_test)
+// Test existence validator config (require_phpunit_test, require_kotest_test, require_rust_unit_test)
 // =============================================================================
 
-/// Require level for test existence (PHP/Kotlin)
+/// Require level for test existence
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum TestRequireLevel {
-    /// Test file must exist
-    FileExists,
-    /// All public methods must be tested
-    AllPublic,
-}
-
-/// Require level for test existence (Rust)
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum TestRequireLevelRust {
     /// Test must exist
     Exists,
-    /// All pub functions must be tested
+    /// All public methods/functions must be tested
     AllPublic,
 }
 
-/// Config for require_phpunit_test validator
+/// Unified option config for doc/test validators
+/// Contains all possible fields from PhpDoc, KotlinDoc, RustDoc, and Test configs
 #[derive(Clone, Debug, Deserialize, Default)]
-pub struct RawPhpUnitTestConfig {
+#[serde(default)]
+pub struct RawOptionConfig {
+    // PhpDocConfig fields
+    pub class: Option<Visibility>,
+    pub interface: Option<Visibility>,
+    #[serde(rename = "trait")]
+    pub trait_: Option<Visibility>,
+    #[serde(rename = "enum")]
+    pub enum_: Option<Visibility>,
+    pub function: Option<Visibility>,
+    // KotlinDocConfig additional fields
+    pub object: Option<Visibility>,
+    pub enum_class: Option<Visibility>,
+    pub sealed_class: Option<Visibility>,
+    pub sealed_interface: Option<Visibility>,
+    pub data_class: Option<Visibility>,
+    pub value_class: Option<Visibility>,
+    pub annotation_class: Option<Visibility>,
+    pub typealias: Option<Visibility>,
+    // RustDocConfig additional fields
+    #[serde(rename = "struct")]
+    pub struct_: Option<Visibility>,
+    pub type_alias: Option<Visibility>,
+    pub union: Option<Visibility>,
+    #[serde(rename = "fn")]
+    pub fn_: Option<Visibility>,
+    pub macro_rules: Option<Visibility>,
+    #[serde(rename = "mod")]
+    pub mod_: Option<Visibility>,
+    // Test config fields (PHPUnit/Kotest/Rust)
     pub test_directory: Option<String>,
     pub require: Option<TestRequireLevel>,
-    pub suffix: Option<String>,
-}
-
-/// Config for require_kotest_test validator
-#[derive(Clone, Debug, Deserialize, Default)]
-pub struct RawKotestTestConfig {
-    pub test_directory: Option<String>,
-    pub require: Option<TestRequireLevel>,
-    pub suffix: Option<String>,
-}
-
-/// Config for require_rust_test validator
-#[derive(Clone, Debug, Deserialize, Default)]
-pub struct RawRustTestConfig {
-    pub unit: Option<RawRustUnitTestConfig>,
-}
-
-/// Config for Rust unit test
-#[derive(Clone, Debug, Deserialize, Default)]
-pub struct RawRustUnitTestConfig {
-    pub require: Option<TestRequireLevelRust>,
+    pub test_file_suffix: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -198,22 +198,16 @@ pub struct RawRule {
     pub label: String,
     #[serde(default, rename = "type")]
     pub type_: String,
-    pub keywords: Option<Vec<String>>,
+    pub texts: Option<Vec<String>>,
+    pub patterns: Option<Vec<String>>,
     pub exec: Option<String>,
     #[serde(default)]
     pub message: String,
     #[serde(default, rename = "match")]
     pub match_: Vec<RawMatchItem>,
-    // Doc validator configs
-    pub php_doc: Option<RawPhpDocConfig>,
-    pub kotlin_doc: Option<RawKotlinDocConfig>,
-    pub rust_doc: Option<RawRustDocConfig>,
-    // Comment validator configs
-    pub comment: Option<RawCommentConfig>,
-    // Test existence validator configs
-    pub phpunit_test: Option<RawPhpUnitTestConfig>,
-    pub kotest_test: Option<RawKotestTestConfig>,
-    pub rust_test: Option<RawRustTestConfig>,
+    // Doc/Comment/Test validator configs (unified as "option" or "format")
+    pub option: Option<RawOptionConfig>,
+    pub format: Option<RawCommentConfig>,
 }
 
 #[derive(Deserialize)]

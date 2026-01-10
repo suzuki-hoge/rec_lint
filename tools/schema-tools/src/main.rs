@@ -102,8 +102,8 @@ const SCHEMAS: &[SchemaConfig] = &[
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-rust-test.schema.json",
-        output: "rules/require-rust-test.md",
+        input: "schema/rules/require-rust-unit-test.schema.json",
+        output: "rules/require-rust-unit-test.md",
         is_index: false,
     },
 ];
@@ -181,9 +181,9 @@ const RULE_TYPES: &[RuleTypeInfo] = &[
         doc_path: "./rules/require-kotest-test.md",
     },
     RuleTypeInfo {
-        type_name: "require_rust_test",
-        description: "Rust テストの存在を検証",
-        doc_path: "./rules/require-rust-test.md",
+        type_name: "require_rust_unit_test",
+        description: "Rust ユニットテストの存在を検証",
+        doc_path: "./rules/require-rust-unit-test.md",
     },
 ];
 

@@ -1,13 +1,13 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.3/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint.schema.json
 
 rule:
   - label: var_dump の禁止
     type: forbidden_texts
-    keywords: [ var_dump ]
+    texts: [ var_dump ]
     message: デバッグ残りは削除し、必要な出力は Logger を使うこと
 
   - label: public class の PHPDoc は必須
     type: require_php_doc
-    php_doc:
+    option:
       class: public
     message: PHPDoc を記述すること
