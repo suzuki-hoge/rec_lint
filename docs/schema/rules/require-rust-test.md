@@ -23,8 +23,6 @@ Rust テスト存在検証設定
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
 | unit | [rustUnitTestConfig](#rustunittestconfig) | - | ユニットテスト設定 |
-| integration | [rustIntegrationTestConfig](#rustintegrationtestconfig) | - | 統合テスト設定 |
-| suffix | string | - | テストファイル名のサフィックス (統合テスト用) |
 
 ## RustUnitTestConfig
 
@@ -32,14 +30,5 @@ Rust ユニットテスト設定
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| require | [testRequireLevelSameFile](./common.md#testrequirelevelsamefile) | - | 検証レベル |
-
-## RustIntegrationTestConfig
-
-Rust 統合テスト設定
-
-| フィールド | 型 | 必須 | 説明 |
-|-----------|-----|:---:|------|
-| test_directory | string | - | 統合テストディレクトリのパス |
 | require | [testRequireLevelSameFile](./common.md#testrequirelevelsamefile) | - | 検証レベル |
 

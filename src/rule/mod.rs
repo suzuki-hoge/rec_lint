@@ -11,9 +11,7 @@ use regex::Regex;
 use crate::matcher::Matcher;
 use crate::validate::comment::custom::{BlockSyntax, CustomCommentSyntax};
 use crate::validate::doc::{KotlinDocConfig, PhpDocConfig, RustDocConfig};
-use crate::validate::test::exists::{
-    KotestTestConfig, PhpUnitTestConfig, RustIntegrationTestConfig, RustTestConfig, RustUnitTestConfig,
-};
+use crate::validate::test::exists::{KotestTestConfig, PhpUnitTestConfig, RustTestConfig, RustUnitTestConfig};
 use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, TestRequireLevel, TestRequireLevelRust, Visibility};
 
 #[derive(Clone, Debug)]
@@ -360,12 +358,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             let unit = raw_config
                 .unit
                 .map(|u| RustUnitTestConfig { require: u.require.unwrap_or(TestRequireLevelRust::Exists) });
-            let integration = raw_config.integration.map(|i| RustIntegrationTestConfig {
-                test_directory: i.test_directory.unwrap_or_else(|| "tests".to_string()),
-                require: i.require.unwrap_or(TestRequireLevelRust::Exists),
-            });
-            let config =
-                RustTestConfig { unit, integration, suffix: raw_config.suffix.unwrap_or_else(|| "_test".to_string()) };
+            let config = RustTestConfig { unit };
             Ok(Rule::RustTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
         }
         other => Err(anyhow!("Rule '{}': unknown type '{}'", raw.label, other)),

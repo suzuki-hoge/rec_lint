@@ -1,15 +1,8 @@
-use std::path::Path;
-
 use super::{RustTestConfig, TestExistenceViolation, TestExistenceViolationKind};
 use crate::rule::parser::TestRequireLevelRust;
 
 /// Validate test existence for a Rust source file
-pub fn validate(
-    file_path: &Path,
-    content: &str,
-    root_dir: &Path,
-    config: &RustTestConfig,
-) -> Vec<TestExistenceViolation> {
+pub fn validate(content: &str, config: &RustTestConfig) -> Vec<TestExistenceViolation> {
     let mut violations = Vec::new();
 
     // Check unit tests
@@ -33,59 +26,7 @@ pub fn validate(
         }
     }
 
-    // Check integration tests
-    if let Some(integration_config) = &config.integration {
-        let relative_path = file_path.strip_prefix(root_dir).unwrap_or(file_path);
-        let test_path = build_integration_test_path(relative_path, root_dir, integration_config, &config.suffix);
-
-        if !test_path.exists() {
-            let expected = test_path.strip_prefix(root_dir).unwrap_or(&test_path);
-            violations.push(TestExistenceViolation {
-                kind: TestExistenceViolationKind::MissingIntegrationTestFile {
-                    expected_path: expected.display().to_string(),
-                },
-            });
-        } else if integration_config.require == TestRequireLevelRust::AllPublic {
-            // Check that all public functions are tested in integration tests
-            let test_content = std::fs::read_to_string(&test_path).unwrap_or_default();
-            let public_functions = extract_public_functions(content);
-
-            for (line, func_name) in public_functions {
-                if !test_content.contains(&func_name) {
-                    violations.push(TestExistenceViolation {
-                        kind: TestExistenceViolationKind::UntestedPublicFunction { line, function_name: func_name },
-                    });
-                }
-            }
-        }
-    }
-
     violations
-}
-
-/// Build integration test file path
-fn build_integration_test_path(
-    relative_path: &Path,
-    root_dir: &Path,
-    config: &super::RustIntegrationTestConfig,
-    suffix: &str,
-) -> std::path::PathBuf {
-    // Remove src/ prefix if present
-    let path_str = relative_path.to_string_lossy();
-    let stripped = path_str.strip_prefix("src/").unwrap_or(&path_str);
-
-    // Replace .rs with {suffix}.rs (or just .rs if suffix is empty)
-    let test_file = if let Some(base) = stripped.strip_suffix(".rs") {
-        if suffix.is_empty() {
-            format!("{base}.rs")
-        } else {
-            format!("{base}{suffix}.rs")
-        }
-    } else {
-        stripped.to_string()
-    };
-
-    root_dir.join(&config.test_directory).join(test_file)
 }
 
 /// Check if content has a test module or test functions

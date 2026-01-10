@@ -19,8 +19,6 @@ pub enum TestExistenceViolationKind {
     UntestedPublicMethod { line: usize, method_name: String },
     /// Unit test does not exist
     MissingUnitTest,
-    /// Integration test file does not exist
-    MissingIntegrationTestFile { expected_path: String },
     /// Public function not tested
     UntestedPublicFunction { line: usize, function_name: String },
 }
@@ -36,9 +34,6 @@ impl std::fmt::Display for TestExistenceViolationKind {
             }
             TestExistenceViolationKind::MissingUnitTest => {
                 write!(f, "ユニットテストが存在しません")
-            }
-            TestExistenceViolationKind::MissingIntegrationTestFile { expected_path } => {
-                write!(f, "統合テストファイルが存在しません: {expected_path}")
             }
             TestExistenceViolationKind::UntestedPublicFunction { line, function_name } => {
                 write!(f, "L{line}: pub 関数 `{function_name}` がテストされていません")
@@ -83,8 +78,6 @@ impl Default for KotestTestConfig {
 #[derive(Debug, Clone, Default)]
 pub struct RustTestConfig {
     pub unit: Option<RustUnitTestConfig>,
-    pub integration: Option<RustIntegrationTestConfig>,
-    pub suffix: String,
 }
 
 /// Config for Rust unit test checks
@@ -96,18 +89,5 @@ pub struct RustUnitTestConfig {
 impl Default for RustUnitTestConfig {
     fn default() -> Self {
         Self { require: TestRequireLevelRust::Exists }
-    }
-}
-
-/// Config for Rust integration test checks
-#[derive(Debug, Clone)]
-pub struct RustIntegrationTestConfig {
-    pub test_directory: String,
-    pub require: TestRequireLevelRust,
-}
-
-impl Default for RustIntegrationTestConfig {
-    fn default() -> Self {
-        Self { test_directory: "tests".to_string(), require: TestRequireLevelRust::Exists }
     }
 }

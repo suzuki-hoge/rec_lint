@@ -313,7 +313,7 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
             }
         }
         Rule::RustTestExistence(rule) => {
-            let violations = test_exists::rust::validate(file, content, root_dir, &rule.config);
+            let violations = test_exists::rust::validate(content, &rule.config);
             if !violations.is_empty() {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),

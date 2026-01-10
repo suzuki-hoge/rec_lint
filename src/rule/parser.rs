@@ -178,20 +178,11 @@ pub struct RawKotestTestConfig {
 #[derive(Clone, Debug, Deserialize, Default)]
 pub struct RawRustTestConfig {
     pub unit: Option<RawRustUnitTestConfig>,
-    pub integration: Option<RawRustIntegrationTestConfig>,
-    pub suffix: Option<String>,
 }
 
 /// Config for Rust unit test
 #[derive(Clone, Debug, Deserialize, Default)]
 pub struct RawRustUnitTestConfig {
-    pub require: Option<TestRequireLevelRust>,
-}
-
-/// Config for Rust integration test
-#[derive(Clone, Debug, Deserialize, Default)]
-pub struct RawRustIntegrationTestConfig {
-    pub test_directory: Option<String>,
     pub require: Option<TestRequireLevelRust>,
 }
 

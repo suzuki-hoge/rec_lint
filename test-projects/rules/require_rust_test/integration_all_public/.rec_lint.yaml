@@ -1,8 +1,0 @@
-rule:
-  - label: rust_integration_test_all_public
-    type: require_rust_test
-    rust_test:
-      integration:
-        require: all_public
-        test_directory: tests
-    message: 全てのpublic関数にインテグレーションテストが必要です
