@@ -99,3 +99,15 @@ fn unit_all_public指定のとき一部のテストがなければエラーに�
         "#,
     );
 }
+
+// no_public mode tests
+
+#[test]
+fn exists指定でもモジュール再エクスポートのみのファイルはエラーにならない() {
+    expect_ok("no_public", "モジュール再エクスポートのみ.rs");
+}
+
+#[test]
+fn exists指定でもpub関数がないファイルはエラーにならない() {
+    expect_ok("no_public", "pub関数なし.rs");
+}

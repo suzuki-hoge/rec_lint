@@ -5,6 +5,12 @@ use crate::rule::parser::TestRequireLevel;
 pub fn validate(content: &str, config: &SameFileTestConfig) -> Vec<TestExistenceViolation> {
     let mut violations = Vec::new();
 
+    // Skip validation if there are no public functions to test
+    let public_functions = extract_public_functions(content);
+    if public_functions.is_empty() {
+        return violations;
+    }
+
     let has_test_module = has_test_module_or_function(content);
 
     if !has_test_module {
@@ -12,7 +18,6 @@ pub fn validate(content: &str, config: &SameFileTestConfig) -> Vec<TestExistence
     } else if config.require == TestRequireLevel::AllPublic {
         // Check that all public functions are tested
         let test_content = extract_test_module_content(content);
-        let public_functions = extract_public_functions(content);
 
         for (line, func_name) in public_functions {
             if !test_content.contains(&func_name) {

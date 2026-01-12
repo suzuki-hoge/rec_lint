@@ -18,6 +18,12 @@ pub fn validate(
         None => return violations, // No class found, skip validation
     };
 
+    // Skip validation if there are no public methods to test
+    let public_methods = extract_public_methods(content);
+    if public_methods.is_empty() {
+        return violations;
+    }
+
     // Build expected test file path using namespace
     let source_namespace = extract_namespace_path(content);
 
@@ -85,7 +91,6 @@ pub fn validate(
             std::fs::read_to_string(fallback_path).unwrap_or_default()
         };
 
-        let public_methods = extract_public_methods(content);
         for (line, method_name) in public_methods {
             if !test_content.contains(&method_name) {
                 violations.push(TestExistenceViolation {
