@@ -1,6 +1,6 @@
 rule:
-  - label: type_alias_doc
-    type: require_rust_doc
-    option:
-      type_alias: all
-    message: RustDocを書いてください
+  - require_rust_doc:
+      label: type_alias_doc
+      option:
+        type_alias: all
+      message: RustDocを書いてください

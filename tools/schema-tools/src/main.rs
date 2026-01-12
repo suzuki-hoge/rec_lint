@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
-use serde_json::Value;
+use serde_json::{json, Map, Value};
 use std::collections::BTreeMap;
+use std::env;
 use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -17,92 +18,92 @@ struct SchemaConfig {
 
 const SCHEMAS: &[SchemaConfig] = &[
     SchemaConfig {
-        input: "schema/rec_lint.schema.json",
+        input: "schema/parts/rec_lint.schema.json",
         output: "rec_lint.schema.md",
         is_index: true,
     },
     SchemaConfig {
-        input: "schema/rec_lint_config.schema.json",
+        input: "schema/parts/rec_lint_config.schema.json",
         output: "rec_lint_config.schema.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/common.schema.json",
+        input: "schema/parts/rules/common.schema.json",
         output: "rules/common.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/guideline.schema.json",
+        input: "schema/parts/rules/guideline.schema.json",
         output: "rules/guideline.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/forbidden-texts.schema.json",
+        input: "schema/parts/rules/forbidden-texts.schema.json",
         output: "rules/forbidden-texts.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/forbidden-patterns.schema.json",
+        input: "schema/parts/rules/forbidden-patterns.schema.json",
         output: "rules/forbidden-patterns.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/custom.schema.json",
+        input: "schema/parts/rules/custom.schema.json",
         output: "rules/custom.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-php-doc.schema.json",
+        input: "schema/parts/rules/require-php-doc.schema.json",
         output: "rules/require-php-doc.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-kotlin-doc.schema.json",
+        input: "schema/parts/rules/require-kotlin-doc.schema.json",
         output: "rules/require-kotlin-doc.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-rust-doc.schema.json",
+        input: "schema/parts/rules/require-rust-doc.schema.json",
         output: "rules/require-rust-doc.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-english-comment.schema.json",
+        input: "schema/parts/rules/require-english-comment.schema.json",
         output: "rules/require-english-comment.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-japanese-comment.schema.json",
+        input: "schema/parts/rules/require-japanese-comment.schema.json",
         output: "rules/require-japanese-comment.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-japanese-phpunit-test-name.schema.json",
+        input: "schema/parts/rules/require-japanese-phpunit-test-name.schema.json",
         output: "rules/require-japanese-phpunit-test-name.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-japanese-kotest-test-name.schema.json",
+        input: "schema/parts/rules/require-japanese-kotest-test-name.schema.json",
         output: "rules/require-japanese-kotest-test-name.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-japanese-rust-test-name.schema.json",
+        input: "schema/parts/rules/require-japanese-rust-test-name.schema.json",
         output: "rules/require-japanese-rust-test-name.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-phpunit-test.schema.json",
+        input: "schema/parts/rules/require-phpunit-test.schema.json",
         output: "rules/require-phpunit-test.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-kotest-test.schema.json",
+        input: "schema/parts/rules/require-kotest-test.schema.json",
         output: "rules/require-kotest-test.md",
         is_index: false,
     },
     SchemaConfig {
-        input: "schema/rules/require-rust-unit-test.schema.json",
+        input: "schema/parts/rules/require-rust-unit-test.schema.json",
         output: "rules/require-rust-unit-test.md",
         is_index: false,
     },
@@ -259,6 +260,16 @@ fn normalize_path(path: &Path) -> PathBuf {
 }
 
 fn main() -> Result<()> {
+    let args: Vec<String> = env::args().collect();
+    let command = args.get(1).map(|s| s.as_str()).unwrap_or("doc");
+
+    match command {
+        "bundle" => run_bundle(),
+        "doc" | _ => run_doc(),
+    }
+}
+
+fn run_doc() -> Result<()> {
     let repo_root = get_repo_root()?;
     let output_dir = repo_root.join(OUTPUT_DIR);
     let rules_output_dir = repo_root.join(RULES_OUTPUT_DIR);
@@ -291,6 +302,205 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn run_bundle() -> Result<()> {
+    let repo_root = get_repo_root()?;
+
+    // Bundle rec_lint.schema.json
+    bundle_schema(
+        &repo_root,
+        "schema/parts/rec_lint.schema.json",
+        "schema/rec_lint.schema.json",
+    )?;
+
+    // Bundle rec_lint_config.schema.json
+    bundle_schema(
+        &repo_root,
+        "schema/parts/rec_lint_config.schema.json",
+        "schema/rec_lint_config.schema.json",
+    )?;
+
+    Ok(())
+}
+
+fn bundle_schema(repo_root: &Path, input: &str, output: &str) -> Result<()> {
+    println!("Bundling: {} -> {}", input, output);
+
+    let input_path = repo_root.join(input);
+    let input_canonical = input_path.canonicalize()?;
+    let output_path = repo_root.join(output);
+
+    // Load all schema files
+    let mut file_cache: BTreeMap<PathBuf, Value> = BTreeMap::new();
+    load_schema_recursive(&input_path, &mut file_cache)?;
+
+    // Get the main schema
+    let main_schema = file_cache.get(&input_canonical).unwrap().clone();
+
+    // Collect all definitions from all files, resolving refs as we go
+    let mut all_definitions: Map<String, Value> = Map::new();
+    for (path, schema) in &file_cache {
+        if let Some(defs) = schema.get("definitions").and_then(|d| d.as_object()) {
+            let prefix = get_definition_prefix(path, &input_canonical);
+            for (name, def) in defs {
+                let full_name = if prefix.is_empty() {
+                    name.clone()
+                } else {
+                    format!("{}_{}", prefix, name)
+                };
+                // Resolve refs in this definition
+                let mut resolved_def = def.clone();
+                resolve_refs_in_value(&mut resolved_def, path, &input_canonical);
+                all_definitions.insert(full_name, resolved_def);
+            }
+        }
+    }
+
+    // Resolve all $ref in the main schema (excluding definitions which we handle separately)
+    let mut bundled = main_schema.clone();
+    resolve_refs_in_value(&mut bundled, &input_canonical, &input_canonical);
+
+    // Update definitions with resolved ones
+    if let Some(obj) = bundled.as_object_mut() {
+        obj.insert("definitions".to_string(), json!(all_definitions));
+    }
+
+    // Write output
+    let output_str = serde_json::to_string_pretty(&bundled)?;
+    fs::write(&output_path, output_str)?;
+    println!("Bundled: {}", output_path.display());
+
+    Ok(())
+}
+
+fn load_schema_recursive(path: &Path, cache: &mut BTreeMap<PathBuf, Value>) -> Result<()> {
+    let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    if cache.contains_key(&canonical) {
+        return Ok(());
+    }
+
+    let content = fs::read_to_string(path)
+        .with_context(|| format!("Failed to read: {}", path.display()))?;
+    let schema: Value = serde_json::from_str(&content)
+        .with_context(|| format!("Failed to parse: {}", path.display()))?;
+
+    cache.insert(canonical.clone(), schema.clone());
+
+    // Find all $ref and load referenced files
+    let refs = collect_refs(&schema);
+    let parent = path.parent().unwrap_or(Path::new("."));
+
+    for ref_path in refs {
+        if ref_path.starts_with('#') {
+            continue; // Same file reference
+        }
+        if let Some(file_part) = ref_path.split('#').next() {
+            if !file_part.is_empty() {
+                let referenced_path = parent.join(file_part);
+                load_schema_recursive(&referenced_path, cache)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn collect_refs(value: &Value) -> Vec<String> {
+    let mut refs = Vec::new();
+    collect_refs_recursive(value, &mut refs);
+    refs
+}
+
+fn collect_refs_recursive(value: &Value, refs: &mut Vec<String>) {
+    match value {
+        Value::Object(map) => {
+            if let Some(Value::String(ref_str)) = map.get("$ref") {
+                refs.push(ref_str.clone());
+            }
+            for v in map.values() {
+                collect_refs_recursive(v, refs);
+            }
+        }
+        Value::Array(arr) => {
+            for v in arr {
+                collect_refs_recursive(v, refs);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn get_definition_prefix(file_path: &Path, main_path: &Path) -> String {
+    if file_path == main_path {
+        return String::new();
+    }
+
+    let file_name = file_path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("");
+
+    // Remove .schema suffix if present
+    let name = file_name.trim_end_matches(".schema");
+
+    // Convert to snake_case identifier
+    name.replace('-', "_")
+}
+
+fn resolve_refs_in_value(value: &mut Value, current_file: &Path, main_file: &Path) {
+    match value {
+        Value::Object(map) => {
+            if let Some(Value::String(ref_str)) = map.get("$ref").cloned() {
+                let new_ref = resolve_ref_string(&ref_str, current_file, main_file);
+                map.insert("$ref".to_string(), json!(new_ref));
+            }
+            for v in map.values_mut() {
+                resolve_refs_in_value(v, current_file, main_file);
+            }
+        }
+        Value::Array(arr) => {
+            for v in arr {
+                resolve_refs_in_value(v, current_file, main_file);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn resolve_ref_string(ref_str: &str, current_file: &Path, main_file: &Path) -> String {
+    if ref_str.starts_with('#') {
+        // Same file reference - check if we need to add prefix
+        if current_file == main_file {
+            return ref_str.to_string();
+        }
+        let def_name = ref_str.trim_start_matches("#/definitions/");
+        let prefix = get_definition_prefix(current_file, main_file);
+        if prefix.is_empty() {
+            ref_str.to_string()
+        } else {
+            format!("#/definitions/{}_{}", prefix, def_name)
+        }
+    } else if ref_str.contains('#') {
+        // External file reference
+        let parts: Vec<&str> = ref_str.splitn(2, '#').collect();
+        let file_part = parts[0];
+        let def_part = parts.get(1).unwrap_or(&"");
+        let def_name = def_part.trim_start_matches("/definitions/");
+
+        let parent = current_file.parent().unwrap_or(Path::new("."));
+        let referenced_path = parent.join(file_part);
+        let canonical = referenced_path.canonicalize().unwrap_or(referenced_path);
+
+        let prefix = get_definition_prefix(&canonical, main_file);
+        if prefix.is_empty() {
+            format!("#/definitions/{}", def_name)
+        } else {
+            format!("#/definitions/{}_{}", prefix, def_name)
+        }
+    } else {
+        ref_str.to_string()
+    }
 }
 
 fn get_repo_root() -> Result<PathBuf> {
@@ -872,8 +1082,8 @@ fn ref_to_markdown_link_with_target(ref_path: &str, source_path: &str, target_do
 
 fn schema_path_to_md_path(schema_path: &str) -> String {
     let path = schema_path
-        .replace("schema/rules/", "docs/schema/rules/")
-        .replace("schema/", "docs/schema/")
+        .replace("schema/parts/rules/", "docs/schema/rules/")
+        .replace("schema/parts/", "docs/schema/")
         .replace(".schema.json", ".md");
 
     if path.ends_with(".json") {

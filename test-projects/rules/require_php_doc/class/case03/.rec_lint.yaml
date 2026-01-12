@@ -1,6 +1,6 @@
 rule:
-  - label: php_doc_class_public
-    type: require_php_doc
-    option:
-      class: public
-    message: PHPDocを書いてください
+  - require_php_doc:
+      label: php_doc_class_public
+      option:
+        class: public
+      message: PHPDocを書いてください

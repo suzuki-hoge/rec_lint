@@ -1,6 +1,6 @@
 rule:
-  - label: rust_unit_test_all_public
-    type: require_rust_unit_test
-    option:
-      require: all_public
-    message: 全てのpublic関数にテストが必要です
+  - require_rust_unit_test:
+      label: rust_unit_test_all_public
+      option:
+        require: all_public
+      message: 全てのpublic関数にテストが必要です

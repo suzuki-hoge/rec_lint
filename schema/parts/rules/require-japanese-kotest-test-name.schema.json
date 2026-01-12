@@ -12,16 +12,9 @@
         {
           "type": "object",
           "required": [
-            "type",
             "label",
             "message"
-          ],
-          "properties": {
-            "type": {
-              "x-property-order": 0,
-              "const": "require_japanese_kotest_test_name"
-            }
-          }
+          ]
         }
       ]
     }

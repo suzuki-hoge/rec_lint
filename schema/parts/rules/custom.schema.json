@@ -12,16 +12,11 @@
         {
           "type": "object",
           "required": [
-            "type",
             "label",
             "message",
             "exec"
           ],
           "properties": {
-            "type": {
-              "x-property-order": 0,
-              "const": "custom"
-            },
             "exec": {
               "x-property-order": 1,
               "description": "ファイルに対して実行するコマンド (終了コード 0 でエラーなし)",

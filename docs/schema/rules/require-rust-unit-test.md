@@ -1,4 +1,4 @@
-# require_rust_unit_test
+# RustUnitTestRule
 
 [← ルール一覧に戻る](../rec_lint.schema.md#rule-types)
 
@@ -10,7 +10,6 @@ Rust ユニットテストの存在を検証する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_rust_unit_test` | o |  |
 | option | [sameFileTestConfig](./common.md#samefiletestconfig) | - | Rust ユニットテスト存在検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |

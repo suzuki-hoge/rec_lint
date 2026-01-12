@@ -1,8 +1,8 @@
 rule:
-  - label: kotest_test_exists
-    type: require_kotest_test
-    option:
-      test_directory: src/test/kotlin
-      require: exists
-      test_file_suffix: Test
-    message: テストファイルが必要です
+  - require_kotest_test:
+      label: kotest_test_exists
+      option:
+        test_directory: src/test/kotlin
+        require: exists
+        test_file_suffix: Test
+      message: テストファイルが必要です

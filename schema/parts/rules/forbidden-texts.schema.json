@@ -12,16 +12,11 @@
         {
           "type": "object",
           "required": [
-            "type",
             "label",
             "message",
             "texts"
           ],
           "properties": {
-            "type": {
-              "x-property-order": 0,
-              "const": "forbidden_texts"
-            },
             "texts": {
               "x-property-order": 1,
               "description": "validate で探す禁止キーワード",

@@ -1,4 +1,4 @@
-# forbidden_texts
+# TextRule
 
 [← ルール一覧に戻る](../rec_lint.schema.md#rule-types)
 
@@ -10,7 +10,6 @@
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `forbidden_texts` | o |  |
 | texts | string[] | o | validate で探す禁止キーワード |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |

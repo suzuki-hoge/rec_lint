@@ -1,6 +1,6 @@
 rule:
-  - label: 行全体テスト
-    type: forbidden_patterns
-    patterns:
-      - FORBIDDEN
-    message: パターン違反
+  - forbidden_patterns:
+      label: 行全体テスト
+      patterns:
+        - FORBIDDEN
+      message: パターン違反

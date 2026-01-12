@@ -1,4 +1,4 @@
-# require_rust_doc
+# NoRustDocRule
 
 [← ルール一覧に戻る](../rec_lint.schema.md#rule-types)
 
@@ -10,7 +10,6 @@ rustdoc がないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_rust_doc` | o |  |
 | option | [rustDocConfig](#rustdocconfig) | - | rustdoc 検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |

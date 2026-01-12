@@ -1,6 +1,6 @@
 rule:
-  - label: rust_unit_test_exists
-    type: require_rust_unit_test
-    option:
-      require: exists
-    message: ユニットテストが必要です
+  - require_rust_unit_test:
+      label: rust_unit_test_exists
+      option:
+        require: exists
+      message: ユニットテストが必要です

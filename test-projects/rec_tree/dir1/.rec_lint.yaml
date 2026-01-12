@@ -1,8 +1,7 @@
 rule:
-  - label: dir1-rule
-    type: forbidden_texts
-    texts: [AAA]
-    message: dir1 violation
-
+  - forbidden_texts:
+      label: dir1-rule
+      texts: [AAA]
+      message: dir1 violation
 guideline:
   - message: dir1-guideline

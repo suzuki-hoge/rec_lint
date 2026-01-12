@@ -1,5 +1,5 @@
 rule:
-  - label: excluded-rule
-    type: forbidden_texts
-    texts: [EXCLUDED]
-    message: Should not appear
+  - forbidden_texts:
+      label: excluded-rule
+      texts: [EXCLUDED]
+      message: Should not appear

@@ -138,20 +138,20 @@ $ rec_lint validate --sort file src/main/java
 `.rec_lint_config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint_config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint_config.schema.json
 ```
 
 `.rec_lint.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint.schema.json
 ```
 
 - Idea 系エディタ: 標準サポート
 - VSCode: [YAML Language Support by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) を追加
 
-### type: custom の利用
+### custom ルールの利用
 
-プリセットの `type: forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `type: custom` で rec_lint 処理フロー中から任意のコマンドを実行できる
+プリセットの `forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `custom` ルールで rec_lint 処理フロー中から任意のコマンドを実行できる
 
 詳細は [docs/schema/rec_lint.schema.md](docs/schema/rec_lint.schema.md) を参照

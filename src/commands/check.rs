@@ -76,7 +76,48 @@ pub fn collect_dirs_with_rules(root: &Path, root_config: &RootConfig) -> Result<
 
 /// Extract rule types from raw config
 pub fn extract_rule_types(config: &RawConfig) -> Vec<String> {
-    config.rule.as_ref().map(|rules| rules.iter().map(|r| r.type_.clone()).collect()).unwrap_or_default()
+    config
+        .rule
+        .as_ref()
+        .map(|rules| {
+            rules
+                .iter()
+                .filter_map(|r| {
+                    if r.forbidden_texts.is_some() {
+                        Some("forbidden_texts".to_string())
+                    } else if r.forbidden_patterns.is_some() {
+                        Some("forbidden_patterns".to_string())
+                    } else if r.custom.is_some() {
+                        Some("custom".to_string())
+                    } else if r.require_php_doc.is_some() {
+                        Some("require_php_doc".to_string())
+                    } else if r.require_kotlin_doc.is_some() {
+                        Some("require_kotlin_doc".to_string())
+                    } else if r.require_rust_doc.is_some() {
+                        Some("require_rust_doc".to_string())
+                    } else if r.require_english_comment.is_some() {
+                        Some("require_english_comment".to_string())
+                    } else if r.require_japanese_comment.is_some() {
+                        Some("require_japanese_comment".to_string())
+                    } else if r.require_japanese_phpunit_test_name.is_some() {
+                        Some("require_japanese_phpunit_test_name".to_string())
+                    } else if r.require_japanese_kotest_test_name.is_some() {
+                        Some("require_japanese_kotest_test_name".to_string())
+                    } else if r.require_japanese_rust_test_name.is_some() {
+                        Some("require_japanese_rust_test_name".to_string())
+                    } else if r.require_phpunit_test.is_some() {
+                        Some("require_phpunit_test".to_string())
+                    } else if r.require_kotest_test.is_some() {
+                        Some("require_kotest_test".to_string())
+                    } else if r.require_rust_unit_test.is_some() {
+                        Some("require_rust_unit_test".to_string())
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 /// Check if entry is hidden (starts with .)

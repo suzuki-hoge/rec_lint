@@ -38,7 +38,7 @@ $ rec_lint add sub-dir
 `.rec_lint_config.yaml`
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint_config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint_config.schema.json
 
 include_extensions:
   - .php
@@ -50,35 +50,35 @@ exclude_dirs:
 `src/main/java/.rec_lint.yaml`
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint.schema.json
 
 rule:
-  - label: var_dump の禁止
-    type: forbidden_texts
-    texts: [ var_dump ]
-    message: デバッグ残りは削除し、必要な出力は Logger を使うこと
+  - forbidden_texts:
+      label: var_dump の禁止
+      texts: [ var_dump ]
+      message: デバッグ残りは削除し、必要な出力は Logger を使うこと
 
-  - label: public class の PHPDoc は必須
-    type: require_php_doc
-    option:
-      class: public
-    message: PHPDoc を記述すること
+  - require_php_doc:
+      label: public class の PHPDoc は必須
+      option:
+        class: public
+      message: PHPDoc を記述すること
 ```
 
 `src/main/java/db/.rec_lint.yaml`
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint.schema.json
 
 rule:
-  - label: http 処理の禁止
-    type: forbidden_patterns
-    patterns: [ "use.*Http" ]
-    message: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること
-    match:
-      - pattern: file_ends_with
-        keywords: [ Command.php, Query.php ]
-        cond: or
+  - forbidden_patterns:
+      label: http 処理の禁止
+      patterns: [ "use.*Http" ]
+      message: DB 処理と HTTP 処理は分離し、HTTP 処理は src/main/php/controller に実装すること
+      match:
+        - pattern: file_ends_with
+          keywords: [ Command.php, Query.php ]
+          cond: or
 
 guideline:
   - message: N + 1 問題が発生するクエリがないか確認すること
@@ -187,20 +187,20 @@ src/db/UserCommand.php:15:9: デバッグ残りは削除し、必要な出力は
 `.rec_lint_config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint_config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint_config.schema.json
 ```
 
 `.rec_lint.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.4/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint.schema.json
 ```
 
 - Idea 系エディタ: 標準サポート
 - VSCode: [YAML Language Support by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) を追加
 
-### type: custom の利用
+### custom ルールの利用
 
-プリセットの `type: forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `type: custom` で rec_lint 処理フロー中から任意のコマンドを実行できる
+プリセットの `forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `custom` ルールで rec_lint 処理フロー中から任意のコマンドを実行できる
 
 詳細は [docs/schema/rec_lint.schema.md](docs/schema/rec_lint.schema.md) を参照

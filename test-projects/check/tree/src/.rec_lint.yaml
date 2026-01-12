@@ -1,5 +1,5 @@
 rule:
-  - label: src-rule
-    type: custom
-    exec: "true"
-    message: Custom rule
+  - custom:
+      label: src-rule
+      exec: "true"
+      message: Custom rule

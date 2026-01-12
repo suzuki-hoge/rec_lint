@@ -1,6 +1,6 @@
 rule:
-  - label: trait_doc
-    type: require_rust_doc
-    option:
-      trait: all
-    message: RustDocを書いてください
+  - require_rust_doc:
+      label: trait_doc
+      option:
+        trait: all
+      message: RustDocを書いてください

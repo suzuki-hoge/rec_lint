@@ -1,6 +1,6 @@
 rule:
-  - label: php_doc_enum_all
-    type: require_php_doc
-    option:
-      enum: all
-    message: PHPDocを書いてください
+  - require_php_doc:
+      label: php_doc_enum_all
+      option:
+        enum: all
+      message: PHPDocを書いてください

@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": ".rec_lint.yaml ドキュメント",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "rule": {
+      "x-property-order": 0,
+      "description": "特定パターンを禁止するルール",
+      "x-doc-description": "特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>guideline: 表示されない",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ruleItem"
+      }
+    },
+    "guideline": {
+      "x-property-order": 1,
+      "description": "レビューガイドライン",
+      "x-doc-description": "レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>guideline: 表示される",
+      "type": "array",
+      "items": {
+        "$ref": "rules/guideline.schema.json#/definitions/guidelineItem"
+      }
+    }
+  },
+  "definitions": {
+    "ruleItem": {
+      "x-doc-order": 1,
+      "title": "RuleItem",
+      "description": "rule に列挙するルールの定義",
+      "x-doc-description": "rule に列挙するルールの定義<br>ルール名をキーとして指定する",
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "forbidden_texts": {
+          "$ref": "rules/forbidden-texts.schema.json#/definitions/textRule"
+        },
+        "forbidden_patterns": {
+          "$ref": "rules/forbidden-patterns.schema.json#/definitions/regexRule"
+        },
+        "custom": {
+          "$ref": "rules/custom.schema.json#/definitions/customRule"
+        },
+        "require_php_doc": {
+          "$ref": "rules/require-php-doc.schema.json#/definitions/noPhpDocRule"
+        },
+        "require_kotlin_doc": {
+          "$ref": "rules/require-kotlin-doc.schema.json#/definitions/noKotlinDocRule"
+        },
+        "require_rust_doc": {
+          "$ref": "rules/require-rust-doc.schema.json#/definitions/noRustDocRule"
+        },
+        "require_english_comment": {
+          "$ref": "rules/require-english-comment.schema.json#/definitions/noJapaneseCommentRule"
+        },
+        "require_japanese_comment": {
+          "$ref": "rules/require-japanese-comment.schema.json#/definitions/noEnglishCommentRule"
+        },
+        "require_japanese_phpunit_test_name": {
+          "$ref": "rules/require-japanese-phpunit-test-name.schema.json#/definitions/japanesePhpUnitTestNameRule"
+        },
+        "require_japanese_kotest_test_name": {
+          "$ref": "rules/require-japanese-kotest-test-name.schema.json#/definitions/japaneseKotestTestNameRule"
+        },
+        "require_japanese_rust_test_name": {
+          "$ref": "rules/require-japanese-rust-test-name.schema.json#/definitions/japaneseRustTestNameRule"
+        },
+        "require_phpunit_test": {
+          "$ref": "rules/require-phpunit-test.schema.json#/definitions/phpUnitTestRule"
+        },
+        "require_kotest_test": {
+          "$ref": "rules/require-kotest-test.schema.json#/definitions/kotestTestRule"
+        },
+        "require_rust_unit_test": {
+          "$ref": "rules/require-rust-unit-test.schema.json#/definitions/rustUnitTestRule"
+        }
+      }
+    }
+  }
+}

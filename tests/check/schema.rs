@@ -13,7 +13,7 @@ fn schema_は_不正なyamlファイルをエラー報告する() {
         &result,
         r#"
             Invalid: invalid/.rec_lint.yaml
-              - {"label":"invalid-rule","message":"This has unknown type","type":"unknown_type"} is not valid under any of the schemas listed in the 'oneOf' keyword at /rule/0
+              - Additional properties are not allowed ('unknown_type' was unexpected) at /rule/0
         "#,
     );
 }

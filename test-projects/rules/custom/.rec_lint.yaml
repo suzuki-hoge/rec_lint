@@ -1,5 +1,5 @@
 rule:
-  - label: custom_check
-    type: custom
-    exec: grep -q ALLOWED {file}
-    message: カスタムルール違反
+  - custom:
+      label: custom_check
+      exec: grep -q ALLOWED {file}
+      message: カスタムルール違反

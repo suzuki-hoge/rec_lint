@@ -12,16 +12,11 @@
         {
           "type": "object",
           "required": [
-            "type",
             "label",
             "message",
             "format"
           ],
           "properties": {
-            "type": {
-              "x-property-order": 0,
-              "const": "require_japanese_comment"
-            },
             "format": {
               "x-property-order": 1,
               "description": "コメント構文設定",

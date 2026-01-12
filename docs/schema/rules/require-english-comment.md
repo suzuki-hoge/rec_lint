@@ -1,4 +1,4 @@
-# require_english_comment
+# NoJapaneseCommentRule
 
 [← ルール一覧に戻る](../rec_lint.schema.md#rule-types)
 
@@ -10,7 +10,6 @@
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_english_comment` | o |  |
 | format | [commentConfig](#commentconfig) | o | コメント構文設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |

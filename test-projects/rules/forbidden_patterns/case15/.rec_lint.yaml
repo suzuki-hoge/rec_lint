@@ -1,7 +1,7 @@
 rule:
-  - label: 複数パターンで先定義優先
-    type: forbidden_patterns
-    patterns:
-      - TODO
-      - TODO_FIXME
-    message: パターン違反
+  - forbidden_patterns:
+      label: 複数パターンで先定義優先
+      patterns:
+        - TODO
+        - TODO_FIXME
+      message: パターン違反

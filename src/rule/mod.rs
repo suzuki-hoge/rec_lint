@@ -12,7 +12,7 @@ use crate::matcher::Matcher;
 use crate::validate::comment::custom::{BlockSyntax, CustomCommentSyntax};
 use crate::validate::doc::{KotlinDocConfig, PhpDocConfig, RustDocConfig};
 use crate::validate::test::exists::{ExternalFileTestConfig, SameFileTestConfig};
-use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRule, TestRequireLevel, Visibility};
+use parser::{CommentLang, RawConfig, RawGuidelineItem, RawRuleContent, RawRuleItem, TestRequireLevel, Visibility};
 
 #[derive(Clone, Debug)]
 pub enum Rule {
@@ -196,24 +196,53 @@ impl TryFrom<RawConfig> for Config {
     }
 }
 
-fn convert_rule(raw: RawRule) -> Result<Rule> {
+fn convert_rule(item: RawRuleItem) -> Result<Rule> {
+    // Count how many rule types are specified (should be exactly 1)
+    let specified: Vec<(&str, Option<RawRuleContent>)> = vec![
+        ("forbidden_texts", item.forbidden_texts),
+        ("forbidden_patterns", item.forbidden_patterns),
+        ("custom", item.custom),
+        ("require_php_doc", item.require_php_doc),
+        ("require_kotlin_doc", item.require_kotlin_doc),
+        ("require_rust_doc", item.require_rust_doc),
+        ("require_english_comment", item.require_english_comment),
+        ("require_japanese_comment", item.require_japanese_comment),
+        ("require_japanese_phpunit_test_name", item.require_japanese_phpunit_test_name),
+        ("require_japanese_kotest_test_name", item.require_japanese_kotest_test_name),
+        ("require_japanese_rust_test_name", item.require_japanese_rust_test_name),
+        ("require_phpunit_test", item.require_phpunit_test),
+        ("require_kotest_test", item.require_kotest_test),
+        ("require_rust_unit_test", item.require_rust_unit_test),
+    ];
+
+    let found: Vec<_> = specified.into_iter().filter(|(_, v)| v.is_some()).collect();
+
+    if found.is_empty() {
+        return Err(anyhow!("Rule item must specify exactly one rule type"));
+    }
+    if found.len() > 1 {
+        let types: Vec<_> = found.iter().map(|(name, _)| *name).collect();
+        return Err(anyhow!("Rule item must specify exactly one rule type, found: {types:?}"));
+    }
+
+    let (rule_type, content) = found.into_iter().next().unwrap();
+    let raw = content.unwrap();
     let matcher = Matcher::new(raw.match_.clone());
 
-    match raw.type_.as_str() {
+    match rule_type {
         "forbidden_texts" => {
-            let texts =
-                raw.texts.ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_texts' requires 'texts'", raw.label))?;
+            let texts = raw.texts.ok_or_else(|| anyhow!("Rule '{}': 'forbidden_texts' requires 'texts'", raw.label))?;
             if raw.exec.is_some() {
-                return Err(anyhow!("Rule '{}': type 'forbidden_texts' must not have 'exec'", raw.label));
+                return Err(anyhow!("Rule '{}': 'forbidden_texts' must not have 'exec'", raw.label));
             }
             Ok(Rule::Text(TextRule { label: raw.label, keywords: texts, message: raw.message, matcher }))
         }
         "forbidden_patterns" => {
             let pattern_strs = raw
                 .patterns
-                .ok_or_else(|| anyhow!("Rule '{}': type 'forbidden_patterns' requires 'patterns'", raw.label))?;
+                .ok_or_else(|| anyhow!("Rule '{}': 'forbidden_patterns' requires 'patterns'", raw.label))?;
             if raw.exec.is_some() {
-                return Err(anyhow!("Rule '{}': type 'forbidden_patterns' must not have 'exec'", raw.label));
+                return Err(anyhow!("Rule '{}': 'forbidden_patterns' must not have 'exec'", raw.label));
             }
             let patterns = pattern_strs
                 .iter()
@@ -228,16 +257,16 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             }))
         }
         "custom" => {
-            let exec = raw.exec.ok_or_else(|| anyhow!("Rule '{}': type 'custom' requires 'exec'", raw.label))?;
+            let exec = raw.exec.ok_or_else(|| anyhow!("Rule '{}': 'custom' requires 'exec'", raw.label))?;
             if raw.texts.is_some() || raw.patterns.is_some() {
-                return Err(anyhow!("Rule '{}': type 'custom' must not have 'texts' or 'patterns'", raw.label));
+                return Err(anyhow!("Rule '{}': 'custom' must not have 'texts' or 'patterns'", raw.label));
             }
             Ok(Rule::Custom(CustomRule { label: raw.label, exec, message: raw.message, matcher }))
         }
         "require_php_doc" => {
             let raw_config = raw
                 .option
-                .ok_or_else(|| anyhow!("Rule '{}': type 'require_php_doc' requires 'option' config", raw.label))?;
+                .ok_or_else(|| anyhow!("Rule '{}': 'require_php_doc' requires 'option' config", raw.label))?;
             if raw_config.class.is_none()
                 && raw_config.interface.is_none()
                 && raw_config.trait_.is_none()
@@ -261,7 +290,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
         "require_kotlin_doc" => {
             let raw_config = raw
                 .option
-                .ok_or_else(|| anyhow!("Rule '{}': type 'require_kotlin_doc' requires 'option' config", raw.label))?;
+                .ok_or_else(|| anyhow!("Rule '{}': 'require_kotlin_doc' requires 'option' config", raw.label))?;
             if raw_config.class.is_none()
                 && raw_config.interface.is_none()
                 && raw_config.object.is_none()
@@ -294,7 +323,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
         "require_rust_doc" => {
             let raw_config = raw
                 .option
-                .ok_or_else(|| anyhow!("Rule '{}': type 'require_rust_doc' requires 'option' config", raw.label))?;
+                .ok_or_else(|| anyhow!("Rule '{}': 'require_rust_doc' requires 'option' config", raw.label))?;
             if raw_config.struct_.is_none()
                 && raw_config.enum_.is_none()
                 && raw_config.trait_.is_none()
@@ -363,7 +392,7 @@ fn convert_rule(raw: RawRule) -> Result<Rule> {
             let config = SameFileTestConfig { require: raw_config.require.unwrap_or(TestRequireLevel::Exists) };
             Ok(Rule::RustTestExistence(TestExistenceRule { label: raw.label, config, message: raw.message, matcher }))
         }
-        other => Err(anyhow!("Rule '{}': unknown type '{}'", raw.label, other)),
+        _ => unreachable!(),
     }
 }
 
@@ -374,7 +403,7 @@ fn convert_visibility(vis: parser::Visibility) -> Visibility {
     }
 }
 
-fn convert_comment_source(raw: &RawRule) -> Result<CommentSource> {
+fn convert_comment_source(raw: &RawRuleContent) -> Result<CommentSource> {
     let config = raw.format.as_ref().ok_or_else(|| anyhow!("Rule '{}': format config is required", raw.label))?;
 
     // lang and custom are mutually exclusive

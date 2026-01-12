@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=schema/rec_lint.schema.json
 
 rule:
-  - type: require_japanese_rust_test_name
-    label: テスト名は日本語
-    message: テストメソッド名は日本語にしてください
+  - require_japanese_rust_test_name:
+      label: テスト名は日本語
+      message: テストメソッド名は日本語にしてください

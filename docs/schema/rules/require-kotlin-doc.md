@@ -1,4 +1,4 @@
-# require_kotlin_doc
+# NoKotlinDocRule
 
 [← ルール一覧に戻る](../rec_lint.schema.md#rule-types)
 
@@ -10,7 +10,6 @@ KDoc がないファイルを検出する
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:---:|------|
-| type | `require_kotlin_doc` | o |  |
 | option | [kotlinDocConfig](#kotlindocconfig) | - | KDoc 検証設定 |
 | label | string | o | show で表示するラベル |
 | message | string | o | validation で違反しているときに表示するメッセージ |

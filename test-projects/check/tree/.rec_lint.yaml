@@ -1,5 +1,5 @@
 rule:
-  - label: root-rule
-    type: forbidden_texts
-    texts: [TODO]
-    message: TODO found
+  - forbidden_texts:
+      label: root-rule
+      texts: [TODO]
+      message: TODO found

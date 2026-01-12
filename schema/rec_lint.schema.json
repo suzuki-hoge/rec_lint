@@ -1,78 +1,870 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": ".rec_lint.yaml ドキュメント",
-  "type": "object",
   "additionalProperties": false,
-  "properties": {
-    "rule": {
-      "x-property-order": 0,
-      "description": "特定パターンを禁止するルール",
-      "x-doc-description": "特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>guideline: 表示されない",
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/ruleItem"
-      }
-    },
-    "guideline": {
-      "x-property-order": 1,
-      "description": "レビューガイドライン",
-      "x-doc-description": "レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>guideline: 表示される",
-      "type": "array",
-      "items": {
-        "$ref": "rules/guideline.schema.json#/definitions/guidelineItem"
-      }
-    }
-  },
   "definitions": {
-    "ruleItem": {
-      "x-doc-order": 1,
-      "title": "RuleItem",
-      "description": "rule に列挙するルールの定義",
-      "x-doc-description": "rule に列挙するルールの定義<br>type ごとに異なる構造を持つ",
+    "common_externalFileTestConfig": {
+      "additionalProperties": false,
+      "description": "外部ファイルテスト存在検証設定 (PHPUnit, Kotest)",
+      "properties": {
+        "require": {
+          "$ref": "#/definitions/common_testRequireLevel",
+          "default": "exists",
+          "description": "検証レベル",
+          "x-property-order": 2
+        },
+        "test_directory": {
+          "description": "テストディレクトリのパス",
+          "type": "string",
+          "x-property-order": 0
+        },
+        "test_file_suffix": {
+          "default": "Test",
+          "description": "テストファイル名のサフィックス",
+          "type": "string",
+          "x-property-order": 1
+        }
+      },
+      "title": "ExternalFileTestConfig",
+      "type": "object",
+      "x-doc-order": 7
+    },
+    "common_matchCond": {
+      "default": "and",
+      "description": "keywords の結合条件",
       "oneOf": [
         {
-          "$ref": "rules/forbidden-texts.schema.json#/definitions/textRule"
+          "const": "and",
+          "description": "すべての keyword に一致"
         },
         {
-          "$ref": "rules/forbidden-patterns.schema.json#/definitions/regexRule"
-        },
-        {
-          "$ref": "rules/custom.schema.json#/definitions/customRule"
-        },
-        {
-          "$ref": "rules/require-php-doc.schema.json#/definitions/noPhpDocRule"
-        },
-        {
-          "$ref": "rules/require-kotlin-doc.schema.json#/definitions/noKotlinDocRule"
-        },
-        {
-          "$ref": "rules/require-rust-doc.schema.json#/definitions/noRustDocRule"
-        },
-        {
-          "$ref": "rules/require-english-comment.schema.json#/definitions/noJapaneseCommentRule"
-        },
-        {
-          "$ref": "rules/require-japanese-comment.schema.json#/definitions/noEnglishCommentRule"
-        },
-        {
-          "$ref": "rules/require-japanese-phpunit-test-name.schema.json#/definitions/japanesePhpUnitTestNameRule"
-        },
-        {
-          "$ref": "rules/require-japanese-kotest-test-name.schema.json#/definitions/japaneseKotestTestNameRule"
-        },
-        {
-          "$ref": "rules/require-japanese-rust-test-name.schema.json#/definitions/japaneseRustTestNameRule"
-        },
-        {
-          "$ref": "rules/require-phpunit-test.schema.json#/definitions/phpUnitTestRule"
-        },
-        {
-          "$ref": "rules/require-kotest-test.schema.json#/definitions/kotestTestRule"
-        },
-        {
-          "$ref": "rules/require-rust-unit-test.schema.json#/definitions/rustUnitTestRule"
+          "const": "or",
+          "description": "いずれかの keyword に一致"
         }
-      ]
+      ],
+      "title": "MatchCond",
+      "type": "string",
+      "x-doc-order": 4
+    },
+    "common_matchItem": {
+      "additionalProperties": false,
+      "description": "ファイルマッチ条件の定義",
+      "properties": {
+        "cond": {
+          "$ref": "#/definitions/common_matchCond",
+          "description": "省略時は and",
+          "x-property-order": 2
+        },
+        "keywords": {
+          "description": "マッチ対象のキーワード",
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-property-order": 1
+        },
+        "pattern": {
+          "$ref": "#/definitions/common_matchPattern",
+          "description": "マッチパターンの種類",
+          "x-property-order": 0
+        }
+      },
+      "required": [
+        "pattern",
+        "keywords"
+      ],
+      "title": "MatchItem",
+      "type": "object",
+      "x-doc-order": 2
+    },
+    "common_matchPattern": {
+      "description": "マッチパターンの種類",
+      "oneOf": [
+        {
+          "const": "file_starts_with",
+          "description": "ファイル名が指定文字列で始まる"
+        },
+        {
+          "const": "file_ends_with",
+          "description": "ファイル名が指定文字列で終わる"
+        },
+        {
+          "const": "path_contains",
+          "description": "パスに指定文字列が含まれる"
+        },
+        {
+          "const": "file_not_starts_with",
+          "description": "ファイル名が指定文字列で始まらない"
+        },
+        {
+          "const": "file_not_ends_with",
+          "description": "ファイル名が指定文字列で終わらない"
+        },
+        {
+          "const": "path_not_contains",
+          "description": "パスに指定文字列が含まれない"
+        }
+      ],
+      "title": "MatchPattern",
+      "type": "string",
+      "x-doc-order": 3
+    },
+    "common_ruleBase": {
+      "description": "ルールの共通フィールド",
+      "properties": {
+        "label": {
+          "description": "show で表示するラベル",
+          "type": "string",
+          "x-property-order": 11
+        },
+        "match": {
+          "description": "対象とするファイルの条件 (複数指定時は and で結合)",
+          "items": {
+            "$ref": "#/definitions/common_matchItem"
+          },
+          "type": "array",
+          "x-doc-description": "show と validation で対象とするファイルの条件<br>複数指定時は and で結合",
+          "x-property-order": 13
+        },
+        "message": {
+          "description": "validation で違反しているときに表示するメッセージ",
+          "type": "string",
+          "x-property-order": 12
+        }
+      },
+      "title": "RuleBase",
+      "type": "object",
+      "x-doc-order": 1
+    },
+    "common_sameFileTestConfig": {
+      "additionalProperties": false,
+      "description": "同一ファイルテスト存在検証設定 (Rust unit test)",
+      "properties": {
+        "require": {
+          "$ref": "#/definitions/common_testRequireLevel",
+          "default": "exists",
+          "description": "検証レベル",
+          "x-property-order": 0
+        }
+      },
+      "title": "SameFileTestConfig",
+      "type": "object",
+      "x-doc-order": 8
+    },
+    "common_testRequireLevel": {
+      "description": "テスト存在検証レベル",
+      "oneOf": [
+        {
+          "const": "exists",
+          "description": "テストが存在すること"
+        },
+        {
+          "const": "all_public",
+          "description": "全 public メソッド/関数がテストで呼ばれること"
+        }
+      ],
+      "title": "TestRequireLevel",
+      "type": "string",
+      "x-doc-order": 6
+    },
+    "common_visibility": {
+      "description": "Doc コメントを強制する対象の可視性",
+      "oneOf": [
+        {
+          "const": "public",
+          "description": "その言語における public のコードのみ検証",
+          "x-property-order": 0
+        },
+        {
+          "const": "all",
+          "description": "すべての可視性を検証",
+          "x-property-order": 1
+        }
+      ],
+      "title": "Visibility",
+      "type": "string",
+      "x-doc-order": 5
+    },
+    "custom_customRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "exec": {
+              "description": "ファイルに対して実行するコマンド (終了コード 0 でエラーなし)",
+              "examples": [
+                "ruby path/to/your/checker.rb {path}",
+                "docker run your:image {path}"
+              ],
+              "type": "string",
+              "x-doc-description": "ファイルに対して実行するコマンド<br>終了コード 0 の場合はエラーなし扱い<br>エラー時は実行コマンドの標準出力がエラーメッセージとして表示される",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message",
+            "exec"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "任意のコマンドを実行してファイルを検証する",
+      "title": "CustomRule",
+      "x-doc-order": 1
+    },
+    "forbidden_patterns_regexRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "patterns": {
+              "description": "validate で探す禁止キーワードの正規表現",
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message",
+            "patterns"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "特定のキーワードを含むファイルを正規表現で検出する",
+      "title": "RegexRule",
+      "x-doc-order": 1
+    },
+    "forbidden_texts_textRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "texts": {
+              "description": "validate で探す禁止キーワード",
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message",
+            "texts"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "特定のキーワードを含むファイルを完全一致で検出する",
+      "title": "TextRule",
+      "x-doc-order": 1
+    },
+    "guideline_guidelineItem": {
+      "additionalProperties": false,
+      "description": "guideline に列挙するレビューガイドラインの定義",
+      "properties": {
+        "match": {
+          "description": "対象とするファイルの条件 (複数指定時は and で結合)",
+          "items": {
+            "$ref": "#/definitions/common_matchItem"
+          },
+          "type": "array",
+          "x-doc-description": "対象とするファイルの条件<br>複数指定時は and で結合",
+          "x-property-order": 1
+        },
+        "message": {
+          "description": "guideline で表示するメッセージ",
+          "type": "string",
+          "x-property-order": 0
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "title": "GuidelineItem",
+      "type": "object",
+      "x-doc-order": 1
+    },
+    "require_english_comment_blockComment": {
+      "additionalProperties": false,
+      "description": "ブロックコメント構文の定義",
+      "properties": {
+        "end": {
+          "description": "ブロックコメントの終了マーカー",
+          "examples": [
+            "*/"
+          ],
+          "type": "string",
+          "x-property-order": 1
+        },
+        "start": {
+          "description": "ブロックコメントの開始マーカー",
+          "examples": [
+            "/*"
+          ],
+          "type": "string",
+          "x-property-order": 0
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "BlockComment",
+      "type": "object",
+      "x-doc-order": 4
+    },
+    "require_english_comment_commentConfig": {
+      "additionalProperties": false,
+      "description": "コメント構文の定義 (lang と custom のどちらかのみ指定)",
+      "properties": {
+        "custom": {
+          "$ref": "#/definitions/require_english_comment_customComment",
+          "description": "プリセットが提供されていない場合の指定",
+          "x-property-order": 1
+        },
+        "lang": {
+          "description": "コメント構文のプリセットが提供されている言語",
+          "oneOf": [
+            {
+              "const": "java",
+              "description": "Java のコメント構文（//, /* */）"
+            },
+            {
+              "const": "kotlin",
+              "description": "Kotlin のコメント構文（//, /* */）"
+            },
+            {
+              "const": "rust",
+              "description": "Rust のコメント構文（//, /* */）"
+            }
+          ],
+          "type": "string",
+          "x-property-order": 0
+        }
+      },
+      "title": "CommentConfig",
+      "type": "object",
+      "x-doc-description": "コメント構文の定義<br>lang と custom のどちらかのみ必ず指定する",
+      "x-doc-order": 2
+    },
+    "require_english_comment_customComment": {
+      "additionalProperties": false,
+      "description": "コメント構文の定義",
+      "properties": {
+        "blocks": {
+          "description": "ブロックコメント構文の定義",
+          "items": {
+            "$ref": "#/definitions/require_english_comment_blockComment"
+          },
+          "type": "array",
+          "x-property-order": 1
+        },
+        "lines": {
+          "description": "行コメントの開始マーカー",
+          "examples": [
+            [
+              "//",
+              "#"
+            ]
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-property-order": 0
+        }
+      },
+      "title": "CustomComment",
+      "type": "object",
+      "x-doc-order": 3
+    },
+    "require_english_comment_noJapaneseCommentRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "format": {
+              "$ref": "#/definitions/require_english_comment_commentConfig",
+              "description": "コメント構文設定",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message",
+            "format"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "コメントが日本語のファイルを検出する",
+      "title": "NoJapaneseCommentRule",
+      "x-doc-order": 1
+    },
+    "require_japanese_comment_noEnglishCommentRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "format": {
+              "$ref": "#/definitions/require_english_comment_commentConfig",
+              "description": "コメント構文設定",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message",
+            "format"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "コメントが英語のファイルを検出する",
+      "title": "NoEnglishCommentRule",
+      "x-doc-order": 1
+    },
+    "require_japanese_kotest_test_name_japaneseKotestTestNameRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "Kotest テスト名が日本語でないファイルを検出する",
+      "title": "JapaneseKotestTestNameRule",
+      "x-doc-order": 1
+    },
+    "require_japanese_phpunit_test_name_japanesePhpUnitTestNameRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "PHPUnit テスト名が日本語でないファイルを検出する",
+      "title": "JapanesePhpUnitTestNameRule",
+      "x-doc-order": 1
+    },
+    "require_japanese_rust_test_name_japaneseRustTestNameRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "Rust テスト名が日本語でないファイルを検出する",
+      "title": "JapaneseRustTestNameRule",
+      "x-doc-order": 1
+    },
+    "require_kotest_test_kotestTestRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "option": {
+              "$ref": "#/definitions/common_externalFileTestConfig",
+              "description": "Kotest テスト存在検証設定",
+              "x-doc-description": "Kotest テスト存在検証設定<br>test_directory のデフォルトは src/test/kotlin",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "Kotest テストファイルの存在を検証する",
+      "title": "KotestTestRule",
+      "x-doc-order": 1
+    },
+    "require_kotlin_doc_kotlinDocConfig": {
+      "additionalProperties": false,
+      "description": "KDoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "minProperties": 1,
+      "properties": {
+        "annotation_class": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "annotation class 宣言に KDoc がないことを認めない",
+          "x-property-order": 8
+        },
+        "class": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "class 宣言に KDoc がないことを認めない",
+          "x-property-order": 0
+        },
+        "data_class": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "data class 宣言に KDoc がないことを認めない",
+          "x-property-order": 6
+        },
+        "enum_class": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "enum class 宣言に KDoc がないことを認めない",
+          "x-property-order": 3
+        },
+        "function": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "fun 宣言に KDoc がないことを認めない",
+          "x-property-order": 10
+        },
+        "interface": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "interface 宣言に KDoc がないことを認めない",
+          "x-property-order": 1
+        },
+        "object": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "object 宣言に KDoc がないことを認めない",
+          "x-property-order": 2
+        },
+        "sealed_class": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "sealed class 宣言に KDoc がないことを認めない",
+          "x-property-order": 4
+        },
+        "sealed_interface": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "sealed interface 宣言に KDoc がないことを認めない",
+          "x-property-order": 5
+        },
+        "typealias": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "typealias 宣言に KDoc がないことを認めない",
+          "x-property-order": 9
+        },
+        "value_class": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "value class 宣言に KDoc がないことを認めない",
+          "x-property-order": 7
+        }
+      },
+      "title": "KotlinDocConfig",
+      "type": "object",
+      "x-doc-description": "KDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: property, constructor, enum_entry, companion_object",
+      "x-doc-order": 2
+    },
+    "require_kotlin_doc_noKotlinDocRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "option": {
+              "$ref": "#/definitions/require_kotlin_doc_kotlinDocConfig",
+              "description": "KDoc 検証設定",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "KDoc がないファイルを検出する",
+      "title": "NoKotlinDocRule",
+      "x-doc-order": 1
+    },
+    "require_php_doc_noPhpDocRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "option": {
+              "$ref": "#/definitions/require_php_doc_phpDocConfig",
+              "description": "PHPDoc 検証設定",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "PHPDoc がないファイルを検出する",
+      "title": "NoPhpDocRule",
+      "x-doc-order": 1
+    },
+    "require_php_doc_phpDocConfig": {
+      "additionalProperties": false,
+      "description": "PHPDoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "minProperties": 1,
+      "properties": {
+        "class": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "class 宣言に PHPDoc がないことを認めない",
+          "x-property-order": 0
+        },
+        "enum": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "enum 宣言に PHPDoc がないことを認めない (PHP 8.1+)",
+          "x-property-order": 3
+        },
+        "function": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "関数/メソッド宣言に PHPDoc がないことを認めない",
+          "x-property-order": 4
+        },
+        "interface": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "interface 宣言に PHPDoc がないことを認めない",
+          "x-property-order": 1
+        },
+        "trait": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "trait 宣言に PHPDoc がないことを認めない",
+          "x-property-order": 2
+        }
+      },
+      "title": "PhpDocConfig",
+      "type": "object",
+      "x-doc-description": "PHPDoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: file, property, constant, define, include/require",
+      "x-doc-order": 2
+    },
+    "require_phpunit_test_phpUnitTestRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "option": {
+              "$ref": "#/definitions/common_externalFileTestConfig",
+              "description": "PHPUnit テスト存在検証設定",
+              "x-doc-description": "PHPUnit テスト存在検証設定<br>test_directory のデフォルトは tests",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "PHPUnit テストファイルの存在を検証する",
+      "title": "PhpUnitTestRule",
+      "x-doc-order": 1
+    },
+    "require_rust_doc_noRustDocRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "option": {
+              "$ref": "#/definitions/require_rust_doc_rustDocConfig",
+              "description": "rustdoc 検証設定",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "rustdoc がないファイルを検出する",
+      "title": "NoRustDocRule",
+      "x-doc-order": 1
+    },
+    "require_rust_doc_rustDocConfig": {
+      "additionalProperties": false,
+      "description": "rustdoc 検証設定の定義 (いずれかひとつは指定が必要)",
+      "minProperties": 1,
+      "properties": {
+        "enum": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "enum 宣言に rustdoc がないことを認めない",
+          "x-property-order": 1
+        },
+        "fn": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "fn 宣言に rustdoc がないことを認めない",
+          "x-property-order": 5
+        },
+        "macro_rules": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "macro_rules! 宣言に rustdoc がないことを認めない",
+          "x-property-order": 6
+        },
+        "mod": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "mod 宣言に rustdoc がないことを認めない",
+          "x-property-order": 7
+        },
+        "struct": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "struct 宣言に rustdoc がないことを認めない",
+          "x-property-order": 0
+        },
+        "trait": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "trait 宣言に rustdoc がないことを認めない",
+          "x-property-order": 2
+        },
+        "type_alias": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "type 宣言に rustdoc がないことを認めない",
+          "x-property-order": 3
+        },
+        "union": {
+          "$ref": "#/definitions/common_visibility",
+          "description": "union 宣言に rustdoc がないことを認めない",
+          "x-property-order": 4
+        }
+      },
+      "title": "RustDocConfig",
+      "type": "object",
+      "x-doc-description": "rustdoc 検証設定の定義<br>いずれかひとつは指定が必要<br>サポート対象外: const, static, struct_field, enum_variant, impl, trait_impl",
+      "x-doc-order": 2
+    },
+    "require_rust_unit_test_rustUnitTestRule": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/common_ruleBase"
+        },
+        {
+          "properties": {
+            "option": {
+              "$ref": "#/definitions/common_sameFileTestConfig",
+              "description": "Rust ユニットテスト存在検証設定",
+              "x-property-order": 1
+            }
+          },
+          "required": [
+            "label",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "Rust ユニットテストの存在を検証する",
+      "title": "RustUnitTestRule",
+      "x-doc-order": 1
+    },
+    "ruleItem": {
+      "additionalProperties": false,
+      "description": "rule に列挙するルールの定義",
+      "maxProperties": 1,
+      "minProperties": 1,
+      "properties": {
+        "custom": {
+          "$ref": "#/definitions/custom_customRule"
+        },
+        "forbidden_patterns": {
+          "$ref": "#/definitions/forbidden_patterns_regexRule"
+        },
+        "forbidden_texts": {
+          "$ref": "#/definitions/forbidden_texts_textRule"
+        },
+        "require_english_comment": {
+          "$ref": "#/definitions/require_english_comment_noJapaneseCommentRule"
+        },
+        "require_japanese_comment": {
+          "$ref": "#/definitions/require_japanese_comment_noEnglishCommentRule"
+        },
+        "require_japanese_kotest_test_name": {
+          "$ref": "#/definitions/require_japanese_kotest_test_name_japaneseKotestTestNameRule"
+        },
+        "require_japanese_phpunit_test_name": {
+          "$ref": "#/definitions/require_japanese_phpunit_test_name_japanesePhpUnitTestNameRule"
+        },
+        "require_japanese_rust_test_name": {
+          "$ref": "#/definitions/require_japanese_rust_test_name_japaneseRustTestNameRule"
+        },
+        "require_kotest_test": {
+          "$ref": "#/definitions/require_kotest_test_kotestTestRule"
+        },
+        "require_kotlin_doc": {
+          "$ref": "#/definitions/require_kotlin_doc_noKotlinDocRule"
+        },
+        "require_php_doc": {
+          "$ref": "#/definitions/require_php_doc_noPhpDocRule"
+        },
+        "require_phpunit_test": {
+          "$ref": "#/definitions/require_phpunit_test_phpUnitTestRule"
+        },
+        "require_rust_doc": {
+          "$ref": "#/definitions/require_rust_doc_noRustDocRule"
+        },
+        "require_rust_unit_test": {
+          "$ref": "#/definitions/require_rust_unit_test_rustUnitTestRule"
+        }
+      },
+      "title": "RuleItem",
+      "type": "object",
+      "x-doc-description": "rule に列挙するルールの定義<br>ルール名をキーとして指定する",
+      "x-doc-order": 1
     }
-  }
+  },
+  "properties": {
+    "guideline": {
+      "description": "レビューガイドライン",
+      "items": {
+        "$ref": "#/definitions/guideline_guidelineItem"
+      },
+      "type": "array",
+      "x-doc-description": "レビューガイドライン<br>show: 表示される<br>validate: 検証されない<br>guideline: 表示される",
+      "x-property-order": 1
+    },
+    "rule": {
+      "description": "特定パターンを禁止するルール",
+      "items": {
+        "$ref": "#/definitions/ruleItem"
+      },
+      "type": "array",
+      "x-doc-description": "特定パターンを禁止するルール<br>show: 表示される<br>validate: 検証される<br>guideline: 表示されない",
+      "x-property-order": 0
+    }
+  },
+  "title": ".rec_lint.yaml ドキュメント",
+  "type": "object"
 }

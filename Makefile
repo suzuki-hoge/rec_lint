@@ -1,3 +1,5 @@
+.PHONY: test fix schema doc fix-all install
+
 test:
 	@cargo nextest run
 
@@ -9,13 +11,14 @@ fix:
 	# @rec_lint validate src
 	# @rec_lint validate tests
 
-doc:
-	@cargo run -q --manifest-path tools/schema-tools/Cargo.toml
+gen:
+	@cargo run -q --manifest-path tools/schema-tools/Cargo.toml -- bundle
+	@cargo run -q --manifest-path tools/schema-tools/Cargo.toml -- doc
 	@cargo run -q --manifest-path tools/readme-generator/Cargo.toml
 
 fix-all:
 	@make fix
-	@make doc
+	@make gen
 
 install:
 	@cargo build --release

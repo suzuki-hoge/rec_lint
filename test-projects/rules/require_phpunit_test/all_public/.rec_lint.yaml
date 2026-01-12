@@ -1,8 +1,8 @@
 rule:
-  - label: phpunit_test_all_public
-    type: require_phpunit_test
-    option:
-      test_directory: tests
-      require: all_public
-      test_file_suffix: Test
-    message: テストファイルが必要です
+  - require_phpunit_test:
+      label: phpunit_test_all_public
+      option:
+        test_directory: tests
+        require: all_public
+        test_file_suffix: Test
+      message: テストファイルが必要です

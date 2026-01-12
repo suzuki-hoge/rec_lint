@@ -1,5 +1,5 @@
 rule:
-  - label: forbidden_patterns_check
-    type: forbidden_patterns
-    patterns: ["print.*"]
-    message: パターン違反
+  - forbidden_patterns:
+      label: forbidden_patterns_check
+      patterns: ["print.*"]
+      message: パターン違反

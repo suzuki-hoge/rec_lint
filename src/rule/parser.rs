@@ -188,16 +188,34 @@ pub struct RawOptionConfig {
 
 #[derive(Deserialize)]
 pub struct RawConfig {
-    pub rule: Option<Vec<RawRule>>,
+    pub rule: Option<Vec<RawRuleItem>>,
     pub guideline: Option<Vec<RawGuidelineItem>>,
 }
 
+/// Rule item with rule name as key
 #[derive(Deserialize, Default)]
-pub struct RawRule {
+pub struct RawRuleItem {
+    pub forbidden_texts: Option<RawRuleContent>,
+    pub forbidden_patterns: Option<RawRuleContent>,
+    pub custom: Option<RawRuleContent>,
+    pub require_php_doc: Option<RawRuleContent>,
+    pub require_kotlin_doc: Option<RawRuleContent>,
+    pub require_rust_doc: Option<RawRuleContent>,
+    pub require_english_comment: Option<RawRuleContent>,
+    pub require_japanese_comment: Option<RawRuleContent>,
+    pub require_japanese_phpunit_test_name: Option<RawRuleContent>,
+    pub require_japanese_kotest_test_name: Option<RawRuleContent>,
+    pub require_japanese_rust_test_name: Option<RawRuleContent>,
+    pub require_phpunit_test: Option<RawRuleContent>,
+    pub require_kotest_test: Option<RawRuleContent>,
+    pub require_rust_unit_test: Option<RawRuleContent>,
+}
+
+/// Rule content (common fields for all rule types)
+#[derive(Deserialize, Default, Clone)]
+pub struct RawRuleContent {
     #[serde(default)]
     pub label: String,
-    #[serde(default, rename = "type")]
-    pub type_: String,
     pub texts: Option<Vec<String>>,
     pub patterns: Option<Vec<String>>,
     pub exec: Option<String>,

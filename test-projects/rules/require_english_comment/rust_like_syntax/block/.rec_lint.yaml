@@ -1,6 +1,6 @@
 rule:
-  - label: comment_rule
-    type: require_english_comment
-    format:
-      lang: rust
-    message: コメントを英語にしてください
+  - require_english_comment:
+      label: comment_rule
+      format:
+        lang: rust
+      message: コメントを英語にしてください

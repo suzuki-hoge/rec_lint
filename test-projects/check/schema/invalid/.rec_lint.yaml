@@ -1,4 +1,4 @@
 rule:
-  - label: invalid-rule
-    type: unknown_type
-    message: This has unknown type
+  - unknown_type:
+      label: invalid-rule
+      message: This has unknown type

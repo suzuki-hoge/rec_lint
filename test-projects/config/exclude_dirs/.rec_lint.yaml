@@ -1,9 +1,9 @@
 rule:
-  - label: exclude test
-    type: forbidden_texts
-    texts: [NGWORD]
-    message: exclude対象テスト
-    match:
-      - pattern: path_contains
-        keywords: [config/exclude_dirs]
-        cond: or
+  - forbidden_texts:
+      label: exclude test
+      texts: [NGWORD]
+      message: exclude対象テスト
+      match:
+        - pattern: path_contains
+          keywords: [config/exclude_dirs]
+          cond: or

@@ -1,5 +1,5 @@
 rule:
-  - label: forbidden_texts_check
-    type: forbidden_texts
-    texts: [needle]
-    message: テキスト違反
+  - forbidden_texts:
+      label: forbidden_texts_check
+      texts: [needle]
+      message: テキスト違反

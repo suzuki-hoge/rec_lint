@@ -1,8 +1,7 @@
 rule:
-  - label: dir3-rule
-    type: forbidden_texts
-    texts: [BBB]
-    message: dir3 violation
-
+  - forbidden_texts:
+      label: dir3-rule
+      texts: [BBB]
+      message: dir3 violation
 guideline:
   - message: dir3-guideline

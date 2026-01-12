@@ -1,5 +1,5 @@
 rule:
-  - label: include test
-    type: forbidden_texts
-    texts: [NGWORD]
-    message: include対象テスト
+  - forbidden_texts:
+      label: include test
+      texts: [NGWORD]
+      message: include対象テスト

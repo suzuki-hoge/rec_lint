@@ -1,6 +1,6 @@
 rule:
-  - label: comment_rule
-    type: require_japanese_comment
-    format:
-      lang: rust
-    message: コメントを日本語にしてください
+  - require_japanese_comment:
+      label: comment_rule
+      format:
+        lang: rust
+      message: コメントを日本語にしてください
