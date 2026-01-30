@@ -1,3 +1,4 @@
+mod html;
 mod list;
 mod schema;
 mod tree;
@@ -18,6 +19,7 @@ pub fn run(mode: CheckMode) -> Result<Vec<String>> {
         CheckMode::List => list::run(&current_dir),
         CheckMode::Tree => tree::run(&current_dir),
         CheckMode::Schema => schema::run(&current_dir),
+        CheckMode::Html => html::run(&current_dir),
     }
 }
 

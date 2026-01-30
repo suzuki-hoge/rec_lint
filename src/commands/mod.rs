@@ -27,6 +27,7 @@ pub enum CheckMode {
     List,
     Tree,
     Schema,
+    Html,
 }
 
 #[derive(Parser)]
@@ -108,7 +109,8 @@ Guideline items are informational reminders for code reviewers.")]
 Options:\n\
   --list:   List directories with .rec_lint.yaml and their rule types\n\
   --tree:   Show directory tree with rule types at each level\n\
-  --schema: Validate all .rec_lint.yaml files against JSON Schema")]
+  --schema: Validate all .rec_lint.yaml files against JSON Schema\n\
+  --html:   Open interactive HTML view in browser")]
     Check {
         /// List directories with .rec_lint.yaml and their rule types
         #[arg(long, group = "mode")]
@@ -121,5 +123,9 @@ Options:\n\
         /// Validate all .rec_lint.yaml files against JSON Schema
         #[arg(long, group = "mode")]
         schema: bool,
+
+        /// Open interactive HTML view in browser
+        #[arg(long, group = "mode")]
+        html: bool,
     },
 }

@@ -28,17 +28,19 @@ fn run() -> anyhow::Result<ExitCode> {
         Commands::Init { dir } => commands::init::run(&dir)?,
         Commands::Add { dir } => commands::add::run(&dir)?,
         Commands::Desc => commands::desc::run()?,
-        Commands::Check { list, tree, schema } => {
+        Commands::Check { list, tree, schema, html } => {
             let mode = if list {
                 CheckMode::List
             } else if tree {
                 CheckMode::Tree
             } else if schema {
                 CheckMode::Schema
+            } else if html {
+                CheckMode::Html
             } else {
                 // No option provided, show help
                 return Err(anyhow::anyhow!(
-                    "No option specified. Use --list, --tree, or --schema.\n\n\
+                    "No option specified. Use --list, --tree, --schema, or --html.\n\n\
                     Run 'rec_lint check --help' for more information."
                 ));
             };

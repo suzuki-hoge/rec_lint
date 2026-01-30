@@ -12,8 +12,8 @@ fn list_は_rec_lint_yaml_があるディレクトリのみ表示する() {
     common::assert_output(
         &result,
         r#"
-            .: [ forbidden_texts ]
-            src: [ custom ]
+            ./.rec_lint.yaml: [ forbidden_texts ]
+            src/.rec_lint.yaml: [ custom ]
         "#,
     );
 }

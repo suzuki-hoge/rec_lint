@@ -13,9 +13,9 @@ pub fn run(start: &Path) -> Result<Vec<String>> {
         .iter()
         .map(|d| {
             let path = if d.relative_path.as_os_str().is_empty() {
-                ".".to_string()
+                "./.rec_lint.yaml".to_string()
             } else {
-                d.relative_path.display().to_string()
+                format!("{}/.rec_lint.yaml", d.relative_path.display())
             };
             let types = d.rule_types.join(", ");
             format!("{path}: [ {types} ]")
