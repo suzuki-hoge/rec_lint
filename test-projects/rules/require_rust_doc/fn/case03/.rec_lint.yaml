@@ -1,0 +1,6 @@
+rule:
+  - require_rust_doc:
+      label: fn_doc
+      option:
+        fn: public
+      message: RustDocを書いてください

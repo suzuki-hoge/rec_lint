@@ -118,7 +118,7 @@ fn is_comment_line(line: &str) -> bool {
 }
 
 fn check_visibility(line: &str, visibility: &Visibility) -> bool {
-    let is_public = line.contains("pub ");
+    let is_public = line.contains("pub ") || line.contains("pub(");
     match visibility {
         Visibility::Public => is_public,
         Visibility::All => true,

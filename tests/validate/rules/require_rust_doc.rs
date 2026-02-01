@@ -125,6 +125,18 @@ fn fn_public指定ですべてのpublicな関数にドキュメントがない�
 }
 
 #[test]
+fn fn_public指定でpub_crate_super_in_pathにドキュメントがないと違反になる() {
+    expect_violation(
+        "fn/case03/public指定_pub_crate_super_in_pathにドキュメントがないと違反になる.rs",
+        r#"
+            RustDocを書いてください: require_rust_doc/fn/case03/public指定_pub_crate_super_in_pathにドキュメントがないと違反になる.rs:1:1 [ found: fn missing_crate ]
+            RustDocを書いてください: require_rust_doc/fn/case03/public指定_pub_crate_super_in_pathにドキュメントがないと違反になる.rs:3:1 [ found: fn missing_super ]
+            RustDocを書いてください: require_rust_doc/fn/case03/public指定_pub_crate_super_in_pathにドキュメントがないと違反になる.rs:5:1 [ found: fn missing_in_path ]
+        "#,
+    );
+}
+
+#[test]
 fn macro_all指定ですべてのmacroにドキュメントがあると違反にならない() {
     expect_ok("macro_rules/case01/all指定_すべてのmacroにドキュメントがある.rs");
 }
