@@ -38,7 +38,7 @@ $ rec_lint add sub-dir
 `.rec_lint_config.yaml`
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint_config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.6/schema/rec_lint_config.schema.json
 
 include_extensions:
   - .php
@@ -50,7 +50,7 @@ exclude_dirs:
 `src/main/java/.rec_lint.yaml`
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.6/schema/rec_lint.schema.json
 
 rule:
   - forbidden_texts:
@@ -68,7 +68,7 @@ rule:
 `src/main/java/db/.rec_lint.yaml`
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.6/schema/rec_lint.schema.json
 
 rule:
   - forbidden_patterns:
@@ -187,13 +187,13 @@ src/db/UserCommand.php:15:9: デバッグ残りは削除し、必要な出力は
 `.rec_lint_config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint_config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.6/schema/rec_lint_config.schema.json
 ```
 
 `.rec_lint.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.6/schema/rec_lint.schema.json
 ```
 
 - Idea 系エディタ: 標準サポート
@@ -202,5 +202,61 @@ src/db/UserCommand.php:15:9: デバッグ残りは削除し、必要な出力は
 ### custom ルールの利用
 
 プリセットの `forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `custom` ルールで rec_lint 処理フロー中から任意のコマンドを実行できる
+
+`{file}` と `{script_dir}` というプレースホルダーを使い、任意の処理を rec_lint の仕組みに統合する
+
+- `{file}`: 対象ファイルのフルパス
+- `{script_dir}`: `.rec_lint_config.yaml` で `script_dir` プロパティを設定すると利用可能
+
+`.rec_lint_config.yaml`:
+
+```yaml
+script_dir: tools/rec_lint-scripts
+```
+
+`.rec_lint.yaml`:
+
+```yaml
+rule:
+  - custom:
+      label: story_exists
+      message: .tsx に対応する .stories.tsx を作成してください
+      exec: python {script_dir}/check-story-book-file-exists.py {file}
+      match:
+        - pattern: file_ends_with
+          keywords: [ ".tsx" ]
+```
+
+`tools/rec_lint-scripts/check-story-book-file-exists.py`:
+
+```python
+#!/usr/bin/env python
+import os
+import sys
+
+
+def main() -> int:
+    if len(sys.argv) < 2:
+        print("Usage: check-story-book-file-exists.py <file_path>")
+        return 1
+
+    file_path = sys.argv[1]
+
+    if file_path.endswith(".stories.tsx"):
+        return 0
+
+    if file_path.endswith(".tsx"):
+        story_path = file_path[:-4] + ".stories.tsx"
+        if os.path.isfile(story_path):
+            return 0
+        print(f"not found: {os.path.basename(story_path)}")
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
 
 詳細は [docs/schema/rec_lint.schema.md](docs/schema/rec_lint.schema.md) を参照

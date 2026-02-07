@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::ffi::OsString;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
 use serde::Deserialize;
@@ -12,12 +12,15 @@ pub struct RawRootConfig {
     pub include_extensions: Vec<String>,
     #[serde(default)]
     pub exclude_dirs: Vec<String>,
+    #[serde(default)]
+    pub script_dir: Option<String>,
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct RootConfig {
     pub include_extensions: HashSet<OsString>,
     pub exclude_dirs: HashSet<String>,
+    pub script_dir: Option<PathBuf>,
 }
 
 impl RawRootConfig {
@@ -32,16 +35,24 @@ impl RawRootConfig {
     }
 }
 
-impl From<RawRootConfig> for RootConfig {
-    fn from(raw: RawRootConfig) -> Self {
+impl RootConfig {
+    pub fn from_raw(raw: RawRootConfig, base_dir: &Path) -> Self {
+        let script_dir = raw.script_dir.map(|dir| {
+            let configured = PathBuf::from(dir);
+            if configured.is_absolute() {
+                configured
+            } else {
+                base_dir.join(configured)
+            }
+        });
+
         RootConfig {
             include_extensions: raw.include_extensions.into_iter().map(OsString::from).collect(),
             exclude_dirs: raw.exclude_dirs.into_iter().collect(),
+            script_dir,
         }
     }
-}
 
-impl RootConfig {
     /// Check if a file extension should be included
     pub fn should_include_extension(&self, ext: Option<&std::ffi::OsStr>) -> bool {
         if self.include_extensions.is_empty() {

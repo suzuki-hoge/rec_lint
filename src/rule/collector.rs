@@ -39,7 +39,7 @@ pub fn collect_rules(target_dir: &Path) -> Result<CollectedRules> {
         if is_root {
             // Load root config
             let raw_root = RawRootConfig::load(&root_config_path)?;
-            root_config = Some(RootConfig::from(raw_root));
+            root_config = Some(RootConfig::from_raw(raw_root, dir));
             root_dir = Some(dir.to_path_buf());
             break;
         }

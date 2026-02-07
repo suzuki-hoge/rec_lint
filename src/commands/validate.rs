@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 use rayon::prelude::*;
@@ -41,23 +41,42 @@ pub fn run(paths: &[PathBuf], sort_mode: SortMode) -> Result<Vec<String>> {
 
     let cached = cache_rules(&files);
     let dir_rules = Arc::new(cached.rules);
+    let errors = Arc::new(Mutex::new(Vec::new()));
 
     let violations: Vec<FileViolation> = files
         .par_iter()
-        .flat_map(|file| {
-            let parent = match file.parent() {
-                Some(p) => p,
-                None => return Vec::new(),
-            };
-            let rules = match dir_rules.get(parent) {
-                Some(r) => r,
-                None => return Vec::new(),
-            };
-            validate_file(file, rules).unwrap_or_default()
+        .flat_map({
+            let errors = Arc::clone(&errors);
+            move |file| {
+                let parent = match file.parent() {
+                    Some(p) => p,
+                    None => return Vec::new(),
+                };
+                let rules = match dir_rules.get(parent) {
+                    Some(r) => r,
+                    None => return Vec::new(),
+                };
+                match validate_file(file, rules) {
+                    Ok(result) => result,
+                    Err(err) => {
+                        if let Ok(mut guard) = errors.lock() {
+                            let relative = file
+                                .strip_prefix(&rules.root_dir)
+                                .map(|p| p.display().to_string())
+                                .unwrap_or_else(|_| file.display().to_string());
+                            guard.push(format!("{relative}: {err}"));
+                        }
+                        Vec::new()
+                    }
+                }
+            }
         })
         .collect();
 
     let mut output: Vec<String> = cached.errors;
+    if let Ok(guard) = errors.lock() {
+        output.extend(guard.iter().cloned());
+    }
     output.extend(format_violations(&violations, sort_mode));
 
     Ok(output)
@@ -158,7 +177,7 @@ fn validate_file(file: &Path, rules: &CollectedRules) -> Result<Vec<FileViolatio
         if !rule.matcher().matches(&file) {
             continue;
         }
-        if let Some(v) = validate_rule(&file, root_dir, rule, &content)? {
+        if let Some(v) = validate_rule(&file, root_dir, &rules.root_config, rule, &content)? {
             violations.push(v);
         }
     }
@@ -166,7 +185,13 @@ fn validate_file(file: &Path, rules: &CollectedRules) -> Result<Vec<FileViolatio
     Ok(violations)
 }
 
-fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Result<Option<FileViolation>> {
+fn validate_rule(
+    file: &Path,
+    root_dir: &Path,
+    root_config: &RootConfig,
+    rule: &Rule,
+    content: &str,
+) -> Result<Option<FileViolation>> {
     match rule {
         Rule::Text(text_rule) => {
             let line_violations = text::validate(content, text_rule);
@@ -191,7 +216,7 @@ fn validate_rule(file: &Path, root_dir: &Path, rule: &Rule, content: &str) -> Re
             }
         }
         Rule::Custom(custom_rule) => {
-            if let Some(custom_violation) = custom::validate(file, custom_rule)? {
+            if let Some(custom_violation) = custom::validate(file, custom_rule, root_config.script_dir.as_deref())? {
                 return Ok(Some(FileViolation {
                     file: file.to_path_buf(),
                     root_dir: root_dir.to_path_buf(),
@@ -478,28 +503,29 @@ fn format_violations(violations: &[FileViolation], sort_mode: SortMode) -> Vec<S
             Some(found) => format!(" [ found: {found} ]"),
             None => String::new(),
         };
+        let custom_suffix = match &fv.custom_output {
+            Some(output) => format!(" [ {output} ]"),
+            None => String::new(),
+        };
         let formatted = match sort_mode {
             SortMode::Rule => {
                 // message: file:line:col [ found: xxx ]
                 if fv.line == 0 {
-                    format!("{}: {}{}", fv.message, fv.file, found_suffix)
+                    format!("{}: {}{}{}", fv.message, fv.file, found_suffix, custom_suffix)
                 } else {
-                    format!("{}: {}:{}:{}{}", fv.message, fv.file, fv.line, fv.col, found_suffix)
+                    format!("{}: {}:{}:{}{}{}", fv.message, fv.file, fv.line, fv.col, found_suffix, custom_suffix)
                 }
             }
             SortMode::File => {
                 // file:line:col: message [ found: xxx ]
                 if fv.line == 0 {
-                    format!("{}: {}{}", fv.file, fv.message, found_suffix)
+                    format!("{}: {}{}{}", fv.file, fv.message, found_suffix, custom_suffix)
                 } else {
-                    format!("{}:{}:{}: {}{}", fv.file, fv.line, fv.col, fv.message, found_suffix)
+                    format!("{}:{}:{}: {}{}{}", fv.file, fv.line, fv.col, fv.message, found_suffix, custom_suffix)
                 }
             }
         };
         output.push(formatted);
-        if let Some(custom_out) = &fv.custom_output {
-            output.push(custom_out.clone());
-        }
     }
     output
 }

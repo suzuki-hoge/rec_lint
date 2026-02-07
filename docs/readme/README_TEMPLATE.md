@@ -138,13 +138,13 @@ $ rec_lint validate --sort file src/main/java
 `.rec_lint_config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint_config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.6/schema/rec_lint_config.schema.json
 ```
 
 `.rec_lint.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.5/schema/rec_lint.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-hoge/rec_lint/refs/tags/v0.0.6/schema/rec_lint.schema.json
 ```
 
 - Idea 系エディタ: 標準サポート
@@ -153,5 +153,28 @@ $ rec_lint validate --sort file src/main/java
 ### custom ルールの利用
 
 プリセットの `forbidden_texts` などでカバーできないケースをバリデーションしたい場合は `custom` ルールで rec_lint 処理フロー中から任意のコマンドを実行できる
+
+`{file}` と `{script_dir}` というプレースホルダーを使い、任意の処理を rec_lint の仕組みに統合する
+
+- `{file}`: 対象ファイルのフルパス
+- `{script_dir}`: `.rec_lint_config.yaml` で `script_dir` プロパティを設定すると利用可能
+
+`.rec_lint_config.yaml`:
+
+```yaml
+script_dir: tools/rec_lint-scripts
+```
+
+`.rec_lint.yaml`:
+
+```yaml
+{{exec: cat test-projects/rules/custom_script_dir/.rec_lint.yaml}}
+```
+
+`tools/rec_lint-scripts/check-story-book-file-exists.py`:
+
+```python
+{{exec: cat test-projects/rules/custom_script_dir/scripts/check-story-book-file-exists.py}}
+```
 
 詳細は [docs/schema/rec_lint.schema.md](docs/schema/rec_lint.schema.md) を参照

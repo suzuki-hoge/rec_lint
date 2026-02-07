@@ -1,0 +1,8 @@
+rule:
+  - custom:
+      label: story_exists
+      message: .tsx に対応する .stories.tsx を作成してください
+      exec: python {script_dir}/check-story-book-file-exists.py {file}
+      match:
+        - pattern: file_ends_with
+          keywords: [ ".tsx" ]

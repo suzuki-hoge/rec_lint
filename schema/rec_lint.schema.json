@@ -194,11 +194,11 @@
             "exec": {
               "description": "ファイルに対して実行するコマンド (終了コード 0 でエラーなし)",
               "examples": [
-                "ruby path/to/your/checker.rb {path}",
-                "docker run your:image {path}"
+                "ruby path/to/your/checker.rb {file}",
+                "bash {script_dir}/check-story.sh {file}"
               ],
               "type": "string",
-              "x-doc-description": "ファイルに対して実行するコマンド<br>終了コード 0 の場合はエラーなし扱い<br>エラー時は実行コマンドの標準出力がエラーメッセージとして表示される",
+              "x-doc-description": "ファイルに対して実行するコマンド<br>終了コード 0 の場合はエラーなし扱い<br>エラー時は実行コマンドの標準出力がエラーメッセージとして表示される<br>利用可能なプレースホルダー: `{file}`, `{script_dir}`",
               "x-property-order": 1
             }
           },

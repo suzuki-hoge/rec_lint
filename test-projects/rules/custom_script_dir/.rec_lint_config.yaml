@@ -1,0 +1,2 @@
+# yaml-language-server: $schema=../../../../schema/rec_lint_config.schema.json
+script_dir: scripts

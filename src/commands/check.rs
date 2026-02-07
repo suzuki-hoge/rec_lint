@@ -49,7 +49,7 @@ pub fn find_root_dir(start: &Path) -> Result<PathBuf> {
 pub fn load_root_config(root: &Path) -> Result<RootConfig> {
     let path = root.join(".rec_lint_config.yaml");
     let raw = RawRootConfig::load(&path)?;
-    Ok(RootConfig::from(raw))
+    Ok(RootConfig::from_raw(raw, root))
 }
 
 /// Collect directories with .rec_lint.yaml files

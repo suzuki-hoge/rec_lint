@@ -35,6 +35,15 @@
       "type": "array",
       "x-doc-description": "検証対象とする拡張子のリスト<br>ドット付きで指定<br>未指定の場合は全ての拡張子が対象<br>これより下位の設定で include しても、これ以外は対象にならない",
       "x-property-order": 0
+    },
+    "script_dir": {
+      "description": "custom ルールで利用するスクリプトのディレクトリ",
+      "examples": [
+        "tools/scripts"
+      ],
+      "type": "string",
+      "x-doc-description": "custom ルールで利用するスクリプトのディレクトリ<br>.rec_lint_config.yaml からの相対パスか絶対パスを指定する",
+      "x-property-order": 2
     }
   },
   "title": ".rec_lint_config.yaml ドキュメント",
